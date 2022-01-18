@@ -2,10 +2,10 @@ import { Request, Response } from 'express'
 import { PaginateModel, Model } from 'mongoose'
 import fs from 'fs'
 import path from 'path'
-import { Album } from  '~/models/album'
-import { Artist } from '~/models/artist'
-import { Genre } from '~/models/genre'
-import { Period } from '~/models/period'
+import { Album } from  '~/models/album.model'
+import { Artist } from '~/models/artist.model'
+import { Genre } from '~/models/genre.model'
+import { Period } from '~/models/period.model'
 // import Book from '../models/book.model'
 // import Author from '../models/author.model'
 // import Genre from '../models/genre.model'
@@ -145,11 +145,28 @@ const backupDelete = (req: Request, res: Response) => {
   }
 }
 
+const clean = async (req: Request, res: Response) => {
+  try {
+    const albums = await readBackupFile('1642537794905', `albums.json`) as any[]
+    const cleaned = albums.map((el: any) => {
+      delete el.releaseYear
+      return el
+    })
+
+    await writeBackupFile('albums.json', '1642537794905', cleaned)
+
+    res.json({ message: 'success' })
+  } catch (error) {
+    res.status(500).json(error)
+  }
+}
+
 const controller = {
   backupList,
   backupSave,
   backupRestore,
-  backupDelete
+  backupDelete,
+  clean
 }
 
 export default controller

@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import controller from '../controllers/albums'
+import controller from '~/controllers/albums.controller'
 
 const router = Router()
 

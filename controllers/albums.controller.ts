@@ -1,9 +1,9 @@
 import 'module-alias/register'
 import { Request, Response } from 'express'
-import { Album } from '~/models/album'
-import { Artist } from '~/models/artist'
-import { Genre } from '~/models/genre'
-import { Period } from '~/models/period'
+import { Album } from '~/models/album.model'
+import { Artist } from '~/models/artist.model'
+import { Genre } from '~/models/genre.model'
+import { Period } from '~/models/period.model'
 import getAlbumsWithCover from '~/helpers/albumsCovers'
 
 const list = async (req: Request, res: Response) => {

@@ -8,4 +8,6 @@ router.post('/save', controller.backupSave)
 router.post('/restore/:date', controller.backupRestore)
 router.delete('/:date', controller.backupDelete)
 
+router.post('/clean', controller.clean)
+
 export default router
