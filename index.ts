@@ -14,8 +14,8 @@ import albumsRoutes from '~/routes/albums.routes'
 // import framesRoutes from './routes/frames.js'
 // import collectionsRoutes from './routes/collections.js'
 // import stationsRoutes from './routes/stations.js'
-// import synchronizeRoutes from './routes/synchronize.js'
 import backupRoutes from './routes/backup.routes'
+import synchronizeRoutes from './routes/synchronize.routes'
 
 dotenv.config()
 
@@ -43,5 +43,6 @@ app.use('/api/albums', albumsRoutes)
 // app.use('/api/stations', stationsRoutes)
 // app.use('/api/synchronize', synchronizeRoutes)
 app.use('/api/backup', backupRoutes)
+app.use('/api/sync', synchronizeRoutes)
 
 app.listen(PORT, () => console.log(`App listening at http://localhost:${PORT}`))
