@@ -35,26 +35,34 @@ interface CloudAlbumTrack extends CloudAlbumFile {
 
 type CloudAlbumContent = CloudAlbumFolder | CloudAlbumFile | CloudAlbumTrack
 
-interface AlbumModel extends Document {
+interface AlbumTracksModel {
+  fileid: number
   title: string
-  artist: Types.ObjectId
-  genre: Types.ObjectId
-  period: Types.ObjectId
-  dateCreated: Date
+  lyrics: string
+  duration: number
+  listened: number
+}
+
+interface AlbumModel {
+  title: string
+  artistName?: string
+  genresArray?: string[]
+  periodYear?: string
+  dateCreated?: Date
   albumCover: number | string
   albumCoverArt: number
   coverID?: number
   toStay?: boolean
   folderid: number
-  modified: Date
+  modified: Date | string
   description: string
-  tracks: [{
-    fileid: number
-    title: string
-    lyrics: string
-    duration: number
-    listened: number
-  }]
+  tracks: AlbumTracksModel[]
+}
+
+interface AlbumModelDocument extends AlbumModel, Document {
+  artist: Types.ObjectId
+  genres: Types.ObjectId[]
+  period: Types.ObjectId
 }
 
 interface AlbumModelPaginated<T extends Document> extends PaginateModel<T> {}
@@ -66,5 +74,7 @@ export {
   CloudAlbumTrack,
   CloudAlbumContent,
   AlbumModel,
+  AlbumModelDocument,
+  AlbumTracksModel,
   AlbumModelPaginated
 }

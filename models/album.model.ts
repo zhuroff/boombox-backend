@@ -1,8 +1,8 @@
 import { model, Schema } from 'mongoose'
 import mongoosePaginate from 'mongoose-paginate-v2'
-import { AlbumModel, AlbumModelPaginated } from '~/types/Album'
+import { AlbumModelDocument, AlbumModelPaginated } from '~/types/Album'
 
-const AlbumSchema: Schema<AlbumModel> = new Schema({
+const AlbumSchema: Schema<AlbumModelDocument> = new Schema({
   title: {
     type: String,
     required: true
@@ -14,11 +14,11 @@ const AlbumSchema: Schema<AlbumModel> = new Schema({
     required: false
   },
 
-  genre: {
+  genres: [{
     type: Schema.Types.ObjectId,
     ref: 'genres',
     required: false
-  },
+  }],
 
   period: {
     type: Schema.Types.ObjectId,
@@ -90,4 +90,4 @@ const AlbumSchema: Schema<AlbumModel> = new Schema({
 AlbumSchema.index({ title: 'text' })
 AlbumSchema.plugin(mongoosePaginate)
 
-export const Album = model<AlbumModel>('albums', AlbumSchema) as AlbumModelPaginated<AlbumModel>
+export const Album = model<AlbumModelDocument>('albums', AlbumSchema) as AlbumModelPaginated<AlbumModelDocument>

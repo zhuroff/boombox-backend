@@ -10,10 +10,12 @@ import {
   CloudAlbumFolder,
   CloudAlbumFile,
   CloudAlbumTrack,
-  CloudAlbumContent
+  CloudAlbumContent,
+  AlbumModel,
+  AlbumTracksModel
 } from '~/types/Album'
 
-// const syncSuccess = { status: 201, message: 'Successfully synchronized' }
+const syncSuccess = { status: 201, message: 'Successfully synchronized' }
 // const unspecifiedError = { status: 0, message: 'Unspecified error' }
 
 const getAlbumCover = (array: CloudAlbumFile[]) => {
@@ -120,21 +122,19 @@ const getAlbumTracks: any = async (array: CloudAlbumContent[]) => {
 //   return result
 // }
 
-// const saveAlbumToDataBase = async (album) => {
-//   const { artistName, albumGenre } = album
+const saveAlbumToDataBase = async (album: AlbumModel) => {
+  const { artistName, genresArray, periodYear } = album
 
-//   delete album.artistName
-//   delete album.albumGenre
+  const newAlbum = new Album(album)
 
-//   const newAlbum = new Album(album)
-
-//   try {
-//     const dbAlbum = await newAlbum.save()
-//     return { ...dbAlbum._doc, artistName, albumGenre }
-//   } catch (error) {
-//     console.log(error.errors)
-//   }
-// }
+  try {
+    const dbAlbum = await newAlbum.save()
+    return { ...dbAlbum, artistName, genresArray, periodYear }
+  } catch (error) {
+    console.log('saveAlbumToDataBase', error)
+    throw error
+  }
+}
 
 // const appendArtistsToAlbums = async (artists) => {
 //   const albumArtistUpdating = artists.map(async (artist) => {
@@ -172,47 +172,48 @@ const getAlbumTracks: any = async (array: CloudAlbumContent[]) => {
 //   return await Promise.all(albumPeriodUpdating)
 // }
 
-// const createDatabaseEntries = async (albums) => {
-//   try {
-//     const dbCreating = albums.map(async (el) => await saveAlbumToDataBase(el))
-//     const createdAlbums = await Promise.all(dbCreating)
+const createDatabaseEntries = async (albums: AlbumModel[]) => {
+  try {
+    const dbCreating = albums.map(async (el) => await saveAlbumToDataBase(el))
+    const createdAlbums = await Promise.all(dbCreating)
+    console.log(createdAlbums)
 
-//     const artists = createdAlbums.map((el) => {
-//       return { artist: el.artistName, album: el._id }
-//     })
+    // const artists = createdAlbums.map((el) => {
+    //   return { artist: el.artistName, album: el._id }
+    // })
 
-//     const genres = createdAlbums.map((el) => {
-//       return { genre: el.albumGenre, album: el._id }
-//     })
+    // const genres = createdAlbums.map((el) => {
+    //   return { genre: el.albumGenre, album: el._id }
+    // })
 
-//     const periods = createdAlbums.map((el) => {
-//       return { period: el.releaseYear, album: el._id }
-//     })
+    // const periods = createdAlbums.map((el) => {
+    //   return { period: el.releaseYear, album: el._id }
+    // })
 
-//     const createdArtists = await saveCategoryToDataBase(
-//       swapCategories(artists, 'artist'),
-//       Artist, 'artist'
-//     )
+    // const createdArtists = await saveCategoryToDataBase(
+    //   swapCategories(artists, 'artist'),
+    //   Artist, 'artist'
+    // )
 
-//     const createdGenres = await saveCategoryToDataBase(
-//       swapCategories(genres, 'genre'),
-//       Genre, 'genre'
-//     )
+    // const createdGenres = await saveCategoryToDataBase(
+    //   swapCategories(genres, 'genre'),
+    //   Genre, 'genre'
+    // )
 
-//     const createdPeriods = await saveCategoryToDataBase(
-//       swapCategories(periods, 'period'),
-//       Period, 'period'
-//     )
+    // const createdPeriods = await saveCategoryToDataBase(
+    //   swapCategories(periods, 'period'),
+    //   Period, 'period'
+    // )
 
-//     await appendArtistsToAlbums(createdArtists)
-//     await appendGenresToAlbums(createdGenres)
-//     await appendPeriodsToAlbum(createdPeriods)
+    // await appendArtistsToAlbums(createdArtists)
+    // await appendGenresToAlbums(createdGenres)
+    // await appendPeriodsToAlbum(createdPeriods)
     
-//     return syncSuccess
-//   } catch (error) {
-//     return error
-//   }
-// }
+    return syncSuccess
+  } catch (error) {
+    return error
+  }
+}
 
 // const remainingAlbums = (a, b) => {
 //   return a.filter(el => !b.includes(el)).concat(b.filter(el => !a.includes(el)))
@@ -328,13 +329,16 @@ const getAlbumTracks: any = async (array: CloudAlbumContent[]) => {
 const getAlbumTitle = (name: string) => {
   const albumTitleRegExp = /\]([^)]+)\#/
   const albumTitle = albumTitleRegExp.exec(name)
+  const albumTitleResult = albumTitle && albumTitle[1] ? albumTitle[1].trim() : 'unknown album'
 
-  return albumTitle ? albumTitle[1]?.trim() : 'unknown album'
+  return albumTitleResult
 }
 
 const getArtistName = (name: string) => {
   const albumArtist = name.split('\[')[0]
-  return albumArtist ? albumArtist.trim() : 'unknown artist'
+  const artistNameResult = albumArtist ? albumArtist.trim() : 'unknown artist'
+
+  return artistNameResult
 }
 
 const getAlbumGenres = (name: string) => {
@@ -345,8 +349,9 @@ const getAlbumGenres = (name: string) => {
 const getAlbumReleaseYear = (name: string) => {
   const albumYearRegExp = /\[([^)]+)\]/
   const albumYear = albumYearRegExp.exec(name)
+  const albumYearResult = albumYear && albumYear[1] ? albumYear[1] : 'unknown year'
 
-  return albumYear ? albumYear[1] : 'unknown year'
+  return albumYearResult
 }
 
 const buildAlbumsData = async (content: CloudAlbum[], isModified = false) => {
@@ -354,36 +359,31 @@ const buildAlbumsData = async (content: CloudAlbum[], isModified = false) => {
     const albumsMap = content.map(async (el: CloudAlbum) => {
       const folderQuery = fetchers.cloudQueryLink(`listfolder?folderid=${el.folderid}`)
       const listFolder = await fetchers.getData(folderQuery)
-      const folderTracks = await getAlbumTracks(listFolder.data.metadata.contents)
+      const folderTracks: AlbumTracksModel[] = await getAlbumTracks(listFolder.data.metadata.contents)
       
-      const pcloudData = {
-        folderid: el.folderid,
-        modified: el.modified,
-        tracks: folderTracks,
-        albumCover: getAlbumCover(listFolder.data.metadata.contents),
-        albumCoverArt: getAlbumCoverArt(listFolder.data.metadata.contents),
+      const pcloudData: AlbumModel = {
         title: getAlbumTitle(el.name),
         artistName: getArtistName(el.name),
-        albumGenres: getAlbumGenres(el.name),
-        releaseYear: getAlbumReleaseYear(el.name),
-        description: ''
+        genresArray: getAlbumGenres(el.name),
+        periodYear: getAlbumReleaseYear(el.name),
+        albumCover: getAlbumCover(listFolder.data.metadata.contents),
+        albumCoverArt: getAlbumCoverArt(listFolder.data.metadata.contents),
+        folderid: el.folderid,        
+        modified: el.modified,
+        description: '',
+        tracks: folderTracks
       }
 
       return pcloudData
     })
 
     const albums = await Promise.all(albumsMap)
-    console.log(albums)
-
-    // if (albums.find((el) => el.errorMessage)) {
-    //   return albums.find((el) => el.errorMessage)
-    // }
 
     // if (isModified) {
     //   return modifyAlbumsInDataBase(albums)
     // }
     
-    // return createDatabaseEntries(albums)
+    return createDatabaseEntries(albums)
   } catch (error) {
     console.log(error)
   }
