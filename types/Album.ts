@@ -44,6 +44,7 @@ interface AlbumTracksModel {
 }
 
 interface AlbumModel {
+  _id?: Types.ObjectId
   title: string
   artistName?: string
   genresArray?: string[]
@@ -63,6 +64,8 @@ interface AlbumModelDocument extends AlbumModel, Document {
   artist: Types.ObjectId
   genres: Types.ObjectId[]
   period: Types.ObjectId
+  _id: Types.ObjectId
+  _doc: AlbumModel
 }
 
 interface AlbumModelPaginated<T extends Document> extends PaginateModel<T> {}

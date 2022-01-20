@@ -14,6 +14,7 @@ import {
   AlbumModel,
   AlbumTracksModel
 } from '~/types/Album'
+import { CategoryAlbum } from '~/types/Category'
 
 const syncSuccess = { status: 201, message: 'Successfully synchronized' }
 // const unspecifiedError = { status: 0, message: 'Unspecified error' }
@@ -62,64 +63,34 @@ const getAlbumTracks: any = async (array: CloudAlbumContent[]) => {
   }
 }
 
-// const swapCategories = (categories, key) => {
-//   const swapped = categories.reduce((acc, next) => {
-//     if (!acc.length) {
-//       const category = {}
+// const saveCategoryToDataBase = async (data: any, Model: any, key: string) => {
+//   // const dbCategoryList = await Model.find({}, { title: true, albums: true }).exec()
 
-//       category[key] = next[key],
-//       category.albums = [next.album]
+//   // const categoriesCreating = data.map(async (el) => {
+//   //   const existCategory = dbCategoryList.find((category) => category.title == el[key])
 
-//       acc.push(category)
-//     } else {
-//       const existingCategory = acc.findIndex((el) => el[key] === next[key])
+//   //   if (!existCategory) {
+//   //     const newCategory = new Model({ title: el[key], albums: el.albums })
 
-//       if (existingCategory !== -1) {
-//         acc[existingCategory].albums.push(next.album)
-//       } else {
-//         const category = {}
+//   //     try {
+//   //       const category = await newCategory.save()
+//   //       return category
+//   //     } catch (error) {
+//   //       return error
+//   //     }
+//   //   } else {
+//   //     try {
+//   //       existCategory.albums = [...existCategory.albums, ...el.albums]
+//   //       const category = await existCategory.save()
+//   //       return category
+//   //     } catch (error) {
+//   //       return error
+//   //     }
+//   //   }
+//   // })
 
-//         category[key] = next[key],
-//         category.albums = [next.album]
-
-//         acc.push(category)
-//       }
-//     }
-
-//     return acc
-//   }, [])
-
-//   return swapped
-// }
-
-// const saveCategoryToDataBase = async (data, Model, key) => {
-//   const dbCategoryList = await Model.find({}, { title: true, albums: true }).exec()
-
-//   const categoriesCreating = data.map(async (el) => {
-//     const existCategory = dbCategoryList.find((category) => category.title == el[key])
-
-//     if (!existCategory) {
-//       const newCategory = new Model({ title: el[key], albums: el.albums })
-
-//       try {
-//         const category = await newCategory.save()
-//         return category
-//       } catch (error) {
-//         return error
-//       }
-//     } else {
-//       try {
-//         existCategory.albums = [...existCategory.albums, ...el.albums]
-//         const category = await existCategory.save()
-//         return category
-//       } catch (error) {
-//         return error
-//       }
-//     }
-//   })
-
-//   const result = await Promise.all(categoriesCreating)
-//   return result
+//   // const result = await Promise.all(categoriesCreating)
+//   // return result
 // }
 
 const saveAlbumToDataBase = async (album: AlbumModel) => {
@@ -176,11 +147,12 @@ const createDatabaseEntries = async (albums: AlbumModel[]) => {
   try {
     const dbCreating = albums.map(async (el) => await saveAlbumToDataBase(el))
     const createdAlbums = await Promise.all(dbCreating)
-    console.log(createdAlbums)
 
-    // const artists = createdAlbums.map((el) => {
-    //   return { artist: el.artistName, album: el._id }
-    // })
+    const artists: CategoryAlbum[] = createdAlbums.map((el) => {
+      return { artist: el.artistName, album: el._doc._id }
+    })
+
+    console.log(artists)
 
     // const genres = createdAlbums.map((el) => {
     //   return { genre: el.albumGenre, album: el._id }
@@ -190,18 +162,13 @@ const createDatabaseEntries = async (albums: AlbumModel[]) => {
     //   return { period: el.releaseYear, album: el._id }
     // })
 
-    // const createdArtists = await saveCategoryToDataBase(
-    //   swapCategories(artists, 'artist'),
-    //   Artist, 'artist'
-    // )
-
     // const createdGenres = await saveCategoryToDataBase(
-    //   swapCategories(genres, 'genre'),
-    //   Genre, 'genre'
+    //   swapCategories(genres, 'genres' as CategoryKeys),
+    //   Genre, 'genres'
     // )
 
     // const createdPeriods = await saveCategoryToDataBase(
-    //   swapCategories(periods, 'period'),
+    //   swapCategories(periods, 'period' as CategoryKeys),
     //   Period, 'period'
     // )
 
