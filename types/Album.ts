@@ -46,8 +46,8 @@ interface AlbumTracksModel {
 interface AlbumModel {
   _id?: Types.ObjectId
   title: string
-  artistName?: string
-  genresArray?: string[]
+  artistTitle?: string
+  genreTitle?: string
   periodYear?: string
   dateCreated?: Date
   albumCover: number | string
@@ -62,7 +62,7 @@ interface AlbumModel {
 
 interface AlbumModelDocument extends AlbumModel, Document {
   artist: Types.ObjectId
-  genres: Types.ObjectId[]
+  genres: Types.ObjectId
   period: Types.ObjectId
   _id: Types.ObjectId
   _doc: AlbumModel
