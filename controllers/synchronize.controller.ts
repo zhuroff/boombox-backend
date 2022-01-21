@@ -221,15 +221,50 @@ const updateDatabaseEntries = async (albums: CloudAlbum[]) => {
   return true
 }
 
-const dbUpdateSplitter = async (cloudAlbums: CloudAlbum[], dbAlbums: AlbumModel[]) => {
+const unlinkAlbumFromCategory = async (
+  ...args: [PaginateModel<CategoryModel>, Types.ObjectId, Types.ObjectId]
+): Promise<any> => {
+  const [Model, albumID, categoryID] = args
+  const query = { id: categoryID }
+  const update = { $pull: { albums: albumID } }
+  const options = { new: true }
+
+  return Model.findOneAndUpdate(query, update, options)
+}
+
+const deleteAlbumFromDatabase = async (album: AlbumModelDocument) => {
+  const query = { id: album._id }
+  const options = { rawResult: true }
+  
+  await Album.findOneAndDelete(query, options)
+  await unlinkAlbumFromCategory(Artist, album._id, album.artist)
+  await unlinkAlbumFromCategory(Genre, album._id, album.genre)
+  await unlinkAlbumFromCategory(Period, album._id, album.period)
+  return true
+}
+
+const deleteDatabaseEntries = async (albums: AlbumModelDocument[]) => {
+  try {
+    const dbDeleting = albums.map(async (album) => (
+      await deleteAlbumFromDatabase(album)
+    ))
+
+    return await Promise.all(dbDeleting)
+  } catch (error) {
+    throw error
+  }
+}
+
+const dbUpdateSplitter = async (cloudAlbums: CloudAlbum[], dbAlbums: AlbumModelDocument[]) => {
   if (!dbAlbums.length) {
+    console.log('Есть что создать!')
     await updateDatabaseEntries(cloudAlbums)
     return syncSuccess
   }
 
   const albumsToAdd = [] as CloudAlbum[]
-  const albumsToDel = [] as AlbumModel[]
-  const albumsToFix = [] as { old: AlbumModel, new: CloudAlbum }[]
+  const albumsToDel = [] as AlbumModelDocument[]
+  const albumsToFix = [] as { old: AlbumModelDocument, new: CloudAlbum }[]
 
   cloudAlbums.forEach((cloudAlbum) => {
     const matched = dbAlbums.find((dbAlbum) => (
@@ -253,18 +288,17 @@ const dbUpdateSplitter = async (cloudAlbums: CloudAlbum[], dbAlbums: AlbumModel[
   albumsToDel.push(...dbAlbums.filter((el) => !el.toStay))
 
   if (albumsToAdd.length) {
+    console.log('Есть что добавить!')
     await updateDatabaseEntries(albumsToAdd)
-    return syncSuccess
   }
 
   if (albumsToDel.length) {
     console.log('Есть что удалить!')
-    return syncSuccess
+    await deleteDatabaseEntries(albumsToDel)
   }
 
   if (albumsToFix.length) {
     console.log('Есть что изменить')
-    return syncSuccess
   }
 
   return syncSuccess
