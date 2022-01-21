@@ -1,6 +1,6 @@
 import 'module-alias/register'
 import { Request, Response } from 'express'
-import { PaginateModel } from 'mongoose'
+import { Types, PaginateModel } from 'mongoose'
 import { fetchers } from '~/helpers/fetchers'
 import { Album } from '~/models/album.model'
 import { Artist } from '~/models/artist.model'
@@ -16,6 +16,14 @@ import {
   AlbumTracksModel,
   AlbumModelDocument
 } from '~/types/Album'
+import { CategoryModel } from '~/types/Category'
+
+type CreatingResponse = {
+  albumID: Types.ObjectId,
+  artistID: Types.ObjectId,
+  genreID: Types.ObjectId,
+  periodID: Types.ObjectId
+}
 
 const syncSuccess = { status: 201, message: 'Successfully synchronized' }
 
@@ -63,47 +71,75 @@ const getAlbumTracks: any = async (array: CloudAlbumContent[]) => {
   }
 }
 
-const createOrUpdateCategory = async (...args: [PaginateModel<any>, string, AlbumModelDocument]) => {
+const attachCategoriesToAlbum = async (payload: CreatingResponse) => {
+  const { albumID, artistID, genreID, periodID } = payload
+  const query = { _id: albumID }
+  const options = { new: true }
+  const update = {
+    artist: artistID,
+    genre: genreID,
+    period: periodID
+  }
+  
+  return await Album.findOneAndUpdate(query, update, options) as AlbumModelDocument
+}
+
+const updateCategoriesInAlbum = async (payload: CreatingResponse[]) => {
+  const updating = payload.map(async (el) => (
+    await attachCategoriesToAlbum(el)
+  ))
+
+  return await Promise.all(updating)
+}
+
+const createOrUpdateCategory = async (
+  ...args: [PaginateModel<any>, string, AlbumModelDocument]
+): Promise<CategoryModel> => {
   const [Model, title, album] = args
   const query = { title: title }
   const update = { $push: { albums: album._doc._id } }
   const options = { upsert: true, new: true, setDefaultsOnInsert: true }
 
-  await Model.findOneAndUpdate(query, update, options)
+  return await Model.findOneAndUpdate(query, update, options)
 }
 
-const saveDatabaseEntries = async (album: AlbumModel) => {
+const saveDatabaseEntries = async (album: AlbumModel): Promise<CreatingResponse> => {
   const { artistTitle, genreTitle, periodYear } = album
   const newAlbum = new Album(album)
 
   try {
     const dbAlbum = await newAlbum.save()
 
-    await createOrUpdateCategory(
+    const artist: CategoryModel = await createOrUpdateCategory(
       Artist,
       artistTitle || 'unknown artist',
       dbAlbum
     )
 
-    await createOrUpdateCategory(
+    const genre: CategoryModel = await createOrUpdateCategory(
       Genre,
       genreTitle || 'unknown genre',
       dbAlbum
     )
 
-    await createOrUpdateCategory(
+    const period: CategoryModel = await createOrUpdateCategory(
       Period,
       periodYear || 'unknown year',
       dbAlbum
     )
 
-    return syncSuccess
+    return {
+      albumID: dbAlbum._id,
+      artistID: artist._id,
+      genreID: genre._id,
+      periodID: period._id
+    }
   } catch (error) {
     throw error
   }
 }
 
-const createDatabaseEntries = async (albums: AlbumModel[]) => {
+const createDatabaseEntries = async (albums: AlbumModel[]): Promise<CreatingResponse[]> => {
   try {
     const dbCreating = albums.map(async (album) => (
       await saveDatabaseEntries(album)
@@ -111,7 +147,7 @@ const createDatabaseEntries = async (albums: AlbumModel[]) => {
 
     return await Promise.all(dbCreating)
   } catch (error) {
-    return error
+    throw error
   }
 }
 
@@ -172,9 +208,9 @@ const buildAlbumsData = async (content: CloudAlbum[], isModified = false) => {
     //   return modifyAlbumsInDataBase(albums)
     // }
     
-    return createDatabaseEntries(albums)
+    return albums
   } catch (error) {
-    console.log(error)
+    throw error
   }
 }
 
@@ -220,7 +256,10 @@ const synchronizeHandler = async (cloudAlbums: CloudAlbum[]) => {
   const dbAlbums = await Album.find({}, searchConfig).exec()
 
   if (!dbAlbums.length) {
-    return buildAlbumsData(cloudAlbums)
+    const buildedAlbums = await buildAlbumsData(cloudAlbums)
+    const createdAlbums = await createDatabaseEntries(buildedAlbums)
+    await updateCategoriesInAlbum(createdAlbums)
+    return syncSuccess
   }
 
   return updateDatabaseEntries(cloudAlbums, dbAlbums)
@@ -244,9 +283,8 @@ const synchronize = async (req: Request, res: Response) => {
       return res.status(500).json(rootFolder.data)
     }
 
-    await synchronizeHandler(cloudContent)
-    //res.json(result)
-    res.json({ message: '1' })
+    const response = await synchronizeHandler(cloudContent)
+    res.json(response)
   } catch (error) {
     res.status(500).json(error)
   }

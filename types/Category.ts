@@ -7,6 +7,7 @@ interface CategoryAlbum {
 }
 
 interface CategoryModel extends Document {
+  _id: Types.ObjectId
   title: string
   dateCreated: Date
   poster: string

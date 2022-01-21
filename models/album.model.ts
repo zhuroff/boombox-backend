@@ -14,11 +14,11 @@ const AlbumSchema: Schema<AlbumModelDocument> = new Schema({
     required: false
   },
 
-  genres: [{
+  genre: {
     type: Schema.Types.ObjectId,
     ref: 'genres',
     required: false
-  }],
+  },
 
   period: {
     type: Schema.Types.ObjectId,
