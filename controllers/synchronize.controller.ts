@@ -6,6 +6,7 @@ import { Album } from '~/models/album.model'
 import { Artist } from '~/models/artist.model'
 import { Genre } from '~/models/genre.model'
 import { Period } from '~/models/period.model'
+import { CategoryModel } from '~/types/Category'
 import {
   CloudAlbum,
   CloudAlbumFolder,
@@ -16,7 +17,6 @@ import {
   AlbumTracksModel,
   AlbumModelDocument
 } from '~/types/Album'
-import { CategoryModel } from '~/types/Category'
 
 type CreatingResponse = {
   albumID: Types.ObjectId,
@@ -214,10 +214,22 @@ const buildAlbumsData = async (content: CloudAlbum[], isModified = false) => {
   }
 }
 
-const updateDatabaseEntries = (cloudAlbums: CloudAlbum[], dbAlbums: AlbumModel[]) => {
-  const albumsToAdd = [] as unknown as any[]
-  const albumsToDel = [] as unknown as any[]
-  const albumsToFix = [] as unknown as any[]
+const updateDatabaseEntries = async (albums: CloudAlbum[]) => {
+  const buildedAlbums = await buildAlbumsData(albums)
+  const createdAlbums = await createDatabaseEntries(buildedAlbums)
+  await updateCategoriesInAlbum(createdAlbums)
+  return true
+}
+
+const dbUpdateSplitter = async (cloudAlbums: CloudAlbum[], dbAlbums: AlbumModel[]) => {
+  if (!dbAlbums.length) {
+    await updateDatabaseEntries(cloudAlbums)
+    return syncSuccess
+  }
+
+  const albumsToAdd = [] as CloudAlbum[]
+  const albumsToDel = [] as AlbumModel[]
+  const albumsToFix = [] as { old: AlbumModel, new: CloudAlbum }[]
 
   cloudAlbums.forEach((cloudAlbum) => {
     const matched = dbAlbums.find((dbAlbum) => (
@@ -231,10 +243,7 @@ const updateDatabaseEntries = (cloudAlbums: CloudAlbum[], dbAlbums: AlbumModel[]
       const cloudModifiedDate = new Date(cloudAlbum.modified).getTime()
 
       if (dbModifiedDate !== cloudModifiedDate) {
-        albumsToFix.push({
-          old: matched,
-          new: cloudAlbum
-        })
+        albumsToFix.push({ old: matched, new: cloudAlbum })
       }
     } else {
       albumsToAdd.push(cloudAlbum)
@@ -242,6 +251,23 @@ const updateDatabaseEntries = (cloudAlbums: CloudAlbum[], dbAlbums: AlbumModel[]
   })
 
   albumsToDel.push(...dbAlbums.filter((el) => !el.toStay))
+
+  if (albumsToAdd.length) {
+    await updateDatabaseEntries(albumsToAdd)
+    return syncSuccess
+  }
+
+  if (albumsToDel.length) {
+    console.log('Есть что удалить!')
+    return syncSuccess
+  }
+
+  if (albumsToFix.length) {
+    console.log('Есть что изменить')
+    return syncSuccess
+  }
+
+  return syncSuccess
 }
 
 const synchronizeHandler = async (cloudAlbums: CloudAlbum[]) => {
@@ -255,14 +281,7 @@ const synchronizeHandler = async (cloudAlbums: CloudAlbum[]) => {
 
   const dbAlbums = await Album.find({}, searchConfig).exec()
 
-  if (!dbAlbums.length) {
-    const buildedAlbums = await buildAlbumsData(cloudAlbums)
-    const createdAlbums = await createDatabaseEntries(buildedAlbums)
-    await updateCategoriesInAlbum(createdAlbums)
-    return syncSuccess
-  }
-
-  return updateDatabaseEntries(cloudAlbums, dbAlbums)
+  return await dbUpdateSplitter(cloudAlbums, dbAlbums)
 }
 
 const synchronize = async (req: Request, res: Response) => {
