@@ -27,6 +27,8 @@ type CreatingResponse = {
 
 const syncSuccess = { status: 201, message: 'Successfully synchronized' }
 
+/* ========================== CREATE ENTRY ============================= */
+
 const getAlbumCover = (array: CloudAlbumFile[]) => {
   const coverFile = array.find((content) => (
     content.contenttype && content.contenttype.includes('image')
@@ -68,86 +70,6 @@ const getAlbumTracks: any = async (array: CloudAlbumContent[]) => {
       })
 
     return modifiedArray
-  }
-}
-
-const attachCategoriesToAlbum = async (payload: CreatingResponse) => {
-  const { albumID, artistID, genreID, periodID } = payload
-  const query = { _id: albumID }
-  const options = { new: true }
-  const update = {
-    artist: artistID,
-    genre: genreID,
-    period: periodID
-  }
-  
-  return await Album.findOneAndUpdate(query, update, options) as AlbumModelDocument
-}
-
-const updateCategoriesInAlbum = async (payload: CreatingResponse[]) => {
-  const updating = payload.map(async (el) => (
-    await attachCategoriesToAlbum(el)
-  ))
-
-  return await Promise.all(updating)
-}
-
-const createOrUpdateCategory = async (
-  ...args: [PaginateModel<any>, string, AlbumModelDocument]
-): Promise<CategoryModel> => {
-  const [Model, title, album] = args
-  const query = { title: title }
-  const update = { $push: { albums: album._doc._id } }
-  const options = { upsert: true, new: true, setDefaultsOnInsert: true }
-
-  return await Model.findOneAndUpdate(query, update, options)
-}
-
-const saveDatabaseEntries = async (album: AlbumModel): Promise<CreatingResponse> => {
-  const { artistTitle, genreTitle, periodYear } = album
-  const newAlbum = new Album(album)
-
-  try {
-    const dbAlbum = await newAlbum.save()
-
-    const artist: CategoryModel = await createOrUpdateCategory(
-      Artist,
-      artistTitle || 'unknown artist',
-      dbAlbum
-    )
-
-    const genre: CategoryModel = await createOrUpdateCategory(
-      Genre,
-      genreTitle || 'unknown genre',
-      dbAlbum
-    )
-
-    const period: CategoryModel = await createOrUpdateCategory(
-      Period,
-      periodYear || 'unknown year',
-      dbAlbum
-    )
-
-    return {
-      albumID: dbAlbum._id,
-      artistID: artist._id,
-      genreID: genre._id,
-      periodID: period._id
-    }
-  } catch (error) {
-    throw error
-  }
-}
-
-const createDatabaseEntries = async (albums: AlbumModel[]): Promise<CreatingResponse[]> => {
-  try {
-    const dbCreating = albums.map(async (album) => (
-      await saveDatabaseEntries(album)
-    ))
-
-    return await Promise.all(dbCreating)
-  } catch (error) {
-    throw error
   }
 }
 
@@ -214,39 +136,111 @@ const buildAlbumsData = async (content: CloudAlbum[], isModified = false) => {
   }
 }
 
-const updateDatabaseEntries = async (albums: CloudAlbum[]) => {
-  const buildedAlbums = await buildAlbumsData(albums)
-  const createdAlbums = await createDatabaseEntries(buildedAlbums)
-  await updateCategoriesInAlbum(createdAlbums)
-  return true
+const createOrUpdateCategory = async (
+  ...args: [PaginateModel<any>, string, AlbumModelDocument]
+): Promise<CategoryModel> => {
+  const [Model, title, album] = args
+  const query = { title: title }
+  const update = { $push: { albums: album._doc._id } }
+  const options = { upsert: true, new: true, setDefaultsOnInsert: true }
+
+  return await Model.findOneAndUpdate(query, update, options)
 }
 
-const unlinkAlbumFromCategory = async (
-  ...args: [PaginateModel<CategoryModel>, Types.ObjectId, Types.ObjectId]
-): Promise<any> => {
-  const [Model, albumID, categoryID] = args
-  const query = { id: categoryID }
-  const update = { $pull: { albums: albumID } }
+const saveDatabaseEntries = async (album: AlbumModel): Promise<CreatingResponse> => {
+  const { artistTitle, genreTitle, periodYear } = album
+  const newAlbum = new Album(album)
+
+  try {
+    const dbAlbum = await newAlbum.save()
+
+    const artist: CategoryModel = await createOrUpdateCategory(
+      Artist,
+      artistTitle || 'unknown artist',
+      dbAlbum
+    )
+
+    const genre: CategoryModel = await createOrUpdateCategory(
+      Genre,
+      genreTitle || 'unknown genre',
+      dbAlbum
+    )
+
+    const period: CategoryModel = await createOrUpdateCategory(
+      Period,
+      periodYear || 'unknown year',
+      dbAlbum
+    )
+
+    return {
+      albumID: dbAlbum._id,
+      artistID: artist._id,
+      genreID: genre._id,
+      periodID: period._id
+    }
+  } catch (error) {
+    throw error
+  }
+}
+
+const createDatabaseEntries = async (albums: AlbumModel[]): Promise<CreatingResponse[]> => {
+  try {
+    const dbCreating = albums.map(async (album) => (
+      await saveDatabaseEntries(album)
+    ))
+
+    return await Promise.all(dbCreating)
+  } catch (error) {
+    throw error
+  }
+}
+
+const attachCategoriesToAlbum = async (payload: CreatingResponse) => {
+  const { albumID, artistID, genreID, periodID } = payload
+  const query = { _id: albumID }
   const options = { new: true }
-
-  return Model.findOneAndUpdate(query, update, options)
-}
-
-const deleteAlbumFromDatabase = async (album: AlbumModelDocument) => {
-  const query = { id: album._id }
-  const options = { rawResult: true }
+  const update = {
+    artist: artistID,
+    genre: genreID,
+    period: periodID
+  }
   
-  await Album.findOneAndDelete(query, options)
-  await unlinkAlbumFromCategory(Artist, album._id, album.artist)
-  await unlinkAlbumFromCategory(Genre, album._id, album.genre)
-  await unlinkAlbumFromCategory(Period, album._id, album.period)
-  return true
+  return await Album.findOneAndUpdate(query, update, options) as AlbumModelDocument
 }
 
-const deleteDatabaseEntries = async (albums: AlbumModelDocument[]) => {
+const updateCategoriesInAlbum = async (payload: CreatingResponse[]) => {
+  const updating = payload.map(async (el) => (
+    await attachCategoriesToAlbum(el)
+  ))
+
+  return await Promise.all(updating)
+}
+
+const updateDatabaseEntries = async (albums: CloudAlbum[]) => {
+  try {
+    const buildedAlbums = await buildAlbumsData(albums)
+    const createdAlbums = await createDatabaseEntries(buildedAlbums)
+    await updateCategoriesInAlbum(createdAlbums)
+    return true
+  } catch (error) {
+    throw error
+  }
+}
+
+/* ========================== DELETE ENTRY ============================= */
+
+const dropAlbum = async (id: Types.ObjectId) => {
+  try {
+    await Album.deleteOne({ _id: id })
+  } catch (error) {
+    throw error
+  }
+}
+
+const deleteAlbumsFromDatabase = async (albums: AlbumModelDocument[]) => {
   try {
     const dbDeleting = albums.map(async (album) => (
-      await deleteAlbumFromDatabase(album)
+      await dropAlbum(album._id)
     ))
 
     return await Promise.all(dbDeleting)
@@ -255,9 +249,46 @@ const deleteDatabaseEntries = async (albums: AlbumModelDocument[]) => {
   }
 }
 
+const unlinkCategory = async (
+  ...args: [PaginateModel<CategoryModel>, Types.ObjectId, Types.ObjectId]
+): Promise<any> => {
+  const [Model, albumID, categoryID] = args
+  const query = { _id: categoryID }
+  const update = { $pull: { albums: albumID } }
+  const options = { new: true }
+
+  return await Model.findOneAndUpdate(query, update, options)
+}
+
+const unlinkCategoriesFromAlbum = async (albums: AlbumModelDocument[]) => {
+  try {
+    const dbUnlinked = albums.map(async (album) => {
+      await unlinkCategory(Artist, album._id, album.artist)
+      await unlinkCategory(Genre, album._id, album.genre)
+      await unlinkCategory(Period, album._id, album.period)
+      return true
+    })
+
+    return await Promise.all(dbUnlinked)
+  } catch (error) {
+    throw error
+  }
+}
+
+const deleteDatabaseEntries = async (albums: AlbumModelDocument[]) => {
+  try {
+    await deleteAlbumsFromDatabase(albums)
+    await unlinkCategoriesFromAlbum(albums)
+    return true
+  } catch (error) {
+    throw error
+  }
+}
+
+/* ========================== PREPARING ============================= */
+
 const dbUpdateSplitter = async (cloudAlbums: CloudAlbum[], dbAlbums: AlbumModelDocument[]) => {
   if (!dbAlbums.length) {
-    console.log('Есть что создать!')
     await updateDatabaseEntries(cloudAlbums)
     return syncSuccess
   }
@@ -288,12 +319,10 @@ const dbUpdateSplitter = async (cloudAlbums: CloudAlbum[], dbAlbums: AlbumModelD
   albumsToDel.push(...dbAlbums.filter((el) => !el.toStay))
 
   if (albumsToAdd.length) {
-    console.log('Есть что добавить!')
     await updateDatabaseEntries(albumsToAdd)
   }
 
   if (albumsToDel.length) {
-    console.log('Есть что удалить!')
     await deleteDatabaseEntries(albumsToDel)
   }
 
