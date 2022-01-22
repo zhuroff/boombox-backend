@@ -41,6 +41,7 @@ interface AlbumTracksModel {
   lyrics: string
   duration: number
   listened: number
+  link?: string
 }
 
 interface AlbumModel {

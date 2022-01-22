@@ -327,7 +327,7 @@ const dbUpdateSplitter = async (cloudAlbums: CloudAlbum[], dbAlbums: AlbumModelD
   }
 
   if (albumsToFix.length) {
-    console.log('Есть что изменить')
+    console.log(albumsToFix)
   }
 
   return syncSuccess

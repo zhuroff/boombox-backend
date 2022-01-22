@@ -4,7 +4,8 @@ import { Album } from '~/models/album.model'
 import { Artist } from '~/models/artist.model'
 import { Genre } from '~/models/genre.model'
 import { Period } from '~/models/period.model'
-import getAlbumsWithCover from '~/helpers/albumsCovers'
+import { getAlbumsWithCover, getImageLink} from '~/helpers/covers'
+import getTracksLinks from '~/helpers/tracks'
 
 const list = async (req: Request, res: Response) => {
   try {
@@ -50,8 +51,26 @@ const list = async (req: Request, res: Response) => {
   }
 }
 
+const single = async (req: Request, res: Response) => {
+  try {
+    const album = await Album.findById(req.params['id'])
+      .populate({ path: 'artist', select: ['title'] })
+      .populate({ path: 'genre', select: ['title'] })
+      .populate({ path: 'period', select: ['title'] })
+      .lean()
+
+    album.albumCover = await getImageLink(Number(album.albumCover))
+    album.tracks = await getTracksLinks(album.tracks)
+
+    res.json(album)
+  } catch (error) {
+    res.status(500).json(error)
+  }
+}
+
 const controller = {
-  list
+  list,
+  single
 }
 
 export default controller
