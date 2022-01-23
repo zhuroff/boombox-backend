@@ -69,7 +69,6 @@ const single = async (req: Request, res: Response) => {
 }
 
 const description = async (req: Request, res: Response) => {
-  console.log(req.body)
   try {
     await Album.updateOne({ _id: req.params['id'] }, { $set: { description: req.body.description } })
     res.status(201).json({ message: 'Description updated' })
