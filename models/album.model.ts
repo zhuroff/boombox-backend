@@ -58,31 +58,9 @@ const AlbumSchema: Schema<AlbumModelDocument> = new Schema({
 
   tracks: [
     {
-      fileid: {
-        type: Number,
-        required: true
-      },
-
-      title: {
-        type: String,
-        required: true
-      },
-
-      lyrics: {
-        type: String,
-        required: false
-      },
-
-      duration: {
-        type: Number,
-        required: false
-      },
-
-      listened: {
-        type: Number,
-        required: false,
-        default: 0
-      }
+      type: Schema.Types.ObjectId,
+      ref: 'tracks',
+      required: false
     }
   ]
 })

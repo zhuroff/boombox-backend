@@ -1,5 +1,5 @@
 import { Document, Types, PaginateModel } from 'mongoose'
-import { TrackModel } from './Track'
+import { TrackModel } from '~/types/Track'
 
 interface CloudAlbum {
   path: string
@@ -36,15 +36,6 @@ interface CloudAlbumTrack extends CloudAlbumFile {
 
 type CloudAlbumContent = CloudAlbumFolder | CloudAlbumFile | CloudAlbumTrack
 
-// interface AlbumTracksModel {
-//   fileid: number
-//   title: string
-//   lyrics: string
-//   duration: number
-//   listened: number
-//   link?: string
-// }
-
 interface AlbumModel {
   _id?: Types.ObjectId
   title: string
@@ -58,7 +49,7 @@ interface AlbumModel {
   folderid: number
   modified: Date | string
   description: string
-  tracks: TrackModel[]
+  tracks: Types.ObjectId[] | TrackModel[]
 }
 
 interface AlbumModelDocument extends AlbumModel, Document {

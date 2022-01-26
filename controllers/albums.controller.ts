@@ -1,6 +1,7 @@
 import 'module-alias/register'
 import { Request, Response } from 'express'
 import { Album } from '~/models/album.model'
+import { TrackModel }  from '~/types/Track'
 import { Artist } from '~/models/artist.model'
 import { Genre } from '~/models/genre.model'
 import { Period } from '~/models/period.model'
@@ -57,10 +58,11 @@ const single = async (req: Request, res: Response) => {
       .populate({ path: 'artist', select: ['title'] })
       .populate({ path: 'genre', select: ['title'] })
       .populate({ path: 'period', select: ['title'] })
+      .populate({ path: 'tracks' })
       .lean()
 
     album.albumCover = await getImageLink(Number(album.albumCover))
-    album.tracks = await getTracksLinks(album.tracks)
+    album.tracks = await getTracksLinks(album.tracks as TrackModel[])
 
     res.json(album)
   } catch (error) {

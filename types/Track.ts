@@ -7,7 +7,7 @@ interface TrackModel {
   duration: number
   listened: number
   link?: string
-  inAlbum: Types.ObjectId
+  inAlbum: number
   inPlaylists: Types.ObjectId[]
 }
 

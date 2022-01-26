@@ -35,7 +35,7 @@ const TrackSchema: Schema<TrackModelDocument> = new Schema({
   },
 
   inAlbum: {
-    type: Schema.Types.ObjectId,
+    type: Number,
     ref: 'albums',
     required: true
   },
@@ -44,7 +44,7 @@ const TrackSchema: Schema<TrackModelDocument> = new Schema({
     {
       type: Schema.Types.ObjectId,
       ref: 'albums',
-      required: true
+      required: false
     }
   ]
 })
@@ -52,4 +52,4 @@ const TrackSchema: Schema<TrackModelDocument> = new Schema({
 TrackSchema.index({ title: 'text' })
 TrackSchema.plugin(mongoosePaginate)
 
-export const Album = model<TrackModelDocument>('albums', TrackSchema) as TrackModelPaginated<TrackModelDocument>
+export const Track = model<TrackModelDocument>('tracks', TrackSchema) as TrackModelPaginated<TrackModelDocument>

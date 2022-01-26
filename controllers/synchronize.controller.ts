@@ -3,6 +3,7 @@ import { Request, Response } from 'express'
 import { Types, PaginateModel } from 'mongoose'
 import { fetchers } from '~/helpers/fetchers'
 import { Album } from '~/models/album.model'
+import { Track } from '~/models/track.model'
 import { Artist } from '~/models/artist.model'
 import { Genre } from '~/models/genre.model'
 import { Period } from '~/models/period.model'
@@ -25,7 +26,7 @@ type CreatingResponse = {
   periodID: Types.ObjectId
 }
 
-const syncSuccess = { status: 201, message: 'Successfully synchronized' }
+const syncSuccessResponse = { status: 201, message: 'Successfully synchronized' }
 
 /* ========================== CREATE ENTRY ============================= */
 
@@ -101,12 +102,37 @@ const getAlbumReleaseYear = (name: string) => {
   return albumYearResult
 }
 
+const createAndSaveTrackEntry = async (track: TrackModel, albumFolderID: number) => {
+  track.inAlbum = albumFolderID
+
+  try {
+    const newTrack = new Track(track)
+    const dbTrack = await newTrack.save()
+    return dbTrack._id
+  } catch (error) {
+    throw error
+  }
+}
+
+const saveTracksToDatabase = async (tracks: TrackModel[], albumFolderID: number): Promise<Types.ObjectId[]> => {
+  try {
+    const tracksSaving = tracks.map(async (track) => (
+      await createAndSaveTrackEntry(track, albumFolderID)
+    ))
+
+    return await Promise.all(tracksSaving)
+  } catch (error) {
+    throw error
+  }
+}
+
 const buildAlbumsData = async (content: CloudAlbum[], isModified = false) => {
   try {
     const albumsMap = content.map(async (el: CloudAlbum) => {
       const folderQuery = fetchers.cloudQueryLink(`listfolder?folderid=${el.folderid}`)
       const listFolder = await fetchers.getData(folderQuery)
       const folderTracks: TrackModel[] = await getAlbumTracks(listFolder.data.metadata.contents)
+      const savedTracks: Types.ObjectId[] = await saveTracksToDatabase(folderTracks, el.folderid)
       
       const pcloudData: AlbumModel = {
         title: getAlbumTitle(el.name),
@@ -118,7 +144,7 @@ const buildAlbumsData = async (content: CloudAlbum[], isModified = false) => {
         folderid: el.folderid,        
         modified: el.modified,
         description: '',
-        tracks: folderTracks
+        tracks: savedTracks
       }
 
       return pcloudData
@@ -217,7 +243,6 @@ const updateCategoriesInAlbum = async (payload: CreatingResponse[]) => {
 }
 
 const updateDatabaseEntries = async (albums: CloudAlbum[]) => {
-  console.log(albums)
   try {
     const buildedAlbums = await buildAlbumsData(albums)
     const createdAlbums = await createDatabaseEntries(buildedAlbums)
@@ -229,6 +254,26 @@ const updateDatabaseEntries = async (albums: CloudAlbum[]) => {
 }
 
 /* ========================== DELETE ENTRY ============================= */
+
+const dropTrack = async (trackID: Types.ObjectId) => {
+  try {
+    return await Track.deleteOne({ _id: trackID })
+  } catch (error) {
+    throw error
+  }
+}
+
+const deleteTracksFromDatabase = async (tracks: Types.ObjectId[]) => {
+  try {
+    const deletingTracks = tracks.map(async (trackID) => (
+      await dropTrack(trackID)
+    ))
+
+    return await Promise.all(deletingTracks)
+  } catch (error) {
+    throw error
+  }
+}
 
 const dropAlbum = async (id: Types.ObjectId) => {
   try {
@@ -277,7 +322,10 @@ const unlinkCategoriesFromAlbum = async (albums: AlbumModelDocument[]) => {
 }
 
 const deleteDatabaseEntries = async (albums: AlbumModelDocument[]) => {
+  const tracks = albums.flatMap((album) => album.tracks as Types.ObjectId[])
+
   try {
+    await deleteTracksFromDatabase(tracks)
     await deleteAlbumsFromDatabase(albums)
     await unlinkCategoriesFromAlbum(albums)
     return true
@@ -289,9 +337,9 @@ const deleteDatabaseEntries = async (albums: AlbumModelDocument[]) => {
 /* ========================== PREPARING ============================= */
 
 const dbUpdateSplitter = async (cloudAlbums: CloudAlbum[], dbAlbums: AlbumModelDocument[]) => {
-  if (!dbAlbums.length) {
+  if (!dbAlbums.length && cloudAlbums.length) {
     await updateDatabaseEntries(cloudAlbums)
-    return syncSuccess
+    return true
   }
 
   const albumsToAdd = [] as CloudAlbum[]
@@ -331,21 +379,20 @@ const dbUpdateSplitter = async (cloudAlbums: CloudAlbum[], dbAlbums: AlbumModelD
     console.log(albumsToFix)
   }
 
-  return syncSuccess
+  return true
 }
 
-const synchronizeHandler = async (cloudAlbums: CloudAlbum[]) => {
+const fetchDatabaseAlbums = async () => {
   const searchConfig = {
     modified: true,
     folderid: true,
     artist: true,
     genre: true,
-    period: true
+    period: true,
+    tracks: true
   }
 
-  const dbAlbums = await Album.find({}, searchConfig).exec()
-
-  return await dbUpdateSplitter(cloudAlbums, dbAlbums)
+  return await Album.find({}, searchConfig).exec()
 }
 
 const synchronize = async (req: Request, res: Response) => {
@@ -353,21 +400,16 @@ const synchronize = async (req: Request, res: Response) => {
 
   try {
     const rootFolder = await fetchers.getData(query)
-    const cloudContent = rootFolder.data.metadata.contents
-
-    if (!cloudContent.length) {
-      return res.json({
-        type: 'warning',
-        message: 'Your cloud collection is empty'
-      })
-    }
+    const cloudAlbums = rootFolder.data.metadata.contents
 
     if (rootFolder.data.result !== 0) {
       return res.status(500).json(rootFolder.data)
     }
 
-    const response = await synchronizeHandler(cloudContent)
-    res.json(response)
+    const dbAlbums = await fetchDatabaseAlbums()
+    await dbUpdateSplitter(cloudAlbums, dbAlbums)
+
+    res.json(syncSuccessResponse)
   } catch (error) {
     res.status(500).json(error)
   }
