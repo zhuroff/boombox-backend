@@ -1,7 +1,7 @@
 import { fetchers } from './fetchers'
-import { AlbumTracksModel } from '~/types/Album'
+import { TrackModel } from '~/types/Track'
 
-const getTracksLinks = async (tracks: AlbumTracksModel[]) => {
+const getTracksLinks = async (tracks: TrackModel[]) => {
   const result = tracks.map(async (el) => {
     const query = fetchers.cloudQueryLink(`getfilelink?fileid=${el.fileid}`)
     const track = await fetchers.getData(query)

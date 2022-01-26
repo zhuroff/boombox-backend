@@ -7,6 +7,7 @@ import { Artist } from '~/models/artist.model'
 import { Genre } from '~/models/genre.model'
 import { Period } from '~/models/period.model'
 import { CategoryModel } from '~/types/Category'
+import { TrackModel } from '~/types/Track'
 import {
   CloudAlbum,
   CloudAlbumFolder,
@@ -14,7 +15,6 @@ import {
   CloudAlbumTrack,
   CloudAlbumContent,
   AlbumModel,
-  AlbumTracksModel,
   AlbumModelDocument
 } from '~/types/Album'
 
@@ -106,7 +106,7 @@ const buildAlbumsData = async (content: CloudAlbum[], isModified = false) => {
     const albumsMap = content.map(async (el: CloudAlbum) => {
       const folderQuery = fetchers.cloudQueryLink(`listfolder?folderid=${el.folderid}`)
       const listFolder = await fetchers.getData(folderQuery)
-      const folderTracks: AlbumTracksModel[] = await getAlbumTracks(listFolder.data.metadata.contents)
+      const folderTracks: TrackModel[] = await getAlbumTracks(listFolder.data.metadata.contents)
       
       const pcloudData: AlbumModel = {
         title: getAlbumTitle(el.name),
@@ -217,6 +217,7 @@ const updateCategoriesInAlbum = async (payload: CreatingResponse[]) => {
 }
 
 const updateDatabaseEntries = async (albums: CloudAlbum[]) => {
+  console.log(albums)
   try {
     const buildedAlbums = await buildAlbumsData(albums)
     const createdAlbums = await createDatabaseEntries(buildedAlbums)
