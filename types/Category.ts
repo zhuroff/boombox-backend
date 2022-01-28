@@ -18,9 +18,36 @@ interface CategoryModel extends Document {
 
 interface ICategory<T extends Document> extends PaginateModel<T> {}
 
+interface ICategoryDocs {
+  _id: Types.ObjectId,
+  title: string,
+  avatar: string,
+  albums: number
+}
+
+interface ICategoryFullDocs extends ICategoryDocs {
+  poster: string
+  albums: any
+  framesAlbums: any
+}
+
+interface ICategoryResponse {
+  docs: ICategoryDocs[]
+
+  pagination: {
+    totalDocs: number
+    limit: number
+    totalPages: number
+    page: number
+  }
+}
+
 export {
   CategoryKeys,
   CategoryModel,
   CategoryAlbum,
-  ICategory
+  ICategory,
+  ICategoryDocs,
+  ICategoryFullDocs,
+  ICategoryResponse
 }

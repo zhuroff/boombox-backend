@@ -40,4 +40,4 @@ const FrameSchema: Schema<FrameModelDocument> = new Schema({
 FrameSchema.index({ title: 'text' })
 FrameSchema.plugin(mongoosePaginate)
 
-export const Album = model<FrameModelDocument>('frames', FrameSchema) as FrameModelPaginated<FrameModelDocument>
+export const Frame = model<FrameModelDocument>('frames', FrameSchema) as FrameModelPaginated<FrameModelDocument>

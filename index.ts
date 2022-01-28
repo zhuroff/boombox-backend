@@ -6,7 +6,7 @@ import cors from 'cors'
 import morgan from 'morgan'
 import albumsRoutes from '~/routes/albums.routes'
 import tracksRoutes from '~/routes/tracks.routes'
-// import artistsRoutes from './routes/artist.js'
+import artistsRoutes from './routes/artists.routes'
 // import genresRoutes from './routes/genres.js'
 // import periodsRoutes from './routes/periods.js'
 // import playlistsRoutes from './routes/playlists.js'
@@ -34,7 +34,7 @@ app.use(json())
 
 app.use('/api/albums', albumsRoutes)
 app.use('/api/tracks', tracksRoutes)
-// app.use('/api/artists', artistsRoutes)
+app.use('/api/artists', artistsRoutes)
 // app.use('/api/genres', genresRoutes)
 // app.use('/api/periods', periodsRoutes)
 // app.use('/api/playlists', playlistsRoutes)

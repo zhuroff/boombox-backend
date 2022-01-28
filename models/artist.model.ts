@@ -2,7 +2,7 @@ import { model, Schema } from 'mongoose'
 import mongoosePaginate from 'mongoose-paginate-v2'
 import { CategoryModel, ICategory } from '~/types/Category'
 
-const ArtistSchema: Schema = new Schema({
+const ArtistSchema: Schema<CategoryModel> = new Schema({
   title: {
     type: String,
     required: true
