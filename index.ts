@@ -13,7 +13,7 @@ import artistsRoutes from './routes/artists.routes'
 // import tracksRoutes from './routes/tracks.js'
 // import searchRoutes from './routes/search.js'
 // import framesRoutes from './routes/frames.js'
-// import collectionsRoutes from './routes/collections.js'
+import collectionsRoutes from '~/routes/collections.routes'
 // import stationsRoutes from './routes/stations.js'
 import backupRoutes from './routes/backup.routes'
 import synchronizeRoutes from './routes/synchronize.routes'
@@ -41,7 +41,7 @@ app.use('/api/artists', artistsRoutes)
 // app.use('/api/tracks', tracksRoutes)
 // app.use('/api/search', searchRoutes)
 // app.use('/api/frames', framesRoutes)
-// app.use('/api/collections', collectionsRoutes)
+app.use('/api/collections', collectionsRoutes)
 // app.use('/api/stations', stationsRoutes)
 // app.use('/api/synchronize', synchronizeRoutes)
 app.use('/api/backup', backupRoutes)
