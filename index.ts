@@ -47,4 +47,6 @@ app.use('/api/collections', collectionsRoutes)
 app.use('/api/backup', backupRoutes)
 app.use('/api/sync', synchronizeRoutes)
 
+app.use('/uploads', express.static(__dirname + '/uploads'))
+
 app.listen(PORT, () => console.log(`App listening at http://localhost:${PORT}`))

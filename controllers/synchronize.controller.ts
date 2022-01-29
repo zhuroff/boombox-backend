@@ -32,7 +32,7 @@ const syncSuccessResponse = { status: 201, message: 'Successfully synchronized' 
 
 const getAlbumCover = (array: CloudAlbumFile[]) => {
   const coverFile = array.find((content) => (
-    content.contenttype && content.contenttype.includes('image')
+    content.contenttype && content.contenttype.includes('application/octet-stream')
   ))
   return coverFile ? coverFile.fileid : 0
 }
