@@ -3,7 +3,8 @@ import { Request, Response } from 'express'
 import { Artist } from '~/models/artist.model'
 import { Frame } from '~/models/frame.model'
 import { ICategoryDocs, ICategoryResponse } from '~/types/Category'
-// import { getAlbumsWithCover } from '~/helpers/covers'
+import { AlbumModelDocument } from '~/types/Album'
+import { getAlbumsWithCover } from '~/helpers/covers'
 
 const list = async (req: Request, res: Response) => {
   const populates = [
@@ -53,44 +54,44 @@ const list = async (req: Request, res: Response) => {
 }
 
 const single = async (req: Request, res: Response) => {
-  // try {
-  //   Artist.findById(req.params.id)
-  //     .populate({
-  //       path: 'albums',
-  //       select: ['title', 'albumCover', 'folderid', 'releaseYear', 'tracks'],
-  //       populate: [
-  //         { path: 'artist', select: ['title', '_id'] },
-  //         { path: 'genre', select: ['title', '_id'] },
-  //         { path: 'period', select: ['title', '_id'] }
-  //       ]
-  //     })
-  //     .populate({
-  //       path: 'framesAlbums',
-  //       select: ['title', 'iframe'],
-  //       populate: [
-  //         { path: 'artist', select: ['title', '_id'] },
-  //         { path: 'genre', select: ['title', '_id'] },
-  //         { path: 'period', select: ['title', '_id'] }
-  //       ]
-  //     })
-  //     .lean()
-  //     .exec(async (error, artist) => {
-  //       if (error) return res.status(500).json(error)
+  try {
+    Artist.findById(req.params['id'])
+      .populate({
+        path: 'albums',
+        select: ['title', 'albumCover', 'folderid'],
+        populate: [
+          { path: 'artist', select: ['title', '_id'] },
+          { path: 'genre', select: ['title', '_id'] },
+          { path: 'period', select: ['title', '_id'] }
+        ]
+      })
+      .populate({
+        path: 'framesAlbums',
+        select: ['title', 'iframe'],
+        populate: [
+          { path: 'artist', select: ['title', '_id'] },
+          { path: 'genre', select: ['title', '_id'] },
+          { path: 'period', select: ['title', '_id'] }
+        ]
+      })
+      .lean()
+      .exec(async (error, artist) => {
+        if (error) return res.status(500).json(error)
 
-  //       const listenQuantity = artist.albums
-  //         .flatMap((el) => el.tracks)
-  //         .reduce((acc, next) => acc += next.listened, 0)
+        const artistResponse = {
+          avatar: artist.avatar,
+          poster: artist.poster,
+          title: artist.title,
+          _id: artist._id,
+          albums: await getAlbumsWithCover(artist.albums as unknown as AlbumModelDocument[]),
+          frames: artist.framesAlbums
+        }
 
-  //       artist.listened = listenQuantity
-  //       artist.albums.forEach((el) => delete el.tracks)
-
-  //       await getAlbumsWithCover(artist.albums)
-
-  //       res.json(artist)
-  //     })
-  // } catch (error) {
-  //   res.status(500).json(error)
-  // }
+        res.json(artistResponse)
+      })
+  } catch (error) {
+    res.status(500).json(error)
+  }
 }
 
 const upload = async (req: Request, res: Response) => {
