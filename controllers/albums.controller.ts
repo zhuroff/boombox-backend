@@ -2,9 +2,11 @@ import 'module-alias/register'
 import { Request, Response } from 'express'
 import { Album } from '~/models/album.model'
 import { TrackModel }  from '~/types/Track'
+import { CloudAlbumFile } from '~/types/Album'
 import { Artist } from '~/models/artist.model'
 import { Genre } from '~/models/genre.model'
 import { Period } from '~/models/period.model'
+import { fetchers } from '~/helpers/fetchers'
 import { getAlbumsWithCover, getImageLink} from '~/helpers/covers'
 import getTracksLinks from '~/helpers/tracks'
 
@@ -36,7 +38,6 @@ const list = async (req: Request, res: Response) => {
       res.json({
         pagination: {
           totalDocs: response.totalDocs,
-          limit: response.limit,
           totalPages: response.totalPages,
           page: response.page,
         },
@@ -79,10 +80,25 @@ const description = async (req: Request, res: Response) => {
   }
 }
 
+const booklet = async (req: Request, res: Response) => {
+  try {
+    const folderQuery = fetchers.cloudQueryLink(`listfolder?folderid=${req.params['booklet']}`)
+    const listFolder = await fetchers.getData(folderQuery)
+    const fileContents: CloudAlbumFile[] = listFolder.data.metadata.contents
+    const preparedData = fileContents.map((el) => ({ albumCover: el.fileid }))
+    const result = await getAlbumsWithCover(preparedData)
+    
+    res.status(201).json(result)
+  } catch (error) {
+    res.status(500).json(error)
+  }
+}
+
 const controller = {
   list,
   single,
-  description
+  description,
+  booklet
 }
 
 export default controller

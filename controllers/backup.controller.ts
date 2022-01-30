@@ -6,13 +6,7 @@ import { Album } from  '~/models/album.model'
 import { Artist } from '~/models/artist.model'
 import { Genre } from '~/models/genre.model'
 import { Period } from '~/models/period.model'
-// import Book from '../models/book.model'
-// import Author from '../models/author.model'
-// import Genre from '../models/genre.model'
-// import List from '../models/list.model'
-// import Publisher from '../models/publisher.model'
-// import Series from '../models/series.model'
-// import Users from '../models/user.model'
+import { Frame } from '~/models/frame.model'
 
 type BackupModel = {
   [index: string]: PaginateModel<any> | Model<any, {}, {}>
@@ -22,7 +16,8 @@ const backupModels: BackupModel = {
   albums: Album,
   artists: Artist,
   genres: Genre,
-  periods: Period
+  periods: Period,
+  frames: Frame
 }
 
 const createBackupFolder = (folderName: string) => {

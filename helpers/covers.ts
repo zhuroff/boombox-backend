@@ -3,17 +3,21 @@ import { fetchers } from './fetchers'
 import { PaginateResult } from 'mongoose'
 import { AlbumModel, AlbumModelDocument } from '~/types/Album'
 
+type BookletPayload = {
+  albumCover: number
+}
+
 const getImageLink = async (id: number): Promise<string | 0> => {
   const query = fetchers.cloudQueryLink(`getfilelink?fileid=${id}`)
   const response = await fetchers.getData(query)
   return response.data.error ? 0 : `https://${response.data.hosts[0]}${response.data.path}`
 }
 
-const getAlbumsWithCover = async (payload: PaginateResult<AlbumModel> | AlbumModelDocument[]) => {
+const getAlbumsWithCover = async (payload: PaginateResult<AlbumModel> | AlbumModelDocument[] | BookletPayload[]) => {
   const data = Array.isArray(payload) ? payload :  payload.docs
 
   try {
-    const coverMap = data.map(async (el: AlbumModel) => {
+    const coverMap = data.map(async (el: AlbumModel | BookletPayload) => {
       el.albumCover = await getImageLink(Number(el.albumCover))
       return el
     })

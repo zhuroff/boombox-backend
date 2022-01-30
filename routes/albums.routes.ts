@@ -5,7 +5,7 @@ const router = Router()
 
 router.post('/', controller.list)
 router.get('/:id', controller.single)
-// router.get('/:id/:booklet', controller.coverArt)
+router.get('/:id/:booklet', controller.booklet)
 router.patch('/:id/description', controller.description)
 // router.patch('/:id/duration', controller.duration)
 // router.patch('/:id/listened', controller.listened)

@@ -12,8 +12,8 @@ interface CategoryModel extends Document {
   dateCreated: Date
   poster: string
   avatar: string
-  albums: [Types.ObjectId]
-  framesAlbums: [Types.ObjectId]
+  albums: Types.ObjectId[]
+  framesAlbums: Types.ObjectId[]
 }
 
 interface ICategory<T extends Document> extends PaginateModel<T> {}
@@ -22,13 +22,7 @@ interface ICategoryDocs {
   _id: Types.ObjectId,
   title: string,
   avatar: string,
-  albums: number
-}
-
-interface ICategoryFullDocs extends ICategoryDocs {
-  poster: string
-  albums: any
-  framesAlbums: any
+  albums: number | Types.ObjectId[]
 }
 
 interface ICategoryResponse {
@@ -36,7 +30,6 @@ interface ICategoryResponse {
 
   pagination: {
     totalDocs: number
-    limit: number
     totalPages: number
     page: number
   }
@@ -48,6 +41,5 @@ export {
   CategoryAlbum,
   ICategory,
   ICategoryDocs,
-  ICategoryFullDocs,
   ICategoryResponse
 }

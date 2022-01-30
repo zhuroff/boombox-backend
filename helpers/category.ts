@@ -12,9 +12,9 @@ const getCategories = async (Model: PaginateModel<any>, req: Request) => {
   ]
 
   const options = {
-    page: req.body.current,
+    page: req.body.page,
     limit: req.body.limit,
-    sort: req.body.sorting,
+    sort: req.body.sort,
     populate: populates,
     lean: true,
     select: {
@@ -39,7 +39,6 @@ const getCategories = async (Model: PaginateModel<any>, req: Request) => {
 
       pagination: {
         totalDocs: response.totalDocs,
-        limit: response.limit,
         totalPages: response.totalPages,
         page: response.page || 1,
       }
