@@ -15,7 +15,7 @@ const create = async (req: Request, res: Response) => {
     const newCollection = new Collection(payload)
     await newCollection.save()
     
-    res.json({ message: 'Collection list successfully created' })
+    res.json({ message: 'Collection successfully created' })
   } catch (error) {
     res.status(500).json(error)
   }
@@ -23,13 +23,13 @@ const create = async (req: Request, res: Response) => {
 
 const list = async (req: Request, res: Response) => {
   try {
-    const config = { title: true, cover: true } 
+    const config = { title: true, cover: true, 'albums.order': true } 
     const response = await Collection.find({}, config)
       .populate({
         path: 'albums.album',
         select: ['title']
       })
-      .sort({ title: -1 })
+      .sort({ 'albums.order': -1 })
 
     res.json(response)
   } catch (error) {
