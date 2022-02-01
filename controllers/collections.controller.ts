@@ -27,7 +27,7 @@ const list = async (req: Request, res: Response) => {
     const response = await Collection.find({}, config)
       .populate({
         path: 'albums.album',
-        select: ['title']
+        select: ['_id']
       })
       .sort({ 'albums.order': -1 })
 

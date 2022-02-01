@@ -1,6 +1,6 @@
 import { Types } from 'mongoose'
 
-interface ICollectionAlbum {
+interface ICollectionModel {
   title: string
   dateCreated: Date
   cover: string
@@ -13,5 +13,5 @@ interface ICollectionAlbum {
 }
 
 export {
-  ICollectionAlbum
+  ICollectionModel
 }

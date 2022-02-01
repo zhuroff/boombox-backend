@@ -1,7 +1,7 @@
 import { model, Schema } from 'mongoose'
-import { ICollectionModel } from '~/types/Collection'
+import { IPlayListModel } from '~/types/Playlist'
 
-const CollectionSchema: Schema<ICollectionModel> = new Schema({
+const PlaylistSchema: Schema<IPlayListModel> = new Schema({
   title: {
     type: String,
     required: true
@@ -12,22 +12,22 @@ const CollectionSchema: Schema<ICollectionModel> = new Schema({
     default: Date.now
   },
 
-  cover: {
-    type: String,
-    required: false
-  },
-
   poster: {
     type: String,
     required: false
   },
 
-  albums: [
+  cover: {
+    type: String,
+    required: false
+  },
+
+  tracks: [
     {
-      album: {
-        ref: 'albums',
+      track: {
         type: Schema.Types.ObjectId,
-        required: false
+        ref: 'tracks',
+        required: true
       },
 
       order: {
@@ -38,6 +38,6 @@ const CollectionSchema: Schema<ICollectionModel> = new Schema({
   ]
 })
 
-CollectionSchema.index({ title: 'text' })
+PlaylistSchema.index({ title: 'text' })
 
-export const Collection = model<ICollectionModel>('collections', CollectionSchema)
+export const Playlist = model<IPlayListModel>('playlists', PlaylistSchema)

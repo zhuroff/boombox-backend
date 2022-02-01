@@ -10,7 +10,7 @@ import artistsRoutes from '~/routes/artists.routes'
 import genresRoutes from '~/routes/genres.routes'
 import periodsRoutes from '~/routes/periods.routes'
 import framesRoutes from '~/routes/frames.routes'
-// import playlistsRoutes from './routes/playlists.js'
+import playlistsRoutes from '~/routes/playlists.routes'
 // import tracksRoutes from './routes/tracks.js'
 // import searchRoutes from './routes/search.js'
 import collectionsRoutes from '~/routes/collections.routes'
@@ -38,7 +38,7 @@ app.use('/api/artists', artistsRoutes)
 app.use('/api/genres', genresRoutes)
 app.use('/api/periods', periodsRoutes)
 app.use('/api/frames', framesRoutes)
-// app.use('/api/playlists', playlistsRoutes)
+app.use('/api/playlists', playlistsRoutes)
 // app.use('/api/tracks', tracksRoutes)
 // app.use('/api/search', searchRoutes)
 app.use('/api/collections', collectionsRoutes)
