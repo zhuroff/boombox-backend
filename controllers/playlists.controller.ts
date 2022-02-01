@@ -35,16 +35,19 @@ import { Playlist } from '~/models/playlist.model'
 // }
 
 const create = async (req: Request, res: Response) => {
-  const payload = {
-    title: req.body.title,
-    tracks: req.body.tracks
-  }
-
-  const playlist = new Playlist(payload)
-
   try {
-    await playlist.save()
-    res.status(201).json(playlist)
+    const payload = {
+      title: req.body.title,
+      tracks: [{
+        track: req.body.track,
+        order: 1
+      }]
+    }
+    const newPlaylist = new Playlist(payload)
+
+    await newPlaylist.save()
+
+    res.json({ message: 'Playlist successfully created' })
   } catch(error) {
     res.status(500).json(error)
   }
@@ -102,7 +105,11 @@ const update = async (req: Request, res: Response) => {
 
     await Playlist.findOneAndUpdate(query, update, options)
 
-    res.json({ message: 'Success' })
+    res.json({
+      message: req.body['listID']
+        ? 'Track successfully added to playlist'
+        : 'Track successfully removed from playlist'
+    })
   } catch (error) {
     console.log(error)
     res.status(500).json(error)

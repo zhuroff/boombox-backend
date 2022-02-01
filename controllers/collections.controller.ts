@@ -13,6 +13,7 @@ const create = async (req: Request, res: Response) => {
       }]
     }
     const newCollection = new Collection(payload)
+    
     await newCollection.save()
     
     res.json({ message: 'Collection successfully created' })
@@ -66,7 +67,8 @@ const single = async (req: Request, res: Response) => {
     })
     
     if (deletedAlbums.length) {
-      deletedAlbums.map(async (album) => await removeItemFromCollection(album))
+      console.log('Album was deleted!!!')
+      // deletedAlbums.map(async (album) => await removeItemFromCollection(album))
     }
     
     const coveredAlbums = await getAlbumsWithCover(existingAlbums.map((el) => {
@@ -88,65 +90,36 @@ const single = async (req: Request, res: Response) => {
   }
 }
 
-const appendAlbumToCollection = async (payload: any) => {
-  try {
-    const targetCollection = await Collection.findById(payload.listID).exec()
+// const removeItemFromCollection = async (payload: any) => {
+//   try {
+//     const targetCollection = await Collection.findById(payload.listID).exec()
 
-    if (targetCollection) {
-      const updatedAlbums = [
-        ...targetCollection.albums,
-        {
-          album: payload.itemID,
-          order: targetCollection.albums.length + 1
-        }
-      ]
-
-      await Collection.updateOne({ _id: payload.listID }, { $set: { albums: updatedAlbums } })
-    }
-  } catch (error) {
-    throw error
-  }
-}
-
-const removeItemFromCollection = async (payload: any) => {
-  try {
-    const targetCollection = await Collection.findById(payload.listID).exec()
-
-    if (targetCollection) {
-      const updatedAlbums = targetCollection.albums
-        .filter((el) => el._id.toString() !== payload.itemID.toString())
-        .map((el, index) => { el.order = index + 1; return el })
-      await Collection.updateOne({ _id: payload.listID }, { $set: { albums: updatedAlbums } })
-    }
-  } catch (error) {
-    throw error
-  }
-}
-
-const removeAlbumFromCollection = async (payload: any) => {
-  try {
-    const targetCollection = await Collection.findById(payload.listID).exec()
-
-    if (targetCollection) {
-      const updatedAlbums = targetCollection.albums
-        .filter((el) => el.album.toString() !== payload.itemID.toString())
-        .map((el, index) => { el.order = index + 1; return el })
-      await Collection.updateOne({ _id: payload.listID }, { $set: { albums: updatedAlbums } })
-    }
-  } catch (error) {
-    throw error
-  }
-}
+//     if (targetCollection) {
+//       const updatedAlbums = targetCollection.albums
+//         .filter((el) => el._id.toString() !== payload.itemID.toString())
+//         .map((el, index) => { el.order = index + 1; return el })
+//       await Collection.updateOne({ _id: payload.listID }, { $set: { albums: updatedAlbums } })
+//     }
+//   } catch (error) {
+//     throw error
+//   }
+// }
 
 const update = async (req: Request, res: Response) => {
   try {
-    if (req.body.isSave) {
-      await appendAlbumToCollection(req.body)
-      res.status(201).json({ message: 'Album successfully added to collection' })
-    } else {
-      await removeAlbumFromCollection(req.body)
-      res.status(201).json({ message: 'Album successfully removed from collection' })
-    }
+    const query = { _id: req.body['listID'] }
+    const update = req.body['inList']
+      ? { $pull: { albums: { album: req.body['itemID'] } } }
+      : { $push: { albums: { album: req.body['itemID'], order: req.body['order'] } } }
+    const options = { new: true }
+
+    await Collection.findOneAndUpdate(query, update, options)
+
+    res.json({
+      message: req.body['listID']
+        ? 'Album successfully removed from collection'
+        : 'Album successfully added to collection'
+    })
   } catch (error) {
     res.status(500).json(error)
   }
