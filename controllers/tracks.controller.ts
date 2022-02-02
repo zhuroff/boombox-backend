@@ -57,10 +57,19 @@ const getLyrics = async (req: Request, res: Response) => {
   }
 }
 
+const saveLyrics = async (req: Request, res: Response) => {
+  try {
+    await Track.findByIdAndUpdate(req.params['id'], { $set: { lyrics: req.body.lyrics } })
+  } catch (error) {
+    res.status(500).json(error)
+  }
+}
+
 const controller = {
   incrementListeningCounter,
   saveTrackDuration,
-  getLyrics
+  getLyrics,
+  saveLyrics
 }
 
 export default controller
