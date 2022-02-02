@@ -1,7 +1,7 @@
 import { Request } from 'express'
 import { PaginateModel } from 'mongoose'
 import { ICategoryDocs, ICategoryResponse } from '~/types/Category'
-import { AlbumModelDocument } from '~/types/Album'
+import { AlbumModel } from '~/types/Album'
 import { Frame } from '~/models/frame.model'
 import { getAlbumsWithCover } from '~/helpers/covers'
 
@@ -78,7 +78,7 @@ const getCategory = async (Model: PaginateModel<any>, req: Request) => {
       poster: response.poster,
       title: response.title,
       _id: response._id,
-      albums: await getAlbumsWithCover(response.albums as unknown as AlbumModelDocument[]),
+      albums: await getAlbumsWithCover(response.albums as unknown as AlbumModel[]),
       frames: response.framesAlbums
     }
 

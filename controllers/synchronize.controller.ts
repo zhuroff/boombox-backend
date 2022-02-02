@@ -8,15 +8,14 @@ import { Artist } from '~/models/artist.model'
 import { Genre } from '~/models/genre.model'
 import { Period } from '~/models/period.model'
 import { CategoryModel } from '~/types/Category'
-import { TrackModel } from '~/types/Track'
+import { CloudTrack } from '~/types/Track'
 import {
-  CloudAlbum,
-  CloudAlbumFolder,
+  CloudFolder,
   CloudAlbumFile,
   CloudAlbumTrack,
   CloudAlbumContent,
-  AlbumModel,
-  AlbumModelDocument
+  PreparedAlbum,
+  AlbumModel
 } from '~/types/Album'
 
 type CreatingResponse = {
@@ -37,7 +36,7 @@ const getAlbumCover = (array: CloudAlbumFile[]) => {
   return coverFile ? coverFile.fileid : 0
 }
 
-const getAlbumCoverArt = (array: CloudAlbumFolder[]) => {
+const getAlbumCoverArt = (array: CloudFolder[]) => {
   const coverArt = array.find((content) => content.name === 'booklet')
   return coverArt ? coverArt.folderid : 0
 }
@@ -45,7 +44,7 @@ const getAlbumCoverArt = (array: CloudAlbumFolder[]) => {
 const getAlbumTracks: any = async (array: CloudAlbumContent[]) => {
   const albumParts = array.filter((el) => (
     el.isfolder && el.name !== 'booklet'
-  )) as CloudAlbumFolder[]
+  )) as CloudFolder[]
 
   if (albumParts.length) {
     const subFoldersContent = albumParts.map(async (el) => {
@@ -102,11 +101,19 @@ const getAlbumReleaseYear = (name: string) => {
   return albumYearResult
 }
 
-const createAndSaveTrackEntry = async (track: TrackModel, albumFolderID: number) => {
-  track.inAlbum = albumFolderID
+const createAndSaveTrackEntry = async (
+  ...args: [CloudTrack, Types.ObjectId, Types.ObjectId]
+) => {
+  const [track, albumID, artistID] = args
+
+  const preparedTrack = {
+    ...track,
+    inAlbum: albumID,
+    artist: artistID
+  }
 
   try {
-    const newTrack = new Track(track)
+    const newTrack = new Track(preparedTrack)
     const dbTrack = await newTrack.save()
     return dbTrack._id
   } catch (error) {
@@ -114,10 +121,14 @@ const createAndSaveTrackEntry = async (track: TrackModel, albumFolderID: number)
   }
 }
 
-const saveTracksToDatabase = async (tracks: TrackModel[], albumFolderID: number): Promise<Types.ObjectId[]> => {
+const saveTracksToDatabase = async (
+  ...args: [CloudTrack[], Types.ObjectId, Types.ObjectId]
+): Promise<Types.ObjectId[]> => {
+  const [tracks, albumID, artistID] = args
+
   try {
     const tracksSaving = tracks.map(async (track) => (
-      await createAndSaveTrackEntry(track, albumFolderID)
+      await createAndSaveTrackEntry(track, albumID, artistID)
     ))
 
     return await Promise.all(tracksSaving)
@@ -126,25 +137,24 @@ const saveTracksToDatabase = async (tracks: TrackModel[], albumFolderID: number)
   }
 }
 
-const buildAlbumsData = async (content: CloudAlbum[], isModified = false) => {
+const buildAlbumsData = async (content: CloudFolder[], isModified = false) => {
   try {
-    const albumsMap = content.map(async (el: CloudAlbum) => {
+    const albumsMap = content.map(async (el: CloudFolder) => {
       const folderQuery = fetchers.cloudQueryLink(`listfolder?folderid=${el.folderid}`)
       const listFolder = await fetchers.getData(folderQuery)
-      const folderTracks: TrackModel[] = await getAlbumTracks(listFolder.data.metadata.contents)
-      const savedTracks: Types.ObjectId[] = await saveTracksToDatabase(folderTracks, el.folderid)
+      const folderTracks: CloudTrack[] = await getAlbumTracks(listFolder.data.metadata.contents)
       
-      const pcloudData: AlbumModel = {
+      const pcloudData: PreparedAlbum = {
         title: getAlbumTitle(el.name),
-        artistTitle: getArtistName(el.name),
-        genreTitle: getAlbumGenre(el.name),
-        periodYear: getAlbumReleaseYear(el.name),
+        artist: getArtistName(el.name),
+        genre: getAlbumGenre(el.name),
+        period: getAlbumReleaseYear(el.name),
         albumCover: getAlbumCover(listFolder.data.metadata.contents),
         albumCoverArt: getAlbumCoverArt(listFolder.data.metadata.contents),
         folderid: el.folderid,        
         modified: el.modified,
         description: '',
-        tracks: savedTracks
+        folderTracks
       }
 
       return pcloudData
@@ -163,53 +173,65 @@ const buildAlbumsData = async (content: CloudAlbum[], isModified = false) => {
 }
 
 const createOrUpdateCategory = async (
-  ...args: [PaginateModel<any>, string, AlbumModelDocument]
+  ...args: [PaginateModel<any>, string, Types.ObjectId]
 ): Promise<CategoryModel> => {
-  const [Model, title, album] = args
+  const [Model, title, albumID] = args
   const query = { title: title }
-  const update = { $push: { albums: album._doc._id } }
+  const update = { $push: { albums: albumID } }
   const options = { upsert: true, new: true, setDefaultsOnInsert: true }
 
   return await Model.findOneAndUpdate(query, update, options)
 }
 
-const saveDatabaseEntries = async (album: AlbumModel): Promise<CreatingResponse> => {
-  const { artistTitle, genreTitle, periodYear } = album
+const saveDatabaseEntries = async (album: PreparedAlbum): Promise<CreatingResponse> => {
+  const { artist, genre, period } = album
   const newAlbum = new Album(album)
 
   try {
-    const dbAlbum = await newAlbum.save()
-
-    const artist: CategoryModel = await createOrUpdateCategory(
+    const dbArtist = await createOrUpdateCategory(
       Artist,
-      artistTitle || 'unknown artist',
-      dbAlbum
+      artist || 'unknown artist',
+      newAlbum._id
     )
 
-    const genre: CategoryModel = await createOrUpdateCategory(
+    const dbGenre = await createOrUpdateCategory(
       Genre,
-      genreTitle || 'unknown genre',
-      dbAlbum
+      genre || 'unknown genre',
+      newAlbum._id
     )
 
-    const period: CategoryModel = await createOrUpdateCategory(
+    const dbPeriod = await createOrUpdateCategory(
       Period,
-      periodYear || 'unknown year',
-      dbAlbum
+      period || 'unknown year',
+      newAlbum._id
     )
+
+    const dbTracks = await saveTracksToDatabase(
+      album.folderTracks,
+      newAlbum._id,
+      dbArtist._id
+    )
+
+    newAlbum.tracks = dbTracks
+    newAlbum.artist = dbArtist._id
+    newAlbum.genre = dbGenre._id
+    newAlbum.period = dbPeriod._id
+
+    await newAlbum.save()
 
     return {
-      albumID: dbAlbum._id,
-      artistID: artist._id,
-      genreID: genre._id,
-      periodID: period._id
+      albumID: newAlbum._id,
+      artistID: dbArtist._id,
+      genreID: dbGenre._id,
+      periodID: dbPeriod._id
     }
+
   } catch (error) {
     throw error
   }
 }
 
-const createDatabaseEntries = async (albums: AlbumModel[]): Promise<CreatingResponse[]> => {
+const createDatabaseEntries = async (albums: PreparedAlbum[]): Promise<CreatingResponse[]> => {
   try {
     const dbCreating = albums.map(async (album) => (
       await saveDatabaseEntries(album)
@@ -221,32 +243,10 @@ const createDatabaseEntries = async (albums: AlbumModel[]): Promise<CreatingResp
   }
 }
 
-const attachCategoriesToAlbum = async (payload: CreatingResponse) => {
-  const { albumID, artistID, genreID, periodID } = payload
-  const query = { _id: albumID }
-  const options = { new: true }
-  const update = {
-    artist: artistID,
-    genre: genreID,
-    period: periodID
-  }
-  
-  return await Album.findOneAndUpdate(query, update, options) as AlbumModelDocument
-}
-
-const updateCategoriesInAlbum = async (payload: CreatingResponse[]) => {
-  const updating = payload.map(async (el) => (
-    await attachCategoriesToAlbum(el)
-  ))
-
-  return await Promise.all(updating)
-}
-
-const updateDatabaseEntries = async (albums: CloudAlbum[]) => {
+const updateDatabaseEntries = async (albums: CloudFolder[]) => {
   try {
     const buildedAlbums = await buildAlbumsData(albums)
-    const createdAlbums = await createDatabaseEntries(buildedAlbums)
-    await updateCategoriesInAlbum(createdAlbums)
+    await createDatabaseEntries(buildedAlbums)
     return true
   } catch (error) {
     throw error
@@ -283,7 +283,7 @@ const dropAlbum = async (id: Types.ObjectId) => {
   }
 }
 
-const deleteAlbumsFromDatabase = async (albums: AlbumModelDocument[]) => {
+const deleteAlbumsFromDatabase = async (albums: AlbumModel[]) => {
   try {
     const dbDeleting = albums.map(async (album) => (
       await dropAlbum(album._id)
@@ -306,7 +306,7 @@ const unlinkCategory = async (
   return await Model.findOneAndUpdate(query, update, options)
 }
 
-const unlinkCategoriesFromAlbum = async (albums: AlbumModelDocument[]) => {
+const unlinkCategoriesFromAlbum = async (albums: AlbumModel[]) => {
   try {
     const dbUnlinked = albums.map(async (album) => {
       await unlinkCategory(Artist, album._id, album.artist)
@@ -321,7 +321,7 @@ const unlinkCategoriesFromAlbum = async (albums: AlbumModelDocument[]) => {
   }
 }
 
-const deleteDatabaseEntries = async (albums: AlbumModelDocument[]) => {
+const deleteDatabaseEntries = async (albums: AlbumModel[]) => {
   const tracks = albums.flatMap((album) => album.tracks as Types.ObjectId[])
 
   try {
@@ -336,15 +336,15 @@ const deleteDatabaseEntries = async (albums: AlbumModelDocument[]) => {
 
 /* ========================== PREPARING ============================= */
 
-const dbUpdateSplitter = async (cloudAlbums: CloudAlbum[], dbAlbums: AlbumModelDocument[]) => {
+const dbUpdateSplitter = async (cloudAlbums: CloudFolder[], dbAlbums: AlbumModel[]) => {
   if (!dbAlbums.length && cloudAlbums.length) {
     await updateDatabaseEntries(cloudAlbums)
     return true
   }
 
-  const albumsToAdd = [] as CloudAlbum[]
-  const albumsToDel = [] as AlbumModelDocument[]
-  const albumsToFix = [] as { old: AlbumModelDocument, new: CloudAlbum }[]
+  const albumsToAdd = [] as CloudFolder[]
+  const albumsToDel = [] as AlbumModel[]
+  const albumsToFix = [] as { old: AlbumModel, new: CloudFolder }[]
 
   cloudAlbums.forEach((cloudAlbum) => {
     const matched = dbAlbums.find((dbAlbum) => (

@@ -1,5 +1,13 @@
 import { Document, Types, PaginateModel } from 'mongoose'
 
+interface CloudTrack {
+  modified: string
+  isfolder: false
+  fileid: number
+  contenttype: 'audio/flac'
+  title: string
+}
+
 interface TrackModel {
   fileid: number
   title: string
@@ -7,8 +15,9 @@ interface TrackModel {
   duration: number
   listened: number
   link?: string
-  inAlbum: number
+  inAlbum: Types.ObjectId
   inPlaylists: Types.ObjectId[]
+  artist: Types.ObjectId
 }
 
 interface TrackModelDocument extends TrackModel, Document {
@@ -20,6 +29,7 @@ interface TrackModelDocument extends TrackModel, Document {
 interface TrackModelPaginated<T extends Document> extends PaginateModel<T> {}
 
 export {
+  CloudTrack,
   TrackModel,
   TrackModelDocument,
   TrackModelPaginated

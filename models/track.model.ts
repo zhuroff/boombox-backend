@@ -35,7 +35,7 @@ const TrackSchema: Schema<TrackModelDocument> = new Schema({
   },
 
   inAlbum: {
-    type: Number,
+    type: Schema.Types.ObjectId,
     ref: 'albums',
     required: true
   },
@@ -46,7 +46,13 @@ const TrackSchema: Schema<TrackModelDocument> = new Schema({
       ref: 'albums',
       required: false
     }
-  ]
+  ],
+
+  artist: {
+    type: Schema.Types.ObjectId,
+    ref: 'artists',
+    required: false
+  }
 })
 
 TrackSchema.index({ title: 'text' })

@@ -116,7 +116,7 @@ const update = async (req: Request, res: Response) => {
     await Collection.findOneAndUpdate(query, update, options)
 
     res.json({
-      message: req.body['listID']
+      message: req.body['inList']
         ? 'Album successfully removed from collection'
         : 'Album successfully added to collection'
     })

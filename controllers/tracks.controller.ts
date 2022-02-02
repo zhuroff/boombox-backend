@@ -1,6 +1,11 @@
 import 'module-alias/register'
 import { Request, Response } from 'express'
 import { Track } from '~/models/track.model'
+import Genius from 'genius-lyrics'
+
+const GClient = new Genius.Client(process.env['GENIUS_SECRET'])
+
+let lyricsTryings = 0
 
 const incrementListeningCounter = async (req: Request, res: Response) => {
   try {
@@ -20,9 +25,42 @@ const saveTrackDuration = async (req: Request, res: Response) => {
   }
 }
 
+const getLyrics = async (req: Request, res: Response) => {
+  try {
+    const searches = await GClient.songs.search(req.body.query)
+    const resultArray = searches.map(async (el) => {
+      const item = {
+        title: el.title,
+        thumbnail: el.thumbnail,
+        artist: el.artist.name,
+        lyrics: await el.lyrics()
+      }
+
+      return item
+    })
+
+    const result = await Promise.all(resultArray)
+
+    res.json(result)
+  } catch (error) {
+    if (error instanceof RangeError) {
+      if (error.message === 'No result was found' && lyricsTryings < 10) {
+        lyricsTryings += 1
+        setTimeout(() => getLyrics(req, res), 1000)
+      } else {
+        res.status(500).json({ error: error?.message })
+        lyricsTryings = 0
+      }
+    } else {
+      res.status(500).json(error)
+    }
+  }
+}
+
 const controller = {
   incrementListeningCounter,
-  saveTrackDuration
+  saveTrackDuration,
+  getLyrics
 }
 
 export default controller

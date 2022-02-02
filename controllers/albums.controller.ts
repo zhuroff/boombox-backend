@@ -62,10 +62,13 @@ const single = async (req: Request, res: Response) => {
       .populate({ path: 'tracks' })
       .lean()
 
-    album.albumCover = await getImageLink(Number(album.albumCover))
-    album.tracks = await getTracksLinks(album.tracks as TrackModel[])
+    const preparedAlbum = {
+      ...album,
+      albumCover: await getImageLink(Number(album.albumCover)),
+      tracks: await getTracksLinks(album.tracks as unknown as TrackModel[])
+    }
 
-    res.json(album)
+    res.json(preparedAlbum)
   } catch (error) {
     res.status(500).json(error)
   }

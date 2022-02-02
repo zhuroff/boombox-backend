@@ -106,9 +106,9 @@ const update = async (req: Request, res: Response) => {
     await Playlist.findOneAndUpdate(query, update, options)
 
     res.json({
-      message: req.body['listID']
-        ? 'Track successfully added to playlist'
-        : 'Track successfully removed from playlist'
+      message: req.body['inList']
+        ? 'Track successfully removed from playlist'
+        : 'Track successfully added to playlist'
     })
   } catch (error) {
     console.log(error)

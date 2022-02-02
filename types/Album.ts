@@ -1,26 +1,11 @@
-import { Document, Types, PaginateModel } from 'mongoose'
-import { TrackModel } from '~/types/Track'
+import { Document, PaginateModel, Types } from 'mongoose'
+import { CloudTrack } from '~/types/Track'
 
-interface CloudAlbum {
-  path: string
-  name: string
-  created: string
-  ismine: boolean
-  thumb: boolean
-  modified: string
-  comments: number
-  id: string
-  isshared: boolean
-  icon: string
-  isfolder: boolean
-  parentfolderid: number
-  folderid: number
-}
-
-interface CloudAlbumFolder {
+interface CloudFolder {
   isfolder: true
   name: string
   folderid: number
+  modified: string
 }
 
 interface CloudAlbumFile {
@@ -34,14 +19,13 @@ interface CloudAlbumTrack extends CloudAlbumFile {
   title: string
 }
 
-type CloudAlbumContent = CloudAlbumFolder | CloudAlbumFile | CloudAlbumTrack
+type CloudAlbumContent = CloudFolder | CloudAlbumFile | CloudAlbumTrack
 
-interface AlbumModel {
-  _id?: Types.ObjectId
+interface PreparedAlbum {
   title: string
-  artistTitle?: string
-  genreTitle?: string
-  periodYear?: string
+  artist: string
+  genre: string
+  period: string
   albumCover: number | string
   albumCoverArt: number
   coverID?: number
@@ -49,27 +33,43 @@ interface AlbumModel {
   folderid: number
   modified: Date | string
   description: string
-  tracks: Types.ObjectId[] | TrackModel[]
+  folderTracks: CloudTrack[]
 }
 
-interface AlbumModelDocument extends AlbumModel, Document {
-  dateCreated: Date
+interface AlbumModel extends Document {
+  title: string
   artist: Types.ObjectId
   genre: Types.ObjectId
   period: Types.ObjectId
-  _id: Types.ObjectId
-  _doc: AlbumModel
+  dateCreated: Date
+  albumCover: number
+  albumCoverArt: number
+  folderid: number
+  modified: Date
+  description: string
+  tracks: Types.ObjectId[]
+  toStay?: boolean
 }
 
-interface AlbumModelPaginated<T extends Document> extends PaginateModel<T> {}
+interface IAlbum<T extends Document> extends PaginateModel<T> {}
+
+interface IAlbumResponse {
+  docs: AlbumModel[]
+
+  pagination: {
+    totalDocs: number
+    totalPages: number
+    page: number
+  }
+}
 
 export {
-  CloudAlbum,
-  CloudAlbumFolder,
+  CloudFolder,
   CloudAlbumFile,
   CloudAlbumTrack,
   CloudAlbumContent,
+  PreparedAlbum,
   AlbumModel,
-  AlbumModelDocument,
-  AlbumModelPaginated
+  IAlbum,
+  IAlbumResponse
 }
