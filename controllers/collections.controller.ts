@@ -1,7 +1,22 @@
 import 'module-alias/register'
 import { Request, Response } from 'express'
 import { Collection } from '~/models/collection.model'
+import { Album } from '~/models/album.model'
 import { getAlbumsWithCover } from '~/helpers/covers'
+
+const updateAlbum = async (collectionID: string, albumID: string, inList: boolean) => {
+  try {
+    const query = { _id: albumID }
+    const update = inList
+      ? { $pull: { inCollections: collectionID } }
+      : { $push: { inCollections: collectionID } }
+    const options = { new: true }
+
+    await Album.findOneAndUpdate(query, update, options)
+  } catch (error) {
+    throw error
+  }
+}
 
 const create = async (req: Request, res: Response) => {
   try {
@@ -15,6 +30,7 @@ const create = async (req: Request, res: Response) => {
     const newCollection = new Collection(payload)
     
     await newCollection.save()
+    await updateAlbum(newCollection._id, req.body.album, false)
     
     res.json({ message: 'Collection successfully created' })
   } catch (error) {
@@ -114,6 +130,7 @@ const update = async (req: Request, res: Response) => {
     const options = { new: true }
 
     await Collection.findOneAndUpdate(query, update, options)
+    await updateAlbum(req.body['listID'], req.body['itemID'], req.body['inList'])
 
     res.json({
       message: req.body['inList']

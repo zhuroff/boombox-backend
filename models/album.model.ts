@@ -62,6 +62,14 @@ const AlbumSchema: Schema<AlbumModel> = new Schema({
       ref: 'tracks',
       required: false
     }
+  ],
+
+  inCollections: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'collections',
+      required: false
+    }
   ]
 })
 

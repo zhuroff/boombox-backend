@@ -1,6 +1,7 @@
 import 'module-alias/register'
 import { Request, Response } from 'express'
 import { Playlist } from '~/models/playlist.model'
+import { Track } from '~/models/track.model'
 // import { getAlbumsWithCover } from '~/helpers/covers'
 // import getTracksLinks from '~/helpers/tracks'
 // import path, { dirname } from 'path'
@@ -34,6 +35,20 @@ import { Playlist } from '~/models/playlist.model'
 //   return await Promise.all(result)
 // }
 
+const updateTrack = async (listID: string, trackID: string, inList: boolean) => {
+  try {
+    const query = { _id: trackID }
+    const update = inList
+      ? { $pull: { inPlaylists: listID } }
+      : { $push: { inPlaylists: listID } }
+    const options = { new: true }
+
+    await Track.findOneAndUpdate(query, update, options)
+  } catch (error) {
+    throw error
+  }
+}
+
 const create = async (req: Request, res: Response) => {
   try {
     const payload = {
@@ -46,6 +61,7 @@ const create = async (req: Request, res: Response) => {
     const newPlaylist = new Playlist(payload)
 
     await newPlaylist.save()
+    await updateTrack(newPlaylist._id, req.body.track, false)
 
     res.json({ message: 'Playlist successfully created' })
   } catch(error) {
@@ -104,6 +120,7 @@ const update = async (req: Request, res: Response) => {
     const options = { new: true }
 
     await Playlist.findOneAndUpdate(query, update, options)
+    await updateTrack(req.body['listID'], req.body['itemID'], req.body['inList'])
 
     res.json({
       message: req.body['inList']

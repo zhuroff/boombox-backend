@@ -25,7 +25,7 @@ const saveTrackDuration = async (req: Request, res: Response) => {
   }
 }
 
-const getLyrics = async (req: Request, res: Response) => {
+const getLyrics = async (req: Request, res: Response): Promise<void | ReturnType<typeof setTimeout>> => {
   try {
     const searches = await GClient.songs.search(req.body.query)
     const resultArray = searches.map(async (el) => {
@@ -43,14 +43,14 @@ const getLyrics = async (req: Request, res: Response) => {
 
     res.json(result)
   } catch (error) {
-    if (error instanceof RangeError) {
+    if (error instanceof Error) {
       if (error.message === 'No result was found' && lyricsTryings < 10) {
         lyricsTryings += 1
-        setTimeout(() => getLyrics(req, res), 1000)
-      } else {
-        res.status(500).json({ error: error?.message })
-        lyricsTryings = 0
+        return setTimeout(() => getLyrics(req, res), 1000)
       }
+      
+      res.status(500).json({ error: error?.message })
+      lyricsTryings = 0
     } else {
       res.status(500).json(error)
     }

@@ -48,6 +48,7 @@ interface AlbumModel extends Document {
   modified: Date
   description: string
   tracks: Types.ObjectId[]
+  inCollections?: Types.ObjectId[]
   toStay?: boolean
 }
 

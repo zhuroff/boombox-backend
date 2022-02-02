@@ -6,6 +6,7 @@ import { CloudAlbumFile } from '~/types/Album'
 import { Artist } from '~/models/artist.model'
 import { Genre } from '~/models/genre.model'
 import { Period } from '~/models/period.model'
+import { Collection } from '~/models/collection.model'
 import { fetchers } from '~/helpers/fetchers'
 import { getAlbumsWithCover, getImageLink} from '~/helpers/covers'
 import getTracksLinks from '~/helpers/tracks'
@@ -15,7 +16,8 @@ const list = async (req: Request, res: Response) => {
     const populates = [
       { path: 'artist', select: ['title'], model: Artist },
       { path: 'genre', select: ['title'], model: Genre },
-      { path: 'period', select: ['title'], model: Period }
+      { path: 'period', select: ['title'], model: Period },
+      { path: 'inCollections', select: ['title'], model: Collection }
     ]
     
     const options = {
