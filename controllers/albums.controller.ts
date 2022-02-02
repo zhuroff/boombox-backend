@@ -59,7 +59,7 @@ const single = async (req: Request, res: Response) => {
       .populate({ path: 'artist', select: ['title'] })
       .populate({ path: 'genre', select: ['title'] })
       .populate({ path: 'period', select: ['title'] })
-      .populate({ path: 'tracks' })
+      .populate({ path: 'tracks', populate: { path: 'artist', select: ['title'] } })
       .lean()
 
     const preparedAlbum = {
