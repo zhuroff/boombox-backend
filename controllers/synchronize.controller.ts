@@ -7,8 +7,10 @@ import { Track } from '~/models/track.model'
 import { Artist } from '~/models/artist.model'
 import { Genre } from '~/models/genre.model'
 import { Period } from '~/models/period.model'
+import { Collection } from '~/models/collection.model'
+import { Playlist } from '~/models/playlist.model'
 import { CategoryModel } from '~/types/Category'
-import { CloudTrack } from '~/types/Track'
+import { CloudTrack, TrackModel } from '~/types/Track'
 import {
   CloudFolder,
   CloudAlbumFile,
@@ -263,10 +265,10 @@ const dropTrack = async (trackID: Types.ObjectId) => {
   }
 }
 
-const deleteTracksFromDatabase = async (tracks: Types.ObjectId[]) => {
+const deleteTracksFromDatabase = async (tracks: TrackModel[]) => {
   try {
-    const deletingTracks = tracks.map(async (trackID) => (
-      await dropTrack(trackID)
+    const deletingTracks = tracks.map(async (track) => (
+      await dropTrack(track._id)
     ))
 
     return await Promise.all(deletingTracks)
@@ -321,13 +323,79 @@ const unlinkCategoriesFromAlbum = async (albums: AlbumModel[]) => {
   }
 }
 
-const deleteDatabaseEntries = async (albums: AlbumModel[]) => {
-  const tracks = albums.flatMap((album) => album.tracks as Types.ObjectId[])
+const unlinkCollection = async (collectionID: Types.ObjectId, albumID: Types.ObjectId) => {
+  const query = { _id: collectionID }
+  const update = { $pull: { albums: { album: albumID } } }
+  const options = { new: true }
 
   try {
+    return await Collection.findOneAndUpdate(query, update, options)
+  } catch (error) {
+    throw error
+  }
+}
+
+const unlinkAlbum = async (album: AlbumModel) => {
+  if (!album.inCollections.length) return true
+
+  const unlinked = album.inCollections.map(async (collectionID) => (
+    await unlinkCollection(collectionID, album._id)
+  ))
+
+  return await Promise.all(unlinked)
+}
+
+const unlinkAlbumsFromCollections = async (albums: AlbumModel[]) => {
+  const unlinked = albums.map(async (album) => (
+    await unlinkAlbum(album)
+  ))
+
+  return await Promise.all(unlinked)
+}
+
+const unlinkPlaylist = async (playlistID: Types.ObjectId, trackID: Types.ObjectId) => {
+  const query = { _id: playlistID }
+  const update = { $pull: { tracks: { track: trackID } } }
+  const options = { new: true }
+
+  try {
+    return await Playlist.findOneAndUpdate(query, update, options)
+  } catch (error) {
+    throw error
+  }
+}
+
+const unlinkTrack = async (track: TrackModel) => {
+  if (!track.inPlaylists.length) return true
+
+  const unlinked = track.inPlaylists.map(async (playlistID) => (
+    await unlinkPlaylist(playlistID, track._id)
+  ))
+
+  return await Promise.all(unlinked)
+}
+
+const unlinkTracksFromPlaylists = async (tracks: TrackModel[]) => {
+  const unlinked = tracks.map(async (track) => (
+    await unlinkTrack(track)
+  ))
+
+  return await Promise.all(unlinked)
+}
+
+const deleteDatabaseEntries = async (albums: AlbumModel[]) => {
+  const tracks = albums.flatMap((album) => (
+    album.tracks as TrackModel[]
+  ))
+
+
+  try {
+    await unlinkAlbumsFromCollections(albums)
+    await unlinkTracksFromPlaylists(tracks)
     await deleteTracksFromDatabase(tracks)
     await deleteAlbumsFromDatabase(albums)
     await unlinkCategoriesFromAlbum(albums)
+    
     return true
   } catch (error) {
     throw error
@@ -389,10 +457,13 @@ const fetchDatabaseAlbums = async () => {
     artist: true,
     genre: true,
     period: true,
-    tracks: true
+    tracks: true,
+    inCollections: true
   }
 
-  return await Album.find({}, searchConfig).exec()
+  return await Album.find({}, searchConfig)
+    .populate({ path: 'tracks', select: ['inPlaylists'] })
+    .exec()
 }
 
 const synchronize = async (req: Request, res: Response) => {

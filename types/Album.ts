@@ -1,5 +1,5 @@
 import { Document, PaginateModel, Types } from 'mongoose'
-import { CloudTrack } from '~/types/Track'
+import { CloudTrack, TrackModel } from '~/types/Track'
 
 interface CloudFolder {
   isfolder: true
@@ -47,8 +47,8 @@ interface AlbumModel extends Document {
   folderid: number
   modified: Date
   description: string
-  tracks: Types.ObjectId[]
-  inCollections?: Types.ObjectId[]
+  tracks: Types.ObjectId[] | TrackModel[]
+  inCollections: Types.ObjectId[]
   toStay?: boolean
 }
 

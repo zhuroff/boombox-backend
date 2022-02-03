@@ -9,6 +9,7 @@ interface CloudTrack {
 }
 
 interface TrackModel {
+  _id: Types.ObjectId
   fileid: number
   title: string
   lyrics: string
