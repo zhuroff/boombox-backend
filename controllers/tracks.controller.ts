@@ -60,6 +60,7 @@ const getLyrics = async (req: Request, res: Response): Promise<void | ReturnType
 const saveLyrics = async (req: Request, res: Response) => {
   try {
     await Track.findByIdAndUpdate(req.params['id'], { $set: { lyrics: req.body.lyrics } })
+    res.json({ message: 'Lyrics successfully added to track' })
   } catch (error) {
     res.status(500).json(error)
   }

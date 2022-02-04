@@ -6,6 +6,7 @@ import { Frame } from '~/models/frame.model'
 import { Artist } from '~/models/artist.model'
 import { Genre } from '~/models/genre.model'
 import { Period } from '~/models/period.model'
+import { Collection } from '~/models/collection.model'
 
 const saveAlbumToCategory = async (
   ...args: [PaginateModel<any>, Types.ObjectId, Types.ObjectId]
@@ -78,9 +79,10 @@ const create = async (req: Request, res: Response) => {
 const list = async (req: Request, res: Response) => {
   try {
     const populates = [
-      { path: 'artist', select: ['title'] },
-      { path: 'genre', select: ['title'] },
-      { path: 'periods', select: ['title'] }
+      { path: 'artist', select: ['title'], model: Artist },
+      { path: 'genre', select: ['title'], model: Genre },
+      { path: 'period', select: ['title'], model: Period },
+      { path: 'inCollections', select: ['title'], model: Collection }
     ]
 
     const options = {
@@ -96,7 +98,17 @@ const list = async (req: Request, res: Response) => {
     }
 
     const response = await Frame.paginate({}, options)
-    res.json(response)
+    
+    if (response) {
+      res.json({
+        pagination: {
+          totalDocs: response.totalDocs,
+          totalPages: response.totalPages,
+          page: response.page,
+        },
+        docs: response.docs
+      })
+    }
   } catch (error) {
     res.status(500).json(error)
   }

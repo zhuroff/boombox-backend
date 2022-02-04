@@ -34,7 +34,15 @@ const FrameSchema: Schema<FrameModelDocument> = new Schema({
 	iframe: {
 		type: String,
 		required: true
-	}
+	},
+
+	inCollections: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'collections',
+      required: false
+    }
+  ]
 })
 
 FrameSchema.index({ title: 'text' })
