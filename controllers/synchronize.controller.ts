@@ -1,4 +1,3 @@
-import 'module-alias/register'
 import { Request, Response } from 'express'
 import { Types, PaginateModel } from 'mongoose'
 import { fetchers } from '~/helpers/fetchers'
@@ -17,7 +16,7 @@ import {
   CloudAlbumTrack,
   CloudAlbumContent,
   PreparedAlbum,
-  AlbumModel
+  IAlbum
 } from '~/types/Album'
 
 type CreatingResponse = {
@@ -285,7 +284,7 @@ const dropAlbum = async (id: Types.ObjectId) => {
   }
 }
 
-const deleteAlbumsFromDatabase = async (albums: AlbumModel[]) => {
+const deleteAlbumsFromDatabase = async (albums: IAlbum[]) => {
   try {
     const dbDeleting = albums.map(async (album) => (
       await dropAlbum(album._id)
@@ -308,7 +307,7 @@ const unlinkCategory = async (
   return await Model.findOneAndUpdate(query, update, options)
 }
 
-const unlinkCategoriesFromAlbum = async (albums: AlbumModel[]) => {
+const unlinkCategoriesFromAlbum = async (albums: IAlbum[]) => {
   try {
     const dbUnlinked = albums.map(async (album) => {
       await unlinkCategory(Artist, album._id, album.artist)
@@ -335,7 +334,7 @@ const unlinkCollection = async (collectionID: Types.ObjectId, albumID: Types.Obj
   }
 }
 
-const unlinkAlbum = async (album: AlbumModel) => {
+const unlinkAlbum = async (album: IAlbum) => {
   if (!album.inCollections.length) return true
 
   const unlinked = album.inCollections.map(async (collectionID) => (
@@ -345,7 +344,7 @@ const unlinkAlbum = async (album: AlbumModel) => {
   return await Promise.all(unlinked)
 }
 
-const unlinkAlbumsFromCollections = async (albums: AlbumModel[]) => {
+const unlinkAlbumsFromCollections = async (albums: IAlbum[]) => {
   const unlinked = albums.map(async (album) => (
     await unlinkAlbum(album)
   ))
@@ -383,7 +382,7 @@ const unlinkTracksFromPlaylists = async (tracks: TrackModel[]) => {
   return await Promise.all(unlinked)
 }
 
-const deleteDatabaseEntries = async (albums: AlbumModel[]) => {
+const deleteDatabaseEntries = async (albums: IAlbum[]) => {
   const tracks = albums.flatMap((album) => (
     album.tracks as TrackModel[]
   ))
@@ -404,15 +403,15 @@ const deleteDatabaseEntries = async (albums: AlbumModel[]) => {
 
 /* ========================== PREPARING ============================= */
 
-const dbUpdateSplitter = async (cloudAlbums: CloudFolder[], dbAlbums: AlbumModel[]) => {
+const dbUpdateSplitter = async (cloudAlbums: CloudFolder[], dbAlbums: IAlbum[]) => {
   if (!dbAlbums.length && cloudAlbums.length) {
     await updateDatabaseEntries(cloudAlbums)
     return true
   }
 
   const albumsToAdd = [] as CloudFolder[]
-  const albumsToDel = [] as AlbumModel[]
-  const albumsToFix = [] as { old: AlbumModel, new: CloudFolder }[]
+  const albumsToDel = [] as IAlbum[]
+  const albumsToFix = [] as { old: IAlbum, new: CloudFolder }[]
 
   cloudAlbums.forEach((cloudAlbum) => {
     const matched = dbAlbums.find((dbAlbum) => (

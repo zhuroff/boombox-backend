@@ -1,6 +1,6 @@
-import { model, Schema } from 'mongoose'
+import { model, PaginateModel, Schema } from 'mongoose'
 import mongoosePaginate from 'mongoose-paginate-v2'
-import { AlbumModel, IAlbum } from '~/types/Album'
+import { AlbumModel } from '~/types/Album'
 
 const AlbumSchema: Schema<AlbumModel> = new Schema({
   title: {
@@ -76,4 +76,4 @@ const AlbumSchema: Schema<AlbumModel> = new Schema({
 AlbumSchema.index({ title: 'text' })
 AlbumSchema.plugin(mongoosePaginate)
 
-export const Album = model<AlbumModel>('albums', AlbumSchema) as IAlbum<AlbumModel>
+export const Album = model<AlbumModel, PaginateModel<AlbumModel>>('albums', AlbumSchema)

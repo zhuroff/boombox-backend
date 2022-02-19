@@ -1,27 +1,27 @@
-import { Document, PaginateModel, Types } from 'mongoose'
+import { Document, Types } from 'mongoose'
 import { CloudTrack, TrackModel } from '~/types/Track'
 
-interface CloudFolder {
+type CloudFolder = {
   isfolder: true
   name: string
   folderid: number
   modified: string
 }
 
-interface CloudAlbumFile {
+type CloudAlbumFile = {
   isfolder: false
   name: string
   contenttype: string
   fileid: number
 }
 
-interface CloudAlbumTrack extends CloudAlbumFile {
+type CloudAlbumTrack = CloudAlbumFile & {
   title: string
 }
 
 type CloudAlbumContent = CloudFolder | CloudAlbumFile | CloudAlbumTrack
 
-interface PreparedAlbum {
+type PreparedAlbum = {
   title: string
   artist: string
   genre: string
@@ -36,13 +36,13 @@ interface PreparedAlbum {
   folderTracks: CloudTrack[]
 }
 
-interface AlbumModel extends Document {
+type AlbumModel = {
   title: string
   artist: Types.ObjectId
   genre: Types.ObjectId
   period: Types.ObjectId
   dateCreated: Date
-  albumCover: number
+  albumCover: number | string
   albumCoverArt: number
   folderid: number
   modified: Date
@@ -52,17 +52,8 @@ interface AlbumModel extends Document {
   toStay?: boolean
 }
 
-interface IAlbum<T extends Document> extends PaginateModel<T> {}
-
-interface IAlbumResponse {
-  docs: AlbumModel[]
-
-  pagination: {
-    totalDocs: number
-    totalPages: number
-    page: number
-  }
-}
+// interface IAlbum<T extends Document> extends PaginateModel<T> {}
+interface IAlbum extends Document, AlbumModel {}
 
 export {
   CloudFolder,
@@ -71,6 +62,5 @@ export {
   CloudAlbumContent,
   PreparedAlbum,
   AlbumModel,
-  IAlbum,
-  IAlbumResponse
+  IAlbum
 }

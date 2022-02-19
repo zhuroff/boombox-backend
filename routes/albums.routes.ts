@@ -1,11 +1,11 @@
 import { Router } from 'express'
-import controller from '~/controllers/albums.controller'
+import { AlbumsController} from '~/controllers/albums.controller'
 
 const router = Router()
 
-router.post('/', controller.list)
-router.get('/:id', controller.single)
-router.get('/:id/:booklet', controller.booklet)
-router.patch('/:id/description', controller.description)
+router.post('/', AlbumsController.list)
+router.get('/:id', AlbumsController.single)
+router.get('/:id/:booklet', AlbumsController.booklet)
+router.patch('/:id/description', AlbumsController.description)
 
 export default router
