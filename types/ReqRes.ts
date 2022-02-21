@@ -25,9 +25,14 @@ type Pagination = {
   page: number
 }
 
+type ResponseMessage = {
+  message: string | number
+}
+
 export {
   Populate,
   PaginatedPageBasicOptions,
   AlbumResponse,
-  Pagination
+  Pagination,
+  ResponseMessage
 }

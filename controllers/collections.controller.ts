@@ -32,7 +32,7 @@ const create = async (req: Request, res: Response) => {
     await newCollection.save()
     await updateAlbum(newCollection._id, req.body.album, false)
     
-    res.json({ message: 'Collection successfully created' })
+    res.status(201).json({ message: 'Collection successfully created' })
   } catch (error) {
     res.status(500).json(error)
   }
@@ -132,7 +132,7 @@ const update = async (req: Request, res: Response) => {
     await Collection.findOneAndUpdate(query, update, options)
     await updateAlbum(req.body['listID'], req.body['itemID'], req.body['inList'])
 
-    res.json({
+    res.status(201).json({
       message: req.body['inList']
         ? 'Album successfully removed from collection'
         : 'Album successfully added to collection'

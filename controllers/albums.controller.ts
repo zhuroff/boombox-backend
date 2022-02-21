@@ -21,10 +21,8 @@ export class AlbumsController {
   }
 
   static async description(req: Request<{ id: string }>, res: Response, next: (error: unknown) => void) {
-    const $set = { description: req.body.description }
-
     try {
-      const result = albumsServices.description(req.params['id'], $set)
+      const result = albumsServices.description(req.params['id'], req.body.description)
       res.status(201).json(result)
     } catch (error) {
       next(error)

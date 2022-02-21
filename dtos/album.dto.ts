@@ -1,6 +1,7 @@
 import { PaginateDocument } from 'mongoose'
 import { AlbumModel } from '~/types/Album'
 import { AlbumResponse, Pagination } from '~/types/ReqRes'
+import { TrackModel } from '~/types/Track'
 
 export class AlbumListDTO {
   pagination: Pagination = {
@@ -25,5 +26,9 @@ export class AlbumListDTO {
 }
 
 export class AlbumSingleDTO {
+  album = {} as AlbumModel
 
+  constructor(model: AlbumModel, albumCover: string | 0, tracks: TrackModel[]) {
+    this.album = { ...model, albumCover, tracks }
+  }
 }

@@ -1,18 +1,15 @@
 import { Request } from 'express'
-import { AlbumListDTO } from '~/dtos/album.dto'
 import { ApiError } from '~/exceptions/api-errors'
-import { getAlbumsWithCover, getImageLink } from '~/helpers/covers'
-import { fetchers } from '~/helpers/fetchers'
-import getTracksLinks from '~/helpers/tracks'
-import { CoversLib } from '~/lib/covers.lib'
 import { Album } from '~/models/album.model'
-import { CloudAlbumFile } from '~/types/Album'
-import { PaginatedPageBasicOptions } from '~/types/ReqRes'
+import { PaginatedPageBasicOptions, Populate, ResponseMessage } from '~/types/ReqRes'
 import { TrackModel } from '~/types/Track'
+import { CloudAlbumFile } from '~/types/Album'
+import { CloudLib } from '~/lib/cloud.lib'
+import { AlbumListDTO, AlbumSingleDTO } from '~/dtos/album.dto'
 
 class AlbumsServices {
-  async list(req: Request) {
-    const populate = [
+  async list(req: Request): Promise<AlbumListDTO> {
+    const populate: Populate[] = [
       { path: 'artist', select: ['title'] },
       { path: 'genre', select: ['title'] },
       { path: 'period', select: ['title'] },
@@ -30,14 +27,14 @@ class AlbumsServices {
     const dbList = await Album.paginate({}, options)
 
     if (dbList) {
-      const coveredAlbums = await CoversLib.covers(dbList.docs)
+      const coveredAlbums = await CloudLib.covers(dbList.docs)
       return new AlbumListDTO(dbList, coveredAlbums)
     }
 
     throw ApiError.BadRequest('Incorrect request options')
   }
 
-  async single(id: string) {
+  async single(id: string): Promise<AlbumSingleDTO> {
     const dbSingle = await Album.findById(id)
       .populate({ path: 'artist', select: ['title'] })
       .populate({ path: 'genre', select: ['title'] })
@@ -46,29 +43,29 @@ class AlbumsServices {
       .lean()
 
     if (dbSingle) {
-      return {
-        ...dbSingle,
-        albumCover: await getImageLink(Number(dbSingle.albumCover)),
-        tracks: await getTracksLinks(dbSingle.tracks as unknown as TrackModel[])
-      }
+      const albumCover = await CloudLib.getImageLink(Number(dbSingle.albumCover))
+      const tracks = await CloudLib.tracks(dbSingle.tracks as unknown as TrackModel[])
+
+      return new AlbumSingleDTO(dbSingle, albumCover, tracks)
     }
 
-    throw new Error()
+    throw ApiError.BadRequest('Incorrect request options')
   }
 
-  async description(_id: string, $set: any) {
+  async description(_id: string, description: string): Promise<ResponseMessage> {
+    const $set = { description }
     await Album.updateOne({ _id }, { $set })
     return { message: 'Description updated' }
   }
 
-  async booklet(id: string) {
-    const folderQuery = fetchers.cloudQueryLink(`listfolder?folderid=${id}`)
-    const listFolder = await fetchers.getData(folderQuery)
+  async booklet(id: string): Promise<(string | number)[]> {
+    const folderQuery = CloudLib.cloudQueryLink(`listfolder?folderid=${id}`)
+    const listFolder = await CloudLib.getData(folderQuery)
     const fileContents: CloudAlbumFile[] = listFolder.data.metadata.contents
     const preparedData = fileContents.map((el) => ({ albumCover: el.fileid }))
-    const booklet = await getAlbumsWithCover(preparedData)
+    const albumCovers = await CloudLib.covers(preparedData)
 
-    return booklet
+    return albumCovers.map((el) => el.albumCover)
   }
 }
 
