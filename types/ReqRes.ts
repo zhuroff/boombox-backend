@@ -3,7 +3,7 @@ type Populate = {
   select: string[]
 }
 
-type PaginatedPageBasicOptions = {
+type PaginationOptions = {
   page: number
   limit: number
   sort: { [index: string]: number }
@@ -15,7 +15,7 @@ type PaginatedPageBasicOptions = {
 type Pagination = {
   totalDocs: number
   totalPages: number
-  page: number
+  page?: number
 }
 
 type ResponseMessage = {
@@ -24,7 +24,7 @@ type ResponseMessage = {
 
 export {
   Populate,
-  PaginatedPageBasicOptions,
+  PaginationOptions,
   Pagination,
   ResponseMessage
 }

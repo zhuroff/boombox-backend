@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
-import { AlbumModel } from '~/types/Album'
+import { AlbumResponse } from '~/types/Album'
 import { TrackResponse } from '~/types/Track'
 import { TrackDTO } from '~/dtos/track.dto'
 
@@ -18,7 +18,7 @@ export class CloudLib {
     return response.data.error ? 0 : `https://${response.data.hosts[0]}${response.data.path}`
   }
 
-  static async covers<T extends Partial<AlbumModel>>(items: T[]): Promise<T[]> {
+  static async covers<T extends Partial<AlbumResponse>>(items: T[]): Promise<T[]> {
     const result = items.map(async (item) => ({
       ...item,
       albumCover: await this.getImageLink(Number(item.albumCover))

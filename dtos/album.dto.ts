@@ -1,28 +1,25 @@
-import { PaginateDocument, Types } from 'mongoose'
+import { Types } from 'mongoose'
 import { AlbumResponse } from '~/types/Album'
 import { CategoryBasic } from '~/types/Category'
-import { Pagination } from '~/types/ReqRes'
 import { TrackDTO } from '~/dtos/track.dto'
 
-export class AlbumListDTO {
-  pagination: Pagination = {
-    totalDocs: 0,
-    totalPages: 1,
-    page: 1
-  }
+export class AlbumItemDTO {
+  _id: Types.ObjectId
+  title: string
+  albumCover: string | number
+  inCollections: Types.ObjectId[]
+  artist: CategoryBasic
+  genre: CategoryBasic
+  period: CategoryBasic
 
-  docs = [] as AlbumResponse[]
-
-  constructor(model: PaginateDocument<unknown, any, AlbumResponse>, albums: AlbumResponse[]) {
-    const { totalDocs, totalPages, page } = model
-
-    this.pagination = {
-      totalDocs,
-      totalPages,
-      page
-    }
-
-    this.docs = albums
+  constructor(album: AlbumResponse) {
+    this._id = album._id
+    this.title = album.title
+    this.albumCover = album.albumCover
+    this.inCollections = album.inCollections
+    this.artist = { _id: album.artist._id, title: album.artist.title }
+    this.genre = { _id: album.genre._id, title: album.genre.title }
+    this.period = { _id: album.period._id, title: album.period.title }
   }
 }
 

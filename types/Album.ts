@@ -1,7 +1,8 @@
 import { Document, Types } from 'mongoose'
 import { CloudTrack, TrackModel, TrackResponse } from './Track'
 import { CategoryBasic } from './Category'
-import { Pagination } from './ReqRes'
+import { AlbumItemDTO } from '~/dtos/album.dto'
+import { PaginationDTO } from '~/dtos/pagination.dto'
 
 type CloudFolder = {
   isfolder: true
@@ -62,13 +63,13 @@ type AlbumResponse = AlbumCommon & {
   artist: CategoryBasic
   genre: CategoryBasic
   period: CategoryBasic
-  albumCover: string
+  albumCover: string | number
   tracks: TrackResponse[]
 }
 
 type AlbumPageResponse = {
-  docs: AlbumModel[]
-  pagination: Pagination
+  docs: AlbumItemDTO[]
+  pagination: PaginationDTO
 }
 
 interface IAlbum extends Document, AlbumModel {}

@@ -2,20 +2,23 @@ import { Request } from 'express'
 import { ApiError } from '~/exceptions/api-errors'
 import { Album } from '~/models/album.model'
 import { CloudLib } from '~/lib/cloud.lib'
-import { AlbumResponse, CloudAlbumFile } from '~/types/Album'
-import { PaginatedPageBasicOptions, Populate, ResponseMessage } from '~/types/ReqRes'
-import { AlbumListDTO, AlbumSingleDTO } from '~/dtos/album.dto'
+import { AlbumResponse, AlbumPageResponse, CloudAlbumFile } from '~/types/Album'
+import { PaginationOptions, Populate, ResponseMessage } from '~/types/ReqRes'
+import { AlbumItemDTO, AlbumSingleDTO } from '~/dtos/album.dto'
+import { PaginationDTO } from '~/dtos/pagination.dto'
 import { TrackDTO } from '~/dtos/track.dto'
+import { Document, PaginateResult } from 'mongoose'
 
 class AlbumsServices {
-  async list(req: Request): Promise<AlbumListDTO> {
+  async list(req: Request): Promise<AlbumPageResponse> {
     const populate: Populate[] = [
       { path: 'artist', select: ['title'] },
       { path: 'genre', select: ['title'] },
       { path: 'period', select: ['title'] },
       { path: 'inCollections', select: ['title'] }
     ]
-    const options: PaginatedPageBasicOptions = {
+
+    const options: PaginationOptions = {
       page: req.body.page,
       limit: req.body.limit,
       sort: req.body.sort,
@@ -24,12 +27,17 @@ class AlbumsServices {
       select: { title: true, albumCover: true }
     }
 
-    const dbList = await Album.paginate({}, options)
+    const dbList: PaginateResult<Document<{}, {}, AlbumResponse>> = await Album.paginate<PaginationOptions>({}, options)
 
     if (dbList) {
-      const coveredAlbums = await CloudLib.covers(dbList.docs)
-      //@ts-ignore
-      return new AlbumListDTO(dbList, coveredAlbums)
+      const { totalDocs, totalPages, page } = dbList
+      const pagination = new PaginationDTO({ totalDocs, totalPages, page })
+
+      const dbDocs = dbList.docs as unknown as AlbumResponse[]      
+      const coveredAlbums = await CloudLib.covers(dbDocs)      
+      const docs = coveredAlbums.map((album) => new AlbumItemDTO(album))
+
+      return { docs, pagination }
     }
 
     throw ApiError.BadRequest('Incorrect request options')
@@ -66,9 +74,9 @@ class AlbumsServices {
     const listFolder = await CloudLib.getData(folderQuery)
     const fileContents: CloudAlbumFile[] = listFolder.data.metadata.contents
     const preparedData = fileContents.map((el) => ({ albumCover: el.fileid }))
-    const albumCovers = await CloudLib.covers(preparedData)
+    const albumBooklet = await CloudLib.covers(preparedData)
 
-    return albumCovers.map((el) => el.albumCover)
+    return albumBooklet.map((el) => el.albumCover)
   }
 }
 
