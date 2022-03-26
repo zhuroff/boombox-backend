@@ -1,5 +1,3 @@
-import { AlbumModel } from "./Album"
-
 type Populate = {
   path: string
   select: string[]
@@ -12,11 +10,6 @@ type PaginatedPageBasicOptions = {
   select: { [index: string]: boolean }
   populate?: Populate | Populate[]
   lean?: boolean
-}
-
-type AlbumResponse = {
-  docs: AlbumModel[]
-  pagination: Pagination
 }
 
 type Pagination = {
@@ -32,7 +25,6 @@ type ResponseMessage = {
 export {
   Populate,
   PaginatedPageBasicOptions,
-  AlbumResponse,
   Pagination,
   ResponseMessage
 }

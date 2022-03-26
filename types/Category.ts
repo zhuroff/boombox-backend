@@ -2,6 +2,11 @@ import { Document, Types, PaginateModel } from 'mongoose'
 
 type CategoryKeys = 'artist' | 'genres' | 'period'
 
+type CategoryBasic = {
+  _id: Types.ObjectId
+  title: string
+}
+
 interface CategoryAlbum {
   [key: string]: Types.ObjectId | string | undefined
 }
@@ -37,6 +42,7 @@ interface ICategoryResponse {
 
 export {
   CategoryKeys,
+  CategoryBasic,
   CategoryModel,
   CategoryAlbum,
   ICategory,

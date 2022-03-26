@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { AlbumModel } from '~/types/Album'
-import { TrackModel } from '~/types/Track'
+import { TrackResponse } from '~/types/Track'
+import { TrackDTO } from '~/dtos/track.dto'
 
 export class CloudLib {
   static cloudQueryLink(param: string) {
@@ -26,13 +27,14 @@ export class CloudLib {
     return await Promise.all(result)
   }
 
-  static async tracks(tracks: TrackModel[]) {
+  static async tracks(tracks: TrackResponse[]) {
     const result = tracks.map(async (el) => {
       const query = this.cloudQueryLink(`getfilelink?fileid=${el.fileid}`)
       const track = await this.getData(query)
-  
-      el.link = `https://${track.data.hosts[0]}${track.data.path}`
-      return el
+
+      const payload = { ...el, link: `https://${track.data.hosts[0]}${track.data.path}` }
+      const result = new TrackDTO(payload)
+      return result
     })
   
     return await Promise.all(result)
