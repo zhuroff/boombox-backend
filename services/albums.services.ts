@@ -33,8 +33,8 @@ class AlbumsServices {
       const { totalDocs, totalPages, page } = dbList
       const pagination = new PaginationDTO({ totalDocs, totalPages, page })
 
-      const dbDocs = dbList.docs as unknown as AlbumResponse[]      
-      const coveredAlbums = await CloudLib.covers(dbDocs)      
+      const dbDocs = dbList.docs as unknown as AlbumResponse[]
+      const coveredAlbums = await CloudLib.covers(dbDocs)
       const docs = coveredAlbums.map((album) => new AlbumItemDTO(album))
 
       return { docs, pagination }
@@ -71,7 +71,7 @@ class AlbumsServices {
 
   async booklet(id: string): Promise<(string | number)[]> {
     const folderQuery = CloudLib.cloudQueryLink(`listfolder?folderid=${id}`)
-    const listFolder = await CloudLib.getData(folderQuery)
+    const listFolder = await CloudLib.get(folderQuery)
     const fileContents: CloudAlbumFile[] = listFolder.data.metadata.contents
     const preparedData = fileContents.map((el) => ({ albumCover: el.fileid }))
     const albumBooklet = await CloudLib.covers(preparedData)

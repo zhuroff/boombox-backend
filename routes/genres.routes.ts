@@ -1,12 +1,12 @@
 import { Router } from 'express'
-import controller from '~/controllers/genres.controller'
+import { GenresController } from '~/controllers/genres.controller'
 import upload from '~/middleware/upload'
 
 const router = Router()
 
-router.post('/', controller.list)
-router.get('/:id', controller.single)
-router.post('/:id/poster', upload.single('poster'), controller.upload)
-router.post('/:id/avatar', upload.single('avatar'), controller.upload)
+router.post('/', GenresController.list)
+router.get('/:id', GenresController.single)
+router.post('/:id/poster', upload.single('poster'), GenresController.upload)
+router.post('/:id/avatar', upload.single('avatar'), GenresController.upload)
 
 export default router

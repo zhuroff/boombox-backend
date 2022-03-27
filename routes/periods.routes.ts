@@ -1,12 +1,12 @@
 import { Router } from 'express'
-import controller from '~/controllers/periods.controller'
+import { PeriodsController } from '~/controllers/periods.controller'
 import upload from '~/middleware/upload'
 
 const router = Router()
 
-router.post('/', controller.list)
-router.get('/:id', controller.single)
-router.post('/:id/poster', upload.single('poster'), controller.upload)
-router.post('/:id/avatar', upload.single('avatar'), controller.upload)
+router.post('/', PeriodsController.list)
+router.get('/:id', PeriodsController.single)
+router.post('/:id/poster', upload.single('poster'), PeriodsController.upload)
+router.post('/:id/avatar', upload.single('avatar'), PeriodsController.upload)
 
 export default router

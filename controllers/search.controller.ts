@@ -1,13 +1,12 @@
 import 'module-alias/register'
 import { Request, Response } from 'express'
 import { PaginateModel } from 'mongoose'
+import { CloudLib } from '~/lib/cloud.lib'
 import { Album } from '~/models/album.model'
 import { Frame } from '~/models/frame.model'
 import { Artist } from '~/models/artist.model'
 import { Genre } from '~/models/genre.model'
 import { Period } from '~/models/period.model'
-import { fetchers } from '~/helpers/fetchers'
-// import { getAlbumsWithCover} from '~/helpers/covers'
 
 type SearchModels = 'albums' | 'frames' | 'artists' | 'genres' | 'periods'
 
@@ -139,6 +138,8 @@ const news = async (req: Request, res: Response) => {
   //     actual_since: new Date().toISOString(),
   //     fields: 'id,title,dates,description,is_free,images,site_url,price',
   //   }
+  //   
+  //   // REPLACE WITH CloudLib.get
   //   const response = await fetchers.getData('https://kudago.com/public-api/v1.4/events/', { params: params })
 
   //   response.data.results.sort((a, b) => {
@@ -164,8 +165,8 @@ const discogs = async (req: Request, res: Response) => {
   `
 
   try {
-    const discogsQuery = fetchers.discogsQueryLink(discogsUrl)
-    const discogsResponse = await fetchers.getData(encodeURI(discogsQuery))
+    const discogsQuery = CloudLib.discogsQueryLink(discogsUrl)
+    const discogsResponse = await CloudLib.get(encodeURI(discogsQuery))
 
     res.json(discogsResponse.data)
   } catch (error) {

@@ -3,7 +3,6 @@ import { Request, Response } from 'express'
 import { Playlist } from '~/models/playlist.model'
 import { Track } from '~/models/track.model'
 // import { getAlbumsWithCover } from '~/helpers/covers'
-// import getTracksLinks from '~/helpers/tracks'
 // import path, { dirname } from 'path'
 // import { fileURLToPath } from 'url'
 // import fs from 'fs'
@@ -14,6 +13,8 @@ import { Track } from '~/models/track.model'
 // const buildPlaylistTracks = async (tracks: any) => {
 //   const result = tracks.map(async (el) => {
 //     const album = await getAlbumsWithCover([{ ...el.album }])
+
+//     // REPLACE WITH CloudLib.tracks
 //     const link = await getTracksLinks([{ fileid: el.fileid }])
 
 //     const track = album[0].tracks.find((track) => track._id.toString() === el.track.toString())

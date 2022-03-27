@@ -2,7 +2,7 @@ import 'module-alias/register'
 import { Request, Response } from 'express'
 import { Collection } from '~/models/collection.model'
 import { Album } from '~/models/album.model'
-import { getAlbumsWithCover } from '~/helpers/covers'
+// import { getAlbumsWithCover } from '~/helpers/covers'
 
 const updateAlbum = async (collectionID: string, albumID: string, inList: boolean) => {
   try {
@@ -87,12 +87,13 @@ const single = async (req: Request, res: Response) => {
       // deletedAlbums.map(async (album) => await removeItemFromCollection(album))
     }
     
-    const coveredAlbums = await getAlbumsWithCover(existingAlbums.map((el) => {
-      if (el.album) {
-        el.album.order = el.order
-        return el.album
-      }
-    }))
+    const coveredAlbums: any = []
+    // const coveredAlbums = await getAlbumsWithCover(existingAlbums.map((el) => {
+    //   if (el.album) {
+    //     el.album.order = el.order
+    //     return el.album
+    //   }
+    // }))
 
     const result = {
       _id: response._id,

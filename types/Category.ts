@@ -1,4 +1,7 @@
 import { Document, Types, PaginateModel } from 'mongoose'
+import { CategoryItemDTO } from '~/dtos/category.dto'
+import { PaginationDTO } from '~/dtos/pagination.dto'
+import { AlbumResponse } from './Album'
 
 type CategoryKeys = 'artist' | 'genres' | 'period'
 
@@ -23,21 +26,22 @@ interface CategoryModel extends Document {
 
 interface ICategory<T extends Document> extends PaginateModel<T> {}
 
-interface ICategoryDocs {
+type CategoryResponse = {
   _id: Types.ObjectId,
   title: string,
   avatar: string,
-  albums: number | Types.ObjectId[]
+  albums: Types.ObjectId[],
+  framesAlbums: Types.ObjectId[]
 }
 
-interface ICategoryResponse {
-  docs: ICategoryDocs[]
+type CategoryPageResponse = CategoryResponse & {
+  poster: string
+  albums: AlbumResponse[]
+}
 
-  pagination: {
-    totalDocs: number
-    totalPages: number
-    page: number
-  }
+type CategoriesPageResponse = {
+  docs: CategoryItemDTO[]
+  pagination: PaginationDTO
 }
 
 export {
@@ -46,6 +50,7 @@ export {
   CategoryModel,
   CategoryAlbum,
   ICategory,
-  ICategoryDocs,
-  ICategoryResponse
+  CategoryResponse,
+  CategoryPageResponse,
+  CategoriesPageResponse
 }

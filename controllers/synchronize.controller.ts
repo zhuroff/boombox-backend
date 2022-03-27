@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { Types, PaginateModel } from 'mongoose'
-import { fetchers } from '~/helpers/fetchers'
+import { CloudLib } from '~/lib/cloud.lib'
 import { Album } from '~/models/album.model'
 import { Track } from '~/models/track.model'
 import { Artist } from '~/models/artist.model'
@@ -49,8 +49,8 @@ const getAlbumTracks: any = async (array: CloudAlbumContent[]) => {
 
   if (albumParts.length) {
     const subFoldersContent = albumParts.map(async (el) => {
-      const query = fetchers.cloudQueryLink(`listfolder?folderid=${el.folderid}`)
-      const elTracks = await fetchers.getData(query)
+      const query = CloudLib.cloudQueryLink(`listfolder?folderid=${el.folderid}`)
+      const elTracks = await CloudLib.get(query)
       
       return elTracks.data.metadata.contents
     })
@@ -141,8 +141,8 @@ const saveTracksToDatabase = async (
 const buildAlbumsData = async (content: CloudFolder[], isModified = false) => {
   try {
     const albumsMap = content.map(async (el: CloudFolder) => {
-      const folderQuery = fetchers.cloudQueryLink(`listfolder?folderid=${el.folderid}`)
-      const listFolder = await fetchers.getData(folderQuery)
+      const folderQuery = CloudLib.cloudQueryLink(`listfolder?folderid=${el.folderid}`)
+      const listFolder = await CloudLib.get(folderQuery)
       const folderTracks: CloudTrack[] = await getAlbumTracks(listFolder.data.metadata.contents)
       
       const pcloudData: PreparedAlbum = {
@@ -466,10 +466,10 @@ const fetchDatabaseAlbums = async () => {
 }
 
 const synchronize = async (req: Request, res: Response) => {
-  const query = fetchers.cloudQueryLink('listfolder?path=/boombox')
+  const query = CloudLib.cloudQueryLink('listfolder?path=/boombox')
 
   try {
-    const rootFolder = await fetchers.getData(query)
+    const rootFolder = await CloudLib.get(query)
     const cloudAlbums = rootFolder.data.metadata.contents
 
     if (rootFolder.data.result !== 0) {

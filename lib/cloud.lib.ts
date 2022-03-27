@@ -14,7 +14,7 @@ export class CloudLib {
 
   static async getImageLink(id: number) {
     const query = this.cloudQueryLink(`getfilelink?fileid=${id}`)
-    const response = await this.getData(query)
+    const response = await this.get(query)
     return response.data.error ? 0 : `https://${response.data.hosts[0]}${response.data.path}`
   }
 
@@ -30,7 +30,7 @@ export class CloudLib {
   static async tracks(tracks: TrackResponse[]) {
     const result = tracks.map(async (el) => {
       const query = this.cloudQueryLink(`getfilelink?fileid=${el.fileid}`)
-      const track = await this.getData(query)
+      const track = await this.get(query)
 
       const payload = { ...el, link: `https://${track.data.hosts[0]}${track.data.path}` }
       const result = new TrackDTO(payload)
@@ -40,7 +40,7 @@ export class CloudLib {
     return await Promise.all(result)
   }
 
-  static async getData(query: string, params?: AxiosRequestConfig): Promise<AxiosResponse> {
+  static async get(query: string, params?: AxiosRequestConfig): Promise<AxiosResponse> {
     try {
       const response = await axios.get(query, params)
       return response
