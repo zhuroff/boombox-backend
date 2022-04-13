@@ -4,6 +4,7 @@ import express, { json } from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
 import morgan from 'morgan'
+import newsRoutes from '~/routes/news.routes'
 import albumsRoutes from '~/routes/albums.routes'
 import tracksRoutes from '~/routes/tracks.routes'
 import artistsRoutes from '~/routes/artists.routes'
@@ -32,6 +33,7 @@ app.use(morgan('tiny'))
 app.use(express.urlencoded({ extended: true }))
 app.use(json())
 
+app.use('/api/news', newsRoutes)
 app.use('/api/albums', albumsRoutes)
 app.use('/api/tracks', tracksRoutes)
 app.use('/api/artists', artistsRoutes)
