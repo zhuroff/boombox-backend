@@ -1,12 +1,12 @@
 import { Router } from 'express'
-import controller from '~/controllers/tracks.controller'
+import { TracksController } from '~/controllers/tracks.controller'
 
 const router = Router()
 
-router.get('/:id/lyrics', controller.getLyricsFromDB)
-router.post('/lyrics', controller.getLyricsExternal)
-router.patch('/:id/listened', controller.incrementListeningCounter)
-router.patch('/:id/duration', controller.saveTrackDuration)
-router.patch('/:id/lyrics', controller.saveLyrics)
+router.get('/:id/lyrics', TracksController.getLyricsFromDB)
+router.post('/lyrics', TracksController.getLyricsExternal)
+router.patch('/:id/listened', TracksController.incrementListeningCounter)
+router.patch('/:id/duration', TracksController.saveTrackDuration)
+router.patch('/:id/lyrics', TracksController.saveLyrics)
 
 export default router

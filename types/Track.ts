@@ -1,7 +1,7 @@
 import { Document, Types, PaginateModel } from 'mongoose'
 import { CategoryBasic } from './Category'
 
-interface CloudTrack {
+type CloudTrack = {
   modified: string
   isfolder: false
   fileid: number
@@ -29,6 +29,13 @@ type TrackResponse = TrackCommon & {
   artist: CategoryBasic
 }
 
+type TrackSearchPayload = {
+  title: string
+  thumbnail: string
+  artist: string
+  lyrics: string
+}
+
 interface TrackModelDocument extends TrackModel, Document {
   _id: Types.ObjectId
   _doc: TrackModel
@@ -41,6 +48,7 @@ export {
   CloudTrack,
   TrackModel,
   TrackResponse,
+  TrackSearchPayload,
   TrackModelDocument,
   TrackModelPaginated
 }
