@@ -25,7 +25,16 @@ const saveTrackDuration = async (req: Request, res: Response) => {
   }
 }
 
-const getLyrics = async (req: Request, res: Response): Promise<void | ReturnType<typeof setTimeout>> => {
+const getLyricsFromDB = async (req: Request, res: Response) => {
+  try {
+    const response = await Track.findById(req.params['id'])
+    res.json({ lyrics: response?.lyrics })
+  } catch (error) {
+    res.status(500).json(error)
+  }
+}
+
+const getLyricsExternal = async (req: Request, res: Response): Promise<void | ReturnType<typeof setTimeout>> => {
   try {
     const searches = await GClient.songs.search(req.body.query)
     const resultArray = searches.map(async (el) => {
@@ -46,7 +55,7 @@ const getLyrics = async (req: Request, res: Response): Promise<void | ReturnType
     if (error instanceof Error) {
       if (error.message === 'No result was found' && lyricsTryings < 10) {
         lyricsTryings += 1
-        return setTimeout(() => getLyrics(req, res), 1000)
+        return setTimeout(() => getLyricsExternal(req, res), 1000)
       }
       
       res.status(500).json({ error: error?.message })
@@ -69,7 +78,8 @@ const saveLyrics = async (req: Request, res: Response) => {
 const controller = {
   incrementListeningCounter,
   saveTrackDuration,
-  getLyrics,
+  getLyricsFromDB,
+  getLyricsExternal,
   saveLyrics
 }
 
