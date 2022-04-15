@@ -30,4 +30,13 @@ export class PeriodsController {
       next(error)
     }
   }
+
+  static async create(req: Request, res: Response, next: (error: unknown) => void) {
+    try {
+      const response = await categoriesServices.create(Period, req.body.value)
+      return res.json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
 }

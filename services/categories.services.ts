@@ -1,6 +1,6 @@
 import { Request } from 'express'
 import { Document, PaginateModel, PaginateResult } from 'mongoose'
-import { CategoryResponse, CategoryPageResponse } from '~/types/Category'
+import { CategoryModel, CategoryResponse, CategoryPageResponse } from '~/types/Category'
 import { PaginationOptions } from '~/types/ReqRes'
 import { CategoryItemDTO, CategoryPageDTO } from '~/dtos/category.dto'
 import { PaginationDTO } from '~/dtos/pagination.dto'
@@ -67,18 +67,34 @@ class CategoriesServices {
     return result
   }
 
-  async uploads(Model: PaginateModel<any>, req: Request) {
+  async uploads(Model: PaginateModel<CategoryModel>, req: Request) {
     if (req.file) {
       const $set: any = {}
       const setKey = req.file.fieldname
 
-      $set[setKey as string] = `/uploads/${req.file.filename}`
+      $set[setKey] = `/uploads/${req.file.filename}`
 
       const response = await Model.findOneAndUpdate({
         _id: req.params['id']
       }, { $set }, { new: true })
       
       return response
+    }
+  }
+
+  async create(Model: PaginateModel<CategoryModel>, title: string) {
+    const payload = {
+      title,
+      albums: [],
+      framesAlbums: []
+    }
+
+    const newCategory = new Model(payload)
+    const savedCategory = await newCategory.save()
+
+    return {
+      _id: savedCategory._id,
+      title: savedCategory.title
     }
   }
 }
