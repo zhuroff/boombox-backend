@@ -30,7 +30,7 @@ const searchModels = {
       artist: true,
       genre: true,
       albumCover: true,
-      releaseYear: true
+      period: true
     },
     populates: [
       { path: 'artist', select: ['title'] },
@@ -45,7 +45,7 @@ const searchModels = {
       title: true,
       artist: true,
       genre: true,
-      releaseYear: true
+      period: true
     },
     populates: [
       { path: 'artist', select: ['title'] },

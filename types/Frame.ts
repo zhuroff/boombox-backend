@@ -6,7 +6,7 @@ interface FrameModel {
   artist: Types.ObjectId
   genre: Types.ObjectId
   period: Types.ObjectId
-  iframe: string,
+  frame: string,
   inCollections: Types.ObjectId[]
 }
 

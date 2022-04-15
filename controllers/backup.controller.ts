@@ -144,7 +144,7 @@ const clean = async (req: Request, res: Response) => {
   try {
     const albums = await readBackupFile('1642537794905', `albums.json`) as any[]
     const cleaned = albums.map((el: any) => {
-      delete el.releaseYear
+      delete el.period
       return el
     })
 

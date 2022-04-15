@@ -3,7 +3,11 @@ import { CategoryItemDTO } from '~/dtos/category.dto'
 import { PaginationDTO } from '~/dtos/pagination.dto'
 import { AlbumResponse } from './Album'
 
-type CategoryKeys = 'artist' | 'genres' | 'period'
+type CategoryKeys = {
+  artist: Types.ObjectId
+  genre: Types.ObjectId
+  period: Types.ObjectId
+}
 
 type CategoryBasic = {
   _id: Types.ObjectId

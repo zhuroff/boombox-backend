@@ -3,10 +3,13 @@ type Populate = {
   select: string[]
 }
 
-type PaginationOptions = {
+type ListConfig = {
   page: number
   limit: number
   sort: { [index: string]: number }
+}
+
+type PaginationOptions = ListConfig & {  
   select: { [index: string]: boolean }
   populate?: Populate | Populate[]
   lean?: boolean
@@ -24,6 +27,7 @@ type ResponseMessage = {
 
 export {
   Populate,
+  ListConfig,
   PaginationOptions,
   Pagination,
   ResponseMessage

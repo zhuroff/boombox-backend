@@ -1,153 +1,45 @@
 import 'module-alias/register'
 import { Request, Response } from 'express'
-import { PaginateModel, Types } from 'mongoose'
-import { CategoryModel } from '~/types/Category'
-import { Frame } from '~/models/frame.model'
-import { Artist } from '~/models/artist.model'
-import { Genre } from '~/models/genre.model'
-import { Period } from '~/models/period.model'
-import { Collection } from '~/models/collection.model'
+import framesServices from '~/services/frames.services'
 
-const saveAlbumToCategory = async (
-  ...args: [PaginateModel<any>, Types.ObjectId, Types.ObjectId]
-): Promise<CategoryModel> => {
-  const [Model, id, albumID] = args
-  const query = { _id: id }
-  const update = { $push: { framesAlbums: albumID } }
-  const options = { upsert: true, new: true, setDefaultsOnInsert: true }
-
-  try {
-    return await Model.findOneAndUpdate(query, update, options)
-    // const category: CategoryAlbum = await Model.findOne({ _id: id })
-
-    // if (!category && !category['framesAlbums']?.length) {
-    //   category.framesAlbums.push(albumID)
-    // } else {
-    //   const is_exist = category.framesAlbums.findIndex((el) => el == albumID) > -1
-
-    //   if (!is_exist) {
-    //     category.framesAlbums.push(albumID)
-    //   }
-    // }
-    
-    // category.save()
-  } catch (error) {
-    throw error
-  }
-}
-
-const removeAlbumFromCategory = async (
-  ...args: [PaginateModel<any>, Types.ObjectId, string]
-): Promise<CategoryModel> => {
-  const [Model, id, albumID] = args
-  const query = { _id: id }
-  const update = { $pull: { framesAlbums: albumID } }
-  const options = { new: true }
-
-  try {
-    return await Model.findOneAndUpdate(query, update, options)
-    // const category = await Model.findOne({ _id: id }).exec()
-    // const filteredAlbums = category.framesAlbums.filter((el) => el.toString() !== albumID.toString())
-
-    // await Model.updateOne({ _id: id }, { $set: { framesAlbums: filteredAlbums } })
-  } catch (error) {
-    throw error
-  }
-}
-
-const create = async (req: Request, res: Response) => {
-  const newBCAlbum = new Frame(req.body)
-  
-  try {
-    const dbAlbum = await newBCAlbum.save()
-
-    await saveAlbumToCategory(Artist, req.body.artist, dbAlbum._id)
-    await saveAlbumToCategory(Genre, req.body.genre, dbAlbum._id)
-    await saveAlbumToCategory(Period, req.body.releaseYear, dbAlbum._id)
-
-    const createdFrame = await Frame.findById(dbAlbum._id)
-      .populate({ path: 'artist', select: ['title'] })
-      .populate({ path: 'genre', select: ['title'] })
-      .populate({ path: 'period', select: ['title'] })
-
-    res.json(createdFrame)
-  } catch (error) {
-    res.status(500).json(error)
-  }
-}
-
-const list = async (req: Request, res: Response) => {
-  try {
-    const populates = [
-      { path: 'artist', select: ['title'], model: Artist },
-      { path: 'genre', select: ['title'], model: Genre },
-      { path: 'period', select: ['title'], model: Period },
-      { path: 'inCollections', select: ['title'], model: Collection }
-    ]
-
-    const options = {
-      page: req.body.page,
-      limit: req.body.limit,
-      sort: req.body.sort,
-      populate: populates,
-      lean: true,
-      select: {
-        title: true,
-        iframe: true
-      }
+export class FramesController {
+  static async create(req: Request, res: Response, next: (error: unknown) => void) {
+    try {
+      const response = await framesServices.create(req.body)
+      res.json(response)
+    } catch (error) {
+      next(error)
     }
+  }
 
-    const response = await Frame.paginate({}, options)
-    
-    if (response) {
-      res.json({
-        pagination: {
-          totalDocs: response.totalDocs,
-          totalPages: response.totalPages,
-          page: response.page,
-        },
-        docs: response.docs
-      })
+  static async list(req: Request, res: Response, next: (error: unknown) => void) {
+    const { page, limit, sort } = req.body
+
+    try {
+      const response = await framesServices.list({ page, limit, sort })
+      res.json(response)
+    } catch (error) {
+      next(error)
     }
-  } catch (error) {
-    res.status(500).json(error)
   }
-}
 
-const single = async (req: Request, res: Response) => {
-  try {
-    const response = await Frame.findById(req.params['id'])
-      .populate({ path: 'artist', select: ['title'] })
-      .populate({ path: 'genre', select: ['title'] })
-      .populate({ path: 'period', select: ['title'] })
-
-    res.json(response)
-  } catch (error) {
-    res.status(500).json(error)
-  }
-}
-
-const remove = async (req: Request, res: Response) => {
-  try {
-    if (req.params['id']) {
-      await Frame.deleteOne({ _id: req.params['id'] })
-
-      await removeAlbumFromCategory(Artist, req.body.artist, req.params['id'])
-      await removeAlbumFromCategory(Genre, req.body.genre, req.params['id'])
-      await removeAlbumFromCategory(Period, req.body.period, req.params['id'])
-
-      res.json({ message: 'Album successfully deleted' })
+  static async single(req: Request, res: Response, next: (error: unknown) => void) {
+    try {
+      const response = await framesServices.single(String(req.params['id']))
+      res.json(response)
+    } catch (error) {
+      next(error)
     }
-  } catch (error) {
-    res.status(500).json(error)
+  }
+
+  static async remove(req: Request, res: Response, next: (error: unknown) => void) {
+    const { artist, genre, period } = req.body
+
+    try {
+      const response = await framesServices.remove(String(req.params['id']), { artist, genre, period })
+      res.json(response)
+    } catch (error) {
+      next(error)
+    }
   }
 }
-
-const controller = {
-  create,
-  list,
-  single,
-  remove
-}
-
-export default controller

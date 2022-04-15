@@ -31,7 +31,7 @@ const FrameSchema: Schema<FrameModelDocument> = new Schema({
     default: Date.now
   },
 
-	iframe: {
+	frame: {
 		type: String,
 		required: true
 	},

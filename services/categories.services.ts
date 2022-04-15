@@ -52,7 +52,7 @@ class CategoriesServices {
       })
       .populate({
         path: 'framesAlbums',
-        select: ['title', 'iframe'],
+        select: ['title', 'frame'],
         populate: [
           { path: 'artist', select: ['title', '_id'] },
           { path: 'genre', select: ['title', '_id'] },
