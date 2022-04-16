@@ -2,7 +2,28 @@ import 'module-alias/register'
 import { Request, Response } from 'express'
 import { Collection } from '~/models/collection.model'
 import { Album } from '~/models/album.model'
+import collectionsServices from '~/services/collections.services'
 // import { getAlbumsWithCover } from '~/helpers/covers'
+
+export class CollectionsController {
+  static async list(req: Request, res: Response, next: (error: unknown) => void) {
+    try {
+      const response = await collectionsServices.list()
+      res.json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  static async single(req: Request, res: Response, next: (error: unknown) => void) {
+    try {
+      const response = await collectionsServices.single(String(req.params['id']))
+      res.json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+}
 
 const updateAlbum = async (collectionID: string, albumID: string, inList: boolean) => {
   try {
@@ -33,75 +54,6 @@ const create = async (req: Request, res: Response) => {
     await updateAlbum(newCollection._id, req.body.album, false)
     
     res.status(201).json({ message: 'Collection successfully created' })
-  } catch (error) {
-    res.status(500).json(error)
-  }
-}
-
-const list = async (req: Request, res: Response) => {
-  try {
-    const config = { title: true, cover: true, 'albums.order': true } 
-    const response = await Collection.find({}, config)
-      .populate({
-        path: 'albums.album',
-        select: ['_id']
-      })
-      .sort({ 'albums.order': -1 })
-
-    res.json(response)
-  } catch (error) {
-    res.status(500).json(error)
-  }
-}
-
-const single = async (req: Request, res: Response) => {
-  try {
-    const response = await Collection.findById(req.params['id'])
-      .populate({
-        path: 'albums.album',
-        select: ['title', 'artist', 'genre', 'period', 'albumCover'],
-        populate: [
-          { path: 'artist', select: ['title'] },
-          { path: 'genre', select: ['title'] },
-          { path: 'period', select: ['title'] }
-        ]
-      })
-      .lean()
-
-    let existingAlbums: any[] = []
-    let deletedAlbums: any[] = []
-
-    response.albums.forEach((el) => {
-      if (el.album) {
-        existingAlbums.push(el)
-      } else {
-        deletedAlbums.push({
-          listID: req.params['id'],
-          itemID: el._id
-        })
-      }
-    })
-    
-    if (deletedAlbums.length) {
-      console.log('Album was deleted!!!')
-      // deletedAlbums.map(async (album) => await removeItemFromCollection(album))
-    }
-    
-    const coveredAlbums: any = []
-    // const coveredAlbums = await getAlbumsWithCover(existingAlbums.map((el) => {
-    //   if (el.album) {
-    //     el.album.order = el.order
-    //     return el.album
-    //   }
-    // }))
-
-    const result = {
-      _id: response._id,
-      title: response.title,
-      albums: coveredAlbums
-    }
-
-    res.json(result)
   } catch (error) {
     res.status(500).json(error)
   }
@@ -154,8 +106,6 @@ const remove = async (req: Request, res: Response) => {
 
 const controller = {
   create,
-  list,
-  single,
   update,
   remove
 }
