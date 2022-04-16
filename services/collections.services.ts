@@ -3,10 +3,38 @@ import { CloudLib } from '~/lib/cloud.lib'
 import { Collection } from '~/models/collection.model'
 import { Album } from '~/models/album.model'
 import { AlbumResponse } from '~/types/Album'
-import { CollectionListItem, CollectionUpdateProps, DeletedCollectionAlbum } from '~/types/Collection'
 import { ResponseMessage } from '~/types/ReqRes'
+import { CollectionListItem, CollectionModelAlbum, CollectionUpdateProps, DeletedCollectionAlbum } from '~/types/Collection'
 
 class CollectionsServices {
+  async create(title: string, album: string) {
+    const payload = {
+      title: title,
+      albums: [{
+        album: album,
+        order: 1
+      }]
+    }
+    
+    const newCollection = new Collection(payload)
+
+    await newCollection.save()
+    await this.updateAlbum({ listID: newCollection._id, itemID: album, inList: false })
+
+    return { message: 'Collection successfully created' }
+  }
+
+  async remove(_id: string) {
+    const response = await Collection.findByIdAndDelete(_id)
+    
+    if (response) {
+      await this.cleanAlbums(response.albums, _id)
+      return { message: 'Collection successfully removed' }
+    }
+
+    throw ApiError.BadRequest('Incorrect request options')
+  }
+
   async list() {
     const config = { title: true, cover: true, 'albums.order': true }
     const response = await Collection.find({}, config)
@@ -100,6 +128,18 @@ class CollectionsServices {
     } catch (error) {
       throw error
     }
+  }
+
+  async cleanAlbums(albums: CollectionModelAlbum[], listID: string) {
+    const cleanProcess = albums.map(async (album) => {
+      const query = { _id: album.album }
+      const update = { $pull: { inCollections: listID } }
+      const options = { new: true }
+      
+      return await Album.findOneAndUpdate(query, update, options)
+    })
+
+    return await Promise.all(cleanProcess)
   }
 }
 

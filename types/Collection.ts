@@ -1,16 +1,18 @@
 import { Types } from 'mongoose'
 import { AlbumResponse } from './Album'
 
-interface ICollectionModel {
+type CollectionModelAlbum = {
+  _id: Types.ObjectId
+  album: Types.ObjectId | AlbumResponse
+  order: number
+}
+
+type ICollectionModel = {
   title: string
   dateCreated: Date
   cover: string
   poster: string
-  albums: {
-    _id: Types.ObjectId
-    album: Types.ObjectId | AlbumResponse
-    order: number
-  }[]
+  albums: CollectionModelAlbum[]
 }
 
 type CollectionListItem = {
@@ -32,6 +34,7 @@ type CollectionUpdateProps = {
 }
 
 export {
+  CollectionModelAlbum,
   ICollectionModel,
   CollectionListItem,
   DeletedCollectionAlbum,

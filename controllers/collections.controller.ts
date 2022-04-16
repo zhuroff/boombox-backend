@@ -1,6 +1,5 @@
 import 'module-alias/register'
 import { Request, Response } from 'express'
-import { Collection } from '~/models/collection.model'
 import collectionsServices from '~/services/collections.services'
 
 export class CollectionsController {
@@ -32,27 +31,25 @@ export class CollectionsController {
       next(error)
     }
   }
-}
 
-// const create = async (req: Request, res: Response) => {
-//   try {
-//     const payload = {
-//       title: req.body.title,
-//       albums: [{
-//         album: req.body.album,
-//         order: 1
-//       }]
-//     }
-//     const newCollection = new Collection(payload)
-    
-//     await newCollection.save()
-//     await updateAlbum(newCollection._id, req.body.album, false)
-    
-//     res.status(201).json({ message: 'Collection successfully created' })
-//   } catch (error) {
-//     res.status(500).json(error)
-//   }
-// }
+  static async create(req: Request, res: Response, next: (error: unknown) => void) {
+    try {
+      const response = await collectionsServices.create(req.body.title, req.body.album)
+      res.status(201).json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  static async remove(req: Request, res: Response, next: (error: unknown) => void) {
+    try {
+      const response = await collectionsServices.remove(String(req.params['id']))
+      res.status(201).json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+}
 
 // const removeItemFromCollection = async (payload: any) => {
 //   try {
@@ -68,18 +65,3 @@ export class CollectionsController {
 //     throw error
 //   }
 // }
-
-const remove = async (req: Request, res: Response) => {
-  try {
-    await Collection.deleteOne({ _id: req.params['id'] })
-    res.status(201).json({ message: 'Collection successfully removed' })
-  } catch (error) {
-    res.status(500).json(error)
-  }
-}
-
-const controller = {
-  remove
-}
-
-export default controller
