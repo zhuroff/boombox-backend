@@ -1,5 +1,10 @@
 import { ApiError } from '~/exceptions/api-errors'
+import { CloudLib } from '~/lib/cloud.lib'
 import { Collection } from '~/models/collection.model'
+import { Album } from '~/models/album.model'
+import { AlbumResponse } from '~/types/Album'
+import { CollectionListItem, CollectionUpdateProps, DeletedCollectionAlbum } from '~/types/Collection'
+import { ResponseMessage } from '~/types/ReqRes'
 
 class CollectionsServices {
   async list() {
@@ -31,12 +36,12 @@ class CollectionsServices {
       })
       .lean()
 
-    let existingAlbums: any[] = []
-    let deletedAlbums: any[] = []
+    let existingAlbums: CollectionListItem[] = []
+    let deletedAlbums: DeletedCollectionAlbum[] = []
 
     response.albums.forEach((el) => {
       if (el.album) {
-        existingAlbums.push(el)
+        existingAlbums.push({ ...el, album: el.album as AlbumResponse })
       } else {
         deletedAlbums.push({
           listID: id,
@@ -50,21 +55,51 @@ class CollectionsServices {
       // deletedAlbums.map(async (album) => await removeItemFromCollection(album))
     }
     
-    const coveredAlbums: any = []
-    // const coveredAlbums = await getAlbumsWithCover(existingAlbums.map((el) => {
-    //   if (el.album) {
-    //     el.album.order = el.order
-    //     return el.album
-    //   }
-    // }))
+    const coveredAlbums = existingAlbums.length
+      ? existingAlbums.map(async (el) => {
+          const coveredAlbum = await CloudLib.covers([el.album])
+          return { ...el, album: coveredAlbum[0] }
+        })
+      : []
 
     const result = {
       _id: response._id,
       title: response.title,
-      albums: coveredAlbums
+      albums: await Promise.all(coveredAlbums)
     }
 
     return result
+  }
+
+  async update({ listID, inList, itemID, order }: CollectionUpdateProps) {
+    const query = { _id: listID }
+    const update = inList
+      ? { $pull: { albums: { album: itemID } } }
+      : { $push: { albums: { album: itemID, order } } }
+    const options = { new: true }
+
+    await Collection.findOneAndUpdate(query, update, options)
+    await this.updateAlbum({ listID, itemID, inList })
+
+    return {
+      message: inList
+        ? 'Album successfully removed from collection'
+        : 'Album successfully added to collection'
+    } as ResponseMessage
+  }
+
+  async updateAlbum({listID, itemID, inList}: Partial<CollectionUpdateProps>) {
+    try {
+      const query = { _id: itemID }
+      const update = inList
+        ? { $pull: { inCollections: listID } }
+        : { $push: { inCollections: listID } }
+      const options = { new: true }
+  
+      await Album.findOneAndUpdate(query, update, options)
+    } catch (error) {
+      throw error
+    }
   }
 }
 
