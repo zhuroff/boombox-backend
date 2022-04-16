@@ -16,8 +16,8 @@ type ICollectionModel = {
 }
 
 type CollectionListItem = {
-  order: number
   _id: Types.ObjectId
+  order: number
   album: Partial<AlbumResponse>
 }
 
@@ -33,10 +33,16 @@ type CollectionUpdateProps = {
   order: number
 }
 
+type CollectionReorder = {
+  oldOrder: number
+  newOrder: number
+}
+
 export {
   CollectionModelAlbum,
   ICollectionModel,
   CollectionListItem,
   DeletedCollectionAlbum,
-  CollectionUpdateProps
+  CollectionUpdateProps,
+  CollectionReorder
 }

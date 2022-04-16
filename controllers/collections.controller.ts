@@ -49,6 +49,17 @@ export class CollectionsController {
       next(error)
     }
   }
+
+  static async reorder(req: Request, res: Response, next: (error: unknown) => void) {
+    const { oldOrder, newOrder } = req.body
+
+    try {
+      const response = await collectionsServices.reorder({ oldOrder, newOrder }, String(req.params['id']))
+      res.status(201).json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
 }
 
 // const removeItemFromCollection = async (payload: any) => {

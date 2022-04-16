@@ -4,7 +4,13 @@ import { Collection } from '~/models/collection.model'
 import { Album } from '~/models/album.model'
 import { AlbumResponse } from '~/types/Album'
 import { ResponseMessage } from '~/types/ReqRes'
-import { CollectionListItem, CollectionModelAlbum, CollectionUpdateProps, DeletedCollectionAlbum } from '~/types/Collection'
+import {
+  CollectionListItem,
+  CollectionModelAlbum,
+  CollectionReorder,
+  CollectionUpdateProps,
+  DeletedCollectionAlbum
+} from '~/types/Collection'
 
 class CollectionsServices {
   async create(title: string, album: string) {
@@ -42,7 +48,6 @@ class CollectionsServices {
         path: 'albums.album',
         select: ['_id']
       })
-      .sort({ 'albums.order': -1 })
 
     if (response) {
       return response
@@ -76,6 +81,12 @@ class CollectionsServices {
           itemID: el._id
         })
       }
+    })
+
+    existingAlbums.sort((a, b) => {
+      if (a.order < b.order) return -1
+      if (a.order > b.order) return 1
+      return 0
     })
     
     if (deletedAlbums.length) {
@@ -114,6 +125,25 @@ class CollectionsServices {
         ? 'Album successfully removed from collection'
         : 'Album successfully added to collection'
     } as ResponseMessage
+  }
+
+  async reorder({ oldOrder, newOrder }: CollectionReorder, id: string) {
+    const targetCollection = await Collection.findById(id).exec()
+
+    if (targetCollection) {
+      targetCollection.albums.splice(
+        newOrder, 0,
+        ...targetCollection.albums.splice(oldOrder, 1)
+      )
+
+      targetCollection.albums.forEach((el, index) => {
+        el.order = index + 1
+      })
+
+      await Collection.updateOne({ _id: id }, { $set: { albums: targetCollection.albums } })
+
+      return { message: 'Order successfully changed' }
+    }
   }
 
   async updateAlbum({listID, itemID, inList}: Partial<CollectionUpdateProps>) {
