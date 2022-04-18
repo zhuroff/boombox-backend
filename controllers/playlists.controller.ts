@@ -2,6 +2,19 @@ import 'module-alias/register'
 import { Request, Response } from 'express'
 import { Playlist } from '~/models/playlist.model'
 import { Track } from '~/models/track.model'
+import playlistsServices from '~/services/playlists.services'
+
+export class PlaylistsController {
+  static async list(req: Request, res: Response, next: (error: unknown) => void) {
+    try {
+      const response = await playlistsServices.list()
+      res.json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+}
+
 // import { getAlbumsWithCover } from '~/helpers/covers'
 // import path, { dirname } from 'path'
 // import { fileURLToPath } from 'url'
@@ -66,16 +79,6 @@ const create = async (req: Request, res: Response) => {
 
     res.json({ message: 'Playlist successfully created' })
   } catch(error) {
-    res.status(500).json(error)
-  }
-}
-
-const list = async (req: Request, res: Response) => {
-  try {   
-    const config = { title: true, tracks: true, poster: true } 
-    const response = await Playlist.find({}, config).sort({ title: -1 })
-    res.json(response)
-  } catch (error) {
     res.status(500).json(error)
   }
 }
@@ -182,7 +185,6 @@ const upload = async (req: Request, res: Response) => {
 
 const controller = {
   create,
-  list,
   single,
   update,
   changeOrder,

@@ -1,19 +1,22 @@
 import { Types } from 'mongoose'
 
-interface IPlayListTrack {
+type PlayListTrack = {
+  _id: Types.ObjectId
   track: Types.ObjectId
   order: number
 }
 
-interface IPlayListModel {
-  _id?: Types.ObjectId
+type PlayListModel = {
+  _id: Types.ObjectId
   title: string
   dateCreated: Date
-  poster: string
-  cover: string
-  tracks: IPlayListTrack[]
+  poster?: string
+  cover?: string
+  tracks: PlayListTrack[]
 }
 
 export {
-  IPlayListModel
+  PlayListTrack,
+  PlayListModel,
+  // PlaylistResponse
 }

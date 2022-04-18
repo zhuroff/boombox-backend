@@ -4,6 +4,7 @@ import { Collection } from '~/models/collection.model'
 import { Album } from '~/models/album.model'
 import { AlbumResponse } from '~/types/Album'
 import { ResponseMessage } from '~/types/ReqRes'
+import { CollectionItemDTO } from '~/dtos/collection.dto'
 import {
   CollectionListItem,
   CollectionModelAlbum,
@@ -43,14 +44,14 @@ class CollectionsServices {
 
   async list() {
     const config = { title: true, cover: true, 'albums.order': true }
-    const response = await Collection.find({}, config)
+    const response = await Collection.find({}, config).sort({ title: 1 })
       .populate({
         path: 'albums.album',
         select: ['_id']
       })
 
     if (response) {
-      return response
+      return response.map((el) => new CollectionItemDTO(el))
     }
 
     throw ApiError.BadRequest('Incorrect request options')

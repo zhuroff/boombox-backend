@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { Request, Response } from 'express'
 import newsServices from '~/services/news.services'
 

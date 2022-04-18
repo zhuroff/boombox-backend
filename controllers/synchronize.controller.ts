@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { Request, Response } from 'express'
 import { Types, PaginateModel } from 'mongoose'
 import { CloudLib } from '~/lib/cloud.lib'

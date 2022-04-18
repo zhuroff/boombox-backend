@@ -1,7 +1,7 @@
 import { model, Schema } from 'mongoose'
-import { IPlayListModel } from '~/types/Playlist'
+import { PlayListModel } from '~/types/Playlist'
 
-const PlaylistSchema: Schema<IPlayListModel> = new Schema({
+const PlaylistSchema: Schema<PlayListModel> = new Schema({
   title: {
     type: String,
     required: true
@@ -40,4 +40,4 @@ const PlaylistSchema: Schema<IPlayListModel> = new Schema({
 
 PlaylistSchema.index({ title: 'text' })
 
-export const Playlist = model<IPlayListModel>('playlists', PlaylistSchema)
+export const Playlist = model<PlayListModel>('playlists', PlaylistSchema)

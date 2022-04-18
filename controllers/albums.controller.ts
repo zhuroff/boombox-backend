@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { Request, Response } from 'express'
 import albumsServices from '~/services/albums.services'
 

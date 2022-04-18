@@ -7,7 +7,8 @@ type CollectionModelAlbum = {
   order: number
 }
 
-type ICollectionModel = {
+type CollectionModel = {
+  _id: Types.ObjectId
   title: string
   dateCreated: Date
   cover: string
@@ -40,7 +41,7 @@ type CollectionReorder = {
 
 export {
   CollectionModelAlbum,
-  ICollectionModel,
+  CollectionModel,
   CollectionListItem,
   DeletedCollectionAlbum,
   CollectionUpdateProps,

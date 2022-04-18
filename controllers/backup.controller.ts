@@ -1,12 +1,13 @@
+import 'module-alias/register'
 import { Request, Response } from 'express'
 import { PaginateModel, Model } from 'mongoose'
-import fs from 'fs'
-import path from 'path'
 import { Album } from  '~/models/album.model'
 import { Artist } from '~/models/artist.model'
 import { Genre } from '~/models/genre.model'
 import { Period } from '~/models/period.model'
 import { Frame } from '~/models/frame.model'
+import fs from 'fs'
+import path from 'path'
 
 type BackupModel = {
   [index: string]: PaginateModel<any> | Model<any, {}, {}>

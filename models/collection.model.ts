@@ -1,7 +1,7 @@
 import { model, Schema } from 'mongoose'
-import { ICollectionModel } from '~/types/Collection'
+import { CollectionModel } from '~/types/Collection'
 
-const CollectionSchema: Schema<ICollectionModel> = new Schema({
+const CollectionSchema: Schema<CollectionModel> = new Schema({
   title: {
     type: String,
     required: true
@@ -40,4 +40,4 @@ const CollectionSchema: Schema<ICollectionModel> = new Schema({
 
 CollectionSchema.index({ title: 'text' })
 
-export const Collection = model<ICollectionModel>('collections', CollectionSchema)
+export const Collection = model<CollectionModel>('collections', CollectionSchema)
