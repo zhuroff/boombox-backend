@@ -1,12 +1,12 @@
 import { Types } from 'mongoose'
-import { PlayListTrack, PlayListModel } from '~/types/Playlist'
+import { PlayListTrack, PlayListModel, PlaylistTrackResponse } from '~/types/Playlist'
 
 export class PlaylistItemDTO {
   _id: Types.ObjectId
   title: string
+  tracks: PlayListTrack[] | PlaylistTrackResponse[]
   poster?: string
   cover?: string
-  tracks: PlayListTrack[]
 
   constructor(playlist: PlayListModel) {
     this._id = playlist._id

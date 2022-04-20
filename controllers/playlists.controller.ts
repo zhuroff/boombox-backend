@@ -1,13 +1,48 @@
 import 'module-alias/register'
 import { Request, Response } from 'express'
-import { Playlist } from '~/models/playlist.model'
-import { Track } from '~/models/track.model'
+import { PlayListUpdatePayload } from '~/types/Playlist'
 import playlistsServices from '~/services/playlists.services'
 
 export class PlaylistsController {
+  static async create(req: Request, res: Response, next: (error: unknown) => void) {
+    const { title, track } = req.body
+
+    try {
+      const response = await playlistsServices.create({ title, track })
+      res.status(201).json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  static async update(req: Request, res: Response, next: (error: unknown) => void) {
+    const payload: PlayListUpdatePayload = {
+      _id: String(req.body['listID']),
+      inList: req.body['inList'],
+      track: req.body['itemID'],
+      order: req.body['order']
+    }
+
+    try {
+      const response = await playlistsServices.update(payload)
+      res.status(201).json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+
   static async list(req: Request, res: Response, next: (error: unknown) => void) {
     try {
       const response = await playlistsServices.list()
+      res.json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  static async single(req: Request, res: Response, next: (error: unknown) => void) {
+    try {
+      const response = await playlistsServices.single(String(req.params['id']))
       res.json(response)
     } catch (error) {
       next(error)
@@ -48,94 +83,6 @@ export class PlaylistsController {
 
 //   return await Promise.all(result)
 // }
-
-const updateTrack = async (listID: string, trackID: string, inList: boolean) => {
-  try {
-    const query = { _id: trackID }
-    const update = inList
-      ? { $pull: { inPlaylists: listID } }
-      : { $push: { inPlaylists: listID } }
-    const options = { new: true }
-
-    await Track.findOneAndUpdate(query, update, options)
-  } catch (error) {
-    throw error
-  }
-}
-
-const create = async (req: Request, res: Response) => {
-  try {
-    const payload = {
-      title: req.body.title,
-      tracks: [{
-        track: req.body.track,
-        order: 1
-      }]
-    }
-    const newPlaylist = new Playlist(payload)
-
-    await newPlaylist.save()
-    await updateTrack(newPlaylist._id, req.body.track, false)
-
-    res.json({ message: 'Playlist successfully created' })
-  } catch(error) {
-    res.status(500).json(error)
-  }
-}
-
-const single = async (req: Request, res: Response) => {
-  // try {
-  //   Playlist.findById(req.params['id'])
-  //     .populate({
-  //       path: 'tracks',
-  //       populate: [
-  //         {
-  //           path: 'artist',
-  //           select: ['title']
-  //         },
-
-  //         {
-  //           path: 'album',
-  //           select: ['title', 'albumCover', 'period', 'tracks'],
-  //           options: { lean: true }
-  //         }
-  //       ]
-  //     })
-  //     .lean()
-  //     .exec(async (error, playlist) => {
-  //       if (error) return res.status(500).json(error)
-
-  //       const tracks = await buildPlaylistTracks(playlist.tracks)
-  //       playlist.tracks = tracks
-        
-  //       res.json(playlist)
-  //     })
-  // } catch (error) {
-  //   console.error(error)
-  // }
-}
-
-const update = async (req: Request, res: Response) => {
-  try {
-    const query = { _id: req.body['listID'] }
-    const update = req.body['inList']
-      ? { $pull: { tracks: { track: req.body['itemID'] } } }
-      : { $push: { tracks: { track: req.body['itemID'], order: req.body['order'] } } }
-    const options = { new: true }
-
-    await Playlist.findOneAndUpdate(query, update, options)
-    await updateTrack(req.body['listID'], req.body['itemID'], req.body['inList'])
-
-    res.json({
-      message: req.body['inList']
-        ? 'Track successfully removed from playlist'
-        : 'Track successfully added to playlist'
-    })
-  } catch (error) {
-    console.log(error)
-    res.status(500).json(error)
-  }
-}
 
 const changeOrder = async (req: Request, res: Response) => {
   // try {
@@ -184,9 +131,6 @@ const upload = async (req: Request, res: Response) => {
 }
 
 const controller = {
-  create,
-  single,
-  update,
   changeOrder,
   deletePlaylist,
   upload

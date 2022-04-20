@@ -4,10 +4,10 @@ import { PlaylistsController } from '~/controllers/playlists.controller'
 
 const router = Router()
 
-// router.post('/', controller.create)
+router.post('/', PlaylistsController.create)
 router.get('/', PlaylistsController.list)
-// router.get('/:id', controller.single)
-// router.patch('/:id', controller.update)
+router.get('/:id', PlaylistsController.single)
+router.patch('/:id', PlaylistsController.update)
 // router.patch('/:id/order', controller.changeOrder)
 // router.post('/:id/delete', controller.deletePlaylist)
 // router.post(
