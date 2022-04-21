@@ -48,6 +48,17 @@ export class PlaylistsController {
       next(error)
     }
   }
+
+  static async reorder(req: Request, res: Response, next: (error: unknown) => void) {
+    const { oldOrder, newOrder } = req.body
+
+    try {
+      const response = await playlistsServices.reorder({ oldOrder, newOrder }, String(req.params['id']))
+      res.status(201).json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
 }
 
 // import { getAlbumsWithCover } from '~/helpers/covers'
@@ -84,26 +95,6 @@ export class PlaylistsController {
 //   return await Promise.all(result)
 // }
 
-const changeOrder = async (req: Request, res: Response) => {
-  // try {
-  //   const targetPlaylist = await Playlist.findById(req.params.id).exec()
-
-  //   targetPlaylist.tracks.splice(
-  //     req.body.newOrder, 0,
-  //     targetPlaylist.tracks.splice(req.body.oldOrder, 1)[0]
-  //   )
-
-  //   targetPlaylist.tracks.forEach((el, index) => {
-  //     el.order = index + 1
-  //   })
-
-  //   await Playlist.updateOne({ _id: req.params.id }, { $set: { tracks: targetPlaylist.tracks } })
-  //   res.status(201).json({ message: 'Tracks order successfully updated' })
-  // } catch (error) {
-  //   res.status(500).json(error)
-  // }
-}
-
 const deletePlaylist = async (req: Request, res: Response) => {
   // try {
   //   if (req.body.cover) {
@@ -131,7 +122,6 @@ const upload = async (req: Request, res: Response) => {
 }
 
 const controller = {
-  changeOrder,
   deletePlaylist,
   upload
 }

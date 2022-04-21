@@ -14,13 +14,10 @@ import {
 } from '~/types/Collection'
 
 class CollectionsServices {
-  async create(title: string, album: string) {
+  async create(title: string, album: string): Promise<ResponseMessage> {
     const payload = {
       title: title,
-      albums: [{
-        album: album,
-        order: 1
-      }]
+      albums: [{ album, order: 1 }]
     }
     
     const newCollection = new Collection(payload)
@@ -128,8 +125,8 @@ class CollectionsServices {
     } as ResponseMessage
   }
 
-  async reorder({ oldOrder, newOrder }: CollectionReorder, id: string) {
-    const targetCollection = await Collection.findById(id).exec()
+  async reorder({ oldOrder, newOrder }: CollectionReorder, _id: string): Promise<ResponseMessage> {
+    const targetCollection = await Collection.findById(_id).exec()
 
     if (targetCollection) {
       targetCollection.albums.splice(
@@ -141,10 +138,12 @@ class CollectionsServices {
         el.order = index + 1
       })
 
-      await Collection.updateOne({ _id: id }, { $set: { albums: targetCollection.albums } })
+      await Collection.updateOne({ _id }, { $set: { albums: targetCollection.albums } })
 
       return { message: 'Order successfully changed' }
     }
+
+    throw ApiError.BadRequest('Incorrect request options')
   }
 
   async updateAlbum({listID, itemID, inList}: Partial<CollectionUpdateProps>) {

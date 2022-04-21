@@ -4,6 +4,7 @@ import { ApiError } from '~/exceptions/api-errors'
 import { CloudLib } from '~/lib/cloud.lib'
 import { Playlist } from '~/models/playlist.model'
 import { Track } from '~/models/track.model'
+import { CollectionReorder } from '~/types/Collection'
 import { PlayListCreatePayload, PlayListUpdatePayload, PlaylistResponse } from '~/types/Playlist'
 import { ResponseMessage } from '~/types/ReqRes'
 
@@ -13,6 +14,7 @@ class PlaylistsServices {
       title,
       tracks: [{ track, order: 1 }]
     }
+    
     const newPlaylist = new Playlist(payload)
 
     await newPlaylist.save()
@@ -53,7 +55,6 @@ class PlaylistsServices {
     const response: PlaylistResponse = await Playlist.findById(id)
       .populate({
         path: 'tracks.track',
-        sort: { order: 1 },
         select: ['title', 'listened', 'duration', 'fileid'],
         populate: [
           {
@@ -95,6 +96,27 @@ class PlaylistsServices {
         ...response,
         tracks: await Promise.all(preparedTracks)
       }
+    }
+
+    throw ApiError.BadRequest('Incorrect request options')
+  }
+
+  async reorder({ oldOrder, newOrder }: CollectionReorder, _id: string): Promise<ResponseMessage> {
+    const targetPlaylist = await Playlist.findById(_id).exec()
+    
+    if (targetPlaylist) {
+      targetPlaylist.tracks.splice(
+        newOrder, 0,
+        ...targetPlaylist.tracks.splice(oldOrder, 1)
+      )
+
+      targetPlaylist.tracks.forEach((el, index) => {
+        el.order = index + 1
+      })
+
+      await Playlist.updateOne({ _id }, { $set: { tracks: targetPlaylist.tracks } })
+
+      return { message: 'Order successfully updated' }
     }
 
     throw ApiError.BadRequest('Incorrect request options')

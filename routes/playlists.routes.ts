@@ -8,7 +8,7 @@ router.post('/', PlaylistsController.create)
 router.get('/', PlaylistsController.list)
 router.get('/:id', PlaylistsController.single)
 router.patch('/:id', PlaylistsController.update)
-// router.patch('/:id/order', controller.changeOrder)
+router.patch('/:id/reorder', PlaylistsController.reorder)
 // router.post('/:id/delete', controller.deletePlaylist)
 // router.post(
 //   '/:id/cover',
