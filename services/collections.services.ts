@@ -12,6 +12,7 @@ import {
   CollectionUpdateProps,
   DeletedCollectionAlbum
 } from '~/types/Collection'
+import { Request } from 'express'
 
 class CollectionsServices {
   async create(title: string, album: string): Promise<ResponseMessage> {
@@ -102,6 +103,7 @@ class CollectionsServices {
     const result = {
       _id: response._id,
       title: response.title,
+      poster: response.poster,
       albums: await Promise.all(coveredAlbums)
     }
 
@@ -170,6 +172,21 @@ class CollectionsServices {
     })
 
     return await Promise.all(cleanProcess)
+  }
+
+  async upload(req: Request) {
+    if (req.file) {
+      const $set: any = {}
+      const setKey = req.file.fieldname
+
+      $set[setKey] = `/uploads/${req.file.filename}`
+
+      const response = await Collection.findOneAndUpdate({
+        _id: req.params['id']
+      }, { $set }, { new: true })
+      
+      return response
+    }
   }
 }
 

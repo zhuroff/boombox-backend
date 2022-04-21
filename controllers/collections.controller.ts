@@ -60,6 +60,15 @@ export class CollectionsController {
       next(error)
     }
   }
+
+  static async upload(req: Request, res: Response, next: (error: unknown) => void) {
+    try {
+      const response = await collectionsServices.upload(req)
+      return res.json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
 }
 
 // const removeItemFromCollection = async (payload: any) => {
