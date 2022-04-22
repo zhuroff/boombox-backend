@@ -67,21 +67,6 @@ class CategoriesServices {
     return result
   }
 
-  async uploads(Model: PaginateModel<CategoryModel>, req: Request) {
-    if (req.file) {
-      const $set: any = {}
-      const setKey = req.file.fieldname
-
-      $set[setKey] = `/uploads/${req.file.filename}`
-
-      const response = await Model.findOneAndUpdate({
-        _id: req.params['id']
-      }, { $set }, { new: true })
-      
-      return response
-    }
-  }
-
   async create(Model: PaginateModel<CategoryModel>, title: string) {
     const payload = {
       title,

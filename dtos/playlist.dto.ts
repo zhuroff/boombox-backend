@@ -6,13 +6,13 @@ export class PlaylistItemDTO {
   title: string
   tracks: PlayListTrack[] | PlaylistTrackResponse[]
   poster?: string
-  cover?: string
+  avatar?: string
 
   constructor(playlist: PlayListModel) {
     this._id = playlist._id
     this.title = playlist.title
     this.tracks = playlist.tracks
-    this.cover = playlist.cover
+    this.avatar = playlist.avatar
     this.poster = playlist.poster
   }
 }

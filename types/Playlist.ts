@@ -31,7 +31,7 @@ type PlayListModel = {
   title: string
   dateCreated: Date
   poster?: string
-  cover?: string
+  avatar?: string
   tracks: PlayListTrack[]
 }
 

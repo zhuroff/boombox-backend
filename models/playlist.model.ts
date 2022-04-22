@@ -17,7 +17,7 @@ const PlaylistSchema: Schema<PlayListModel> = new Schema({
     required: false
   },
 
-  cover: {
+  avatar: {
     type: String,
     required: false
   },

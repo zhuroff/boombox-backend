@@ -1,7 +1,11 @@
 import 'module-alias/register'
 import { Request, Response } from 'express'
+import { Model } from 'mongoose'
+import { PlayListModel } from '~/types/Playlist'
 import { PlayListUpdatePayload } from '~/types/Playlist'
+import { Playlist } from '~/models/playlist.model'
 import playlistsServices from '~/services/playlists.services'
+import uploadsServices from '~/services/uploads.services'
 
 export class PlaylistsController {
   static async create(req: Request, res: Response, next: (error: unknown) => void) {
@@ -55,6 +59,15 @@ export class PlaylistsController {
     try {
       const response = await playlistsServices.reorder({ oldOrder, newOrder }, String(req.params['id']))
       res.status(201).json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  static async upload(req: Request, res: Response, next: (error: unknown) => void) {
+    try {
+      const response = await uploadsServices.upload<Model<PlayListModel>>(Playlist, req)
+      return res.json(response)
     } catch (error) {
       next(error)
     }

@@ -1,7 +1,10 @@
 import 'module-alias/register'
 import { Request, Response } from 'express'
 import { Period } from '~/models/period.model'
+import { PaginateModel } from 'mongoose'
+import { CategoryModel } from '~/types/Category'
 import categoriesServices from '~/services/categories.services'
+import uploadsServices from '~/services/uploads.services'
 
 export class PeriodsController {
   static async list(req: Request, res: Response, next: (error: unknown) => void) {
@@ -22,18 +25,18 @@ export class PeriodsController {
     }
   }
 
-  static async upload(req: Request, res: Response, next: (error: unknown) => void) {
+  static async create(req: Request, res: Response, next: (error: unknown) => void) {
     try {
-      const response = await categoriesServices.uploads(Period, req)
+      const response = await categoriesServices.create(Period, req.body.value)
       return res.json(response)
     } catch (error) {
       next(error)
     }
   }
 
-  static async create(req: Request, res: Response, next: (error: unknown) => void) {
+  static async upload(req: Request, res: Response, next: (error: unknown) => void) {
     try {
-      const response = await categoriesServices.create(Period, req.body.value)
+      const response = await uploadsServices.upload<PaginateModel<CategoryModel>>(Period, req)
       return res.json(response)
     } catch (error) {
       next(error)

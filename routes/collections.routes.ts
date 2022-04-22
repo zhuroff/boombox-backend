@@ -11,5 +11,6 @@ router.patch('/:id', CollectionsController.update)
 router.patch('/:id/reorder', CollectionsController.reorder)
 router.delete('/:id', CollectionsController.remove)
 router.post('/:id/poster', upload.single('poster'), CollectionsController.upload)
+router.post('/:id/avatar', upload.single('avatar'), CollectionsController.upload)
 
 export default router

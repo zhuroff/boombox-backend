@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { PlaylistsController } from '~/controllers/playlists.controller'
-// import upload from '~/middleware/upload'
+import upload from '~/middleware/upload'
 
 const router = Router()
 
@@ -10,10 +10,7 @@ router.get('/:id', PlaylistsController.single)
 router.patch('/:id', PlaylistsController.update)
 router.patch('/:id/reorder', PlaylistsController.reorder)
 // router.post('/:id/delete', controller.deletePlaylist)
-// router.post(
-//   '/:id/cover',
-//   upload.single('cover'),
-//   controller.upload
-// )
+router.post('/:id/poster', upload.single('poster'), PlaylistsController.upload)
+router.post('/:id/avatar', upload.single('avatar'), PlaylistsController.upload)
 
 export default router

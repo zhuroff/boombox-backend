@@ -12,7 +12,7 @@ const CollectionSchema: Schema<CollectionModel> = new Schema({
     default: Date.now
   },
 
-  cover: {
+  avatar: {
     type: String,
     required: false
   },

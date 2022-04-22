@@ -11,7 +11,7 @@ type CollectionModel = {
   _id: Types.ObjectId
   title: string
   dateCreated: Date
-  cover: string
+  avatar: string
   poster: string
   albums: CollectionModelAlbum[]
 }

@@ -41,7 +41,7 @@ class PlaylistsServices {
   }
 
   async list() {
-    const config = { title: true, tracks: true, poster: true }
+    const config = { title: true, tracks: true, avatar: true }
     const response = await Playlist.find({}, config).sort({ title: 1 }).exec()
 
     if (response) {
