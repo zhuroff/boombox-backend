@@ -103,6 +103,7 @@ class CollectionsServices {
       _id: response._id,
       title: response.title,
       poster: response.poster,
+      avatar: response.avatar,
       albums: await Promise.all(coveredAlbums)
     }
 
