@@ -7,6 +7,7 @@ import { Track } from '~/models/track.model'
 import { CollectionReorder } from '~/types/Collection'
 import { PlayListCreatePayload, PlayListUpdatePayload, PlaylistResponse } from '~/types/Playlist'
 import { ResponseMessage } from '~/types/ReqRes'
+import filesServices from '~/services/files.services'
 
 class PlaylistsServices {
   async create({ title, track }: PlayListCreatePayload): Promise<ResponseMessage> {
@@ -101,6 +102,29 @@ class PlaylistsServices {
     throw ApiError.BadRequest('Incorrect request options')
   }
 
+  async remove(_id: string): Promise<ResponseMessage> {
+    const response = await Playlist.findByIdAndDelete({ _id })
+    const tracks = response?.tracks
+    const images = [response?.poster, response?.avatar]
+      .reduce<string[]>((acc, next) => {
+        if (next !== undefined) {
+          acc.push(next)
+        }
+
+        return acc
+      }, [])
+
+    if (tracks && tracks.length > 0) {
+      tracks.map(async (el) => await this.updateTrack(_id, el.track, true))
+    }
+
+    if (images.length > 0) {
+      filesServices.remove(images)
+    }
+
+    return { message: 'Playlist was successfully deleted' }
+  }
+
   async reorder({ oldOrder, newOrder }: CollectionReorder, _id: string): Promise<ResponseMessage> {
     const targetPlaylist = await Playlist.findById(_id).exec()
     
@@ -122,7 +146,16 @@ class PlaylistsServices {
     throw ApiError.BadRequest('Incorrect request options')
   }
 
-  async updateTrack(listID: Types.ObjectId | string, trackID: string, inList: boolean) {
+  async rename(_id: string, title: string): Promise<ResponseMessage> {
+    const query = { _id }
+    const update = { title }
+
+    await Playlist.findOneAndUpdate(query, update)
+
+    return { message: 'Playlist title was successfully updated' }
+  }
+
+  async updateTrack(listID: Types.ObjectId | string, trackID: Types.ObjectId | string, inList: boolean) {
     const query = { _id: trackID }
     const update = inList
       ? { $pull: { inPlaylists: listID } }

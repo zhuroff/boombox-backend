@@ -4,7 +4,7 @@ import { Genre } from '~/models/genre.model'
 import { PaginateModel } from 'mongoose'
 import { CategoryModel } from '~/types/Category'
 import categoriesServices from '~/services/categories.services'
-import uploadsServices from '~/services/uploads.services'
+import filesServices from '~/services/files.services'
 
 export class GenresController {
   static async list(req: Request, res: Response, next: (error: unknown) => void) {
@@ -36,7 +36,7 @@ export class GenresController {
 
   static async upload(req: Request, res: Response, next: (error: unknown) => void) {
     try {
-      const response = await uploadsServices.upload<PaginateModel<CategoryModel>>(Genre, req)
+      const response = await filesServices.upload<PaginateModel<CategoryModel>>(Genre, req)
       return res.json(response)
     } catch (error) {
       next(error)

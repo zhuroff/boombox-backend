@@ -1,7 +1,9 @@
-import { Request } from "express"
-import { Model } from "mongoose"
+import { Request } from 'express'
+import { Model } from 'mongoose'
+import fs from 'fs'
+import path from 'path'
 
-class UploadsServices {
+class FilesServices {
   async upload<T extends Model<any>>(Model: T, req: Request) {
     if (req.file) {
       const $set: any = {}
@@ -16,6 +18,12 @@ class UploadsServices {
       return response
     }
   }
+
+  remove(files: string[]) {
+    files.map((link) => (
+      fs.unlinkSync(path.join(__dirname, '../', encodeURI(link)))
+    ))
+  }
 }
 
-export default new UploadsServices()
+export default new FilesServices()
