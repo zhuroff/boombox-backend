@@ -18,7 +18,8 @@
       "~/*": ["./*"]
     },
     "types": [
-      "@types/node"
+      "@types/node",
+      "./types"
     ],
     "esModuleInterop": true,
     "skipLibCheck": true,
