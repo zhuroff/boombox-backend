@@ -5,8 +5,7 @@ const router = Router()
 
 router.get('/', RadioController.savedStations)
 router.post('/', RadioController.allStations)
-// router.post('/create', FramesController.create)
-// router.post('/', FramesController.list)
-// router.post('/:id/delete', FramesController.remove)
+router.post('/:id', RadioController.saveStation)
+router.delete('/:id', RadioController.deleteStation)
 
 export default router

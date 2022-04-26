@@ -17,15 +17,23 @@ type RadioBrowserStation = {
   name: string
   url: string
   url_resolved: string
-  homepage: string
-  favicon: string
   country: string
-  countrycode: string
+  tags: string
+}
+
+type RadioBrowserStationResponse = RadioBrowserStation & {
   votes: number
+}
+
+type RadioSavePayload = {
+  stationuuid: string
+  name: string
 }
 
 export {
   RadioModel,
   RadioRequestConfig,
-  RadioBrowserStation
+  RadioBrowserStation,
+  RadioBrowserStationResponse,
+  RadioSavePayload
 }

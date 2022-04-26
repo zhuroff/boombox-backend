@@ -22,4 +22,24 @@ export class RadioController {
       next(error)
     }
   }
+
+  static async saveStation(req: Request, res: Response, next: (error: unknown) => void) {
+    const { stationuuid, name } = req.body
+
+    try {
+      const response = await radioServices.saveStation({ stationuuid, name })
+      res.status(201).json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  static async deleteStation(req: Request, res: Response, next: (error: unknown) => void) {
+    try {
+      const response = await radioServices.deleteStation(String(req.params['id']))
+      res.status(201).json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
 }
