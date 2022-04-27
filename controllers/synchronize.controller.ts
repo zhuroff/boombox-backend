@@ -76,7 +76,7 @@ const getAlbumTracks: any = async (array: CloudAlbumContent[]) => {
 }
 
 const getAlbumTitle = (name: string) => {
-  const albumTitleRegExp = /\]([^)]+)\#/
+  const albumTitleRegExp = /\]\s*(.+?)\s*#/
   const albumTitle = albumTitleRegExp.exec(name)
   const albumTitleResult = albumTitle && albumTitle[1] ? albumTitle[1].trim() : 'unknown album'
 
