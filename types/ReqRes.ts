@@ -39,11 +39,15 @@ type SearchModelKey = 'albums' | 'frames' | 'artists' | 'genres' | 'periods' | '
 type SearchParams = { '$text': { '$search': string } }
 
 type SearchResult = {
-  [K in SearchModelKey]?: Partial<AlbumResponse | CategoryResponse>[]
+  [K in SearchModelKey]?: {
+    title: string
+    data: Partial<AlbumResponse | CategoryResponse>[]
+  }
 }
 
 type SearchModel = {
   instance: PaginateModel<any> | Model<any> | null
+  title: string
   options: { [index: string]: boolean }
   populates?: {
     path: string

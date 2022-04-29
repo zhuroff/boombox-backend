@@ -31,7 +31,10 @@ class SearchServices {
 
     const result = Array.from(mappedResult).reduce((acc, next) => {
       if (next[1].length) {
-        acc[next[0]] = next[1]
+        acc[next[0]] = {
+          title: searchSchema[next[0]].title,
+          data: next[1]
+        }
       }
       
       return acc
@@ -69,6 +72,7 @@ class SearchServices {
 const searchSchema: SearchModelsSchema = {
   albums: {
     instance: Album,
+    title: 'Альбомы',
     options: {
       _id: true,
       title: true,
@@ -86,6 +90,7 @@ const searchSchema: SearchModelsSchema = {
 
   frames: {
     instance: Frame,
+    title: 'Фреймы',
     options: {
       _id: true,
       title: true,
@@ -102,26 +107,31 @@ const searchSchema: SearchModelsSchema = {
 
   artists: {
     instance: Artist,
+    title: 'Артисты',
     options: { _id: true, title: true, avatar: true }
   },
 
   genres: {
     instance: Genre,
+    title: 'Жанры',
     options: { _id: true, title: true, avatar: true }
   },
 
   periods: {
     instance: Period,
+    title: 'Даты',
     options: { _id: true, title: true, avatar: true }
   },
 
   collections: {
     instance: Collection,
+    title: 'Коллекции',
     options: { _id: true, title: true, avatar: true }
   },
 
   playlists: {
     instance: Playlist,
+    title: 'Плейлисты',
     options: { _id: true, title: true, avatar: true }
   }
 }
