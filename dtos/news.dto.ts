@@ -1,5 +1,4 @@
-import { NewsItemResponse, NewsItemResponseDate } from "~/types/News"
-
+import { NewsItemResponse, NewsItemResponseDate } from '~/types/News'
 
 const localizeDate = (date: Date, isTime = false) => {
   return new Date(date).toLocaleDateString('ru-RU', {

@@ -29,18 +29,17 @@ class SearchServices {
       )
     }
 
-    const result = Array.from(mappedResult).reduce((acc, next) => {
+    return Array.from(mappedResult).reduce<SearchResult[]>((acc, next) => {
       if (next[1].length) {
-        acc[next[0]] = {
+        acc.push({
           title: searchSchema[next[0]].title,
+          key: next[0],
           data: next[1]
-        }
+        })
       }
       
       return acc
-    }, {} as SearchResult)
-
-    return result
+    }, [])
   }
 
   async searchSplitter({ query, key }: SearchPayload & { key: SearchModelKey }) {

@@ -74,18 +74,3 @@ export class CollectionsController {
     }
   }
 }
-
-// const removeItemFromCollection = async (payload: any) => {
-//   try {
-//     const targetCollection = await Collection.findById(payload.listID).exec()
-
-//     if (targetCollection) {
-//       const updatedAlbums = targetCollection.albums
-//         .filter((el) => el._id.toString() !== payload.itemID.toString())
-//         .map((el, index) => { el.order = index + 1; return el })
-//       await Collection.updateOne({ _id: payload.listID }, { $set: { albums: updatedAlbums } })
-//     }
-//   } catch (error) {
-//     throw error
-//   }
-// }
