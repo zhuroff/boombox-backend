@@ -61,7 +61,7 @@ const backupList = (req: Request, res: Response) => {
     const folders = fs.readdirSync(path.join(__dirname, '../backups'))
     res.json(folders)
   } catch (error) {
-    console.error(error)
+    console.log(error)
     res.status(500).json(error)
   }
 }
@@ -85,7 +85,7 @@ const backupSave = async (req: Request, res: Response) => {
     })
 
     await Promise.all(backupProcess)
-    res.json({ message: 'Data backup completed successfully' })
+    res.status(201).json({ message: 'Data backup completed successfully' })
   } catch (error) {
     console.log(error)
     res.status(500).json(error)
@@ -105,14 +105,13 @@ const backupRestore = async (req: Request, res: Response) => {
         await Model.insertMany(fileContent)
 
         return el
+      } else {
+        throw new Error('Something went wrong')
       }
-
-      const backupRestoreError = new Error('Something went wrong')
-      throw backupRestoreError
     })
 
     await Promise.all(restoreProcess)
-    res.json({ message: 'Data restore completed successfully' })
+    res.status(201).json({ message: 'Data restore completed successfully' })
   } catch (error) {
     res.status(500).json(error)
   }
@@ -128,41 +127,39 @@ const backupDelete = (req: Request, res: Response) => {
         { recursive: true },
         (error) => {
           if (error) throw new Error(error.message || 'Something went wrong')
-          res.json({ message: 'Backup was successfully deleted' })
+          res.status(201).json({ message: 'Backup was successfully deleted' })
         }
       )
+    } else {
+      throw new Error('Backup folder is not exist')
     }
-
-    const backupDeletingError = new Error('Something went wrong')
-    throw backupDeletingError
   } catch (error) {
     console.log(error)
     res.status(500).json(error)
   }
 }
 
-const clean = async (req: Request, res: Response) => {
-  try {
-    const albums = await readBackupFile('1642537794905', `albums.json`) as any[]
-    const cleaned = albums.map((el: any) => {
-      delete el.period
-      return el
-    })
+// const clean = async (req: Request, res: Response) => {
+//   try {
+//     const albums = await readBackupFile('1642537794905', `albums.json`) as any[]
+//     const cleaned = albums.map((el: any) => {
+//       delete el.period
+//       return el
+//     })
 
-    await writeBackupFile('albums.json', '1642537794905', cleaned)
+//     await writeBackupFile('albums.json', '1642537794905', cleaned)
 
-    res.json({ message: 'success' })
-  } catch (error) {
-    res.status(500).json(error)
-  }
-}
+//     res.json({ message: 'success' })
+//   } catch (error) {
+//     res.status(500).json(error)
+//   }
+// }
 
 const controller = {
   backupList,
   backupSave,
   backupRestore,
-  backupDelete,
-  clean
+  backupDelete
 }
 
 export default controller
