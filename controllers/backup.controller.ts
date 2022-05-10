@@ -3,9 +3,13 @@ import { Request, Response } from 'express'
 import { PaginateModel, Model } from 'mongoose'
 import { Album } from  '~/models/album.model'
 import { Artist } from '~/models/artist.model'
+import { Collection } from '~/models/collection.model'
+import { Frame } from '~/models/frame.model'
 import { Genre } from '~/models/genre.model'
 import { Period } from '~/models/period.model'
-import { Frame } from '~/models/frame.model'
+import { Playlist } from '~/models/playlist.model'
+import { Radio } from '~/models/radio.model'
+import { Track } from '~/models/track.model'
 import fs from 'fs'
 import path from 'path'
 
@@ -16,9 +20,13 @@ type BackupModel = {
 const backupModels: BackupModel = {
   albums: Album,
   artists: Artist,
+  collections: Collection,
+  frames: Frame,
   genres: Genre,
   periods: Period,
-  frames: Frame
+  playlists: Playlist,
+  radio: Radio,
+  tracks: Track
 }
 
 const createBackupFolder = (folderName: string) => {
