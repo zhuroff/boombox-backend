@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { Types } from 'mongoose'
 import { PlayListTrack, PlayListModel, PlaylistTrackResponse } from '~/types/Playlist'
 

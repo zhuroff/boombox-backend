@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { Router } from 'express'
 import { GenresController } from '~/controllers/genres.controller'
 import upload from '~/middleware/upload'

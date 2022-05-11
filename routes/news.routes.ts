@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { Router } from 'express'
 import { NewsController } from '~/controllers/news.controller'
 

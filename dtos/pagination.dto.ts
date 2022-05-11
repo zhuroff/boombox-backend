@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { Pagination } from "~/types/ReqRes"
 
 export class PaginationDTO {

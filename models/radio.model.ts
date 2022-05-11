@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { model, Schema } from 'mongoose'
 import { RadioModel } from '~/types/Radio'
 

@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { Types } from 'mongoose'
 import { CollectionModel, CollectionModelAlbum } from '~/types/Collection'
 

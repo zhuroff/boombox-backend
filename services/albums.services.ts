@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { Request } from 'express'
 import { ApiError } from '~/exceptions/api-errors'
 import { Album } from '~/models/album.model'

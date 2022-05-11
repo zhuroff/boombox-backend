@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { Router } from 'express'
 import { TracksController } from '~/controllers/tracks.controller'
 

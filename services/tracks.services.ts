@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { ApiError } from '~/exceptions/api-errors'
 import { Track } from '~/models/track.model'
 import { TrackSearchPayload } from '~/types/Track'

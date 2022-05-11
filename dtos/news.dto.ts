@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { NewsItemResponse, NewsItemResponseDate } from '~/types/News'
 
 const localizeDate = (date: Date, isTime = false) => {

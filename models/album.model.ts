@@ -1,6 +1,7 @@
+import 'module-alias/register'
 import { model, PaginateModel, Schema } from 'mongoose'
-import mongoosePaginate from 'mongoose-paginate-v2'
 import { AlbumModel } from '~/types/Album'
+import mongoosePaginate from 'mongoose-paginate-v2'
 
 const AlbumSchema: Schema<AlbumModel> = new Schema({
   title: {

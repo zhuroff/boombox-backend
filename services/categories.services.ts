@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { Request } from 'express'
 import { Document, PaginateModel, PaginateResult } from 'mongoose'
 import { CategoryModel, CategoryResponse, CategoryPageResponse } from '~/types/Category'

@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { Types } from 'mongoose'
 import { AlbumResponse } from '~/types/Album'
 import { CategoryBasic } from '~/types/Category'

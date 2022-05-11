@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { AlbumResponse } from '~/types/Album'
 import { TrackResponse } from '~/types/Track'

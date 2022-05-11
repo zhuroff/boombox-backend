@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { Document, Types, PaginateModel } from 'mongoose'
 import { CategoryItemDTO } from '~/dtos/category.dto'
 import { PaginationDTO } from '~/dtos/pagination.dto'

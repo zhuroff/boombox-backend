@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { Router } from 'express'
 import { CollectionsController } from '~/controllers/collections.controller'
 import upload from '~/middleware/upload'

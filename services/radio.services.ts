@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { Radio } from '~/models/radio.model'
 import { ApiError } from '~/exceptions/api-errors'
 import { RadioBrowserStationResponse, RadioRequestConfig, RadioSavePayload } from '~/types/Radio'

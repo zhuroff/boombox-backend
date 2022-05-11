@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { Types } from 'mongoose'
 import { TrackResponse } from '~/types/Track'
 import { CategoryBasic } from '~/types/Category'

@@ -1,173 +1,41 @@
 import 'module-alias/register'
 import { Request, Response } from 'express'
-import { PaginateModel, Model } from 'mongoose'
-import { Album } from  '~/models/album.model'
-import { Artist } from '~/models/artist.model'
-import { Collection } from '~/models/collection.model'
-import { Frame } from '~/models/frame.model'
-import { Genre } from '~/models/genre.model'
-import { Period } from '~/models/period.model'
-import { Playlist } from '~/models/playlist.model'
-import { Radio } from '~/models/radio.model'
-import { Track } from '~/models/track.model'
-import fs from 'fs'
-import path from 'path'
+import backupServices from '~/services/backup.services'
 
-type BackupModel = {
-  [index: string]: PaginateModel<any> | Model<any, {}, {}>
-}
-
-const backupModels: BackupModel = {
-  albums: Album,
-  artists: Artist,
-  collections: Collection,
-  frames: Frame,
-  genres: Genre,
-  periods: Period,
-  playlists: Playlist,
-  radio: Radio,
-  tracks: Track
-}
-
-const createBackupFolder = (folderName: string) => {
-  return new Promise((resolve, reject) => {
-    fs.mkdir(
-      path.join(__dirname, '../backups', folderName),
-      (error) => {
-        error ? reject(error) : resolve(true)
-      }
-    )
-  })
-}
-
-const writeBackupFile = async (fileName: string, folderName: string, data: any) => {
-  return new Promise((resolve, reject) => {
-    fs.writeFile(
-      path.join(__dirname, '../backups', folderName, fileName),
-      JSON.stringify(data),
-      (error) => {
-        error ? reject(error) : resolve(true)
-      }
-    )
-  })
-}
-
-const readBackupFile = (folderName: string, fileName: string) => {
-  return new Promise((resolve, reject) => {
-    fs.readFile(
-      path.join(__dirname, '../backups', folderName, fileName),
-      'utf8',
-      (error, data) => (
-        error ? reject(error) : resolve(JSON.parse(data))
-      )
-    )
-  })
-}
-
-const backupList = (req: Request, res: Response) => {
-  try {
-    const folders = fs.readdirSync(path.join(__dirname, '../backups'))
-    res.json(folders)
-  } catch (error) {
-    console.log(error)
-    res.status(500).json(error)
-  }
-}
-
-const backupSave = async (req: Request, res: Response) => {
-  const timestamp = String(new Date().getTime())
-
-  try {
-    await createBackupFolder(timestamp)
-
-    const backupProcess = Object.keys(backupModels).map(async (el: string) => {
-      const Model = backupModels[el]
-
-      if (Model) {
-        const response = await Model.find({}).lean()
-        return await writeBackupFile(`${el}.json`, timestamp, response)
-      }
-
-      const backupSavingError = new Error('Something went wrong')
-      throw backupSavingError
-    })
-
-    await Promise.all(backupProcess)
-    res.status(201).json({ message: 'Data backup completed successfully' })
-  } catch (error) {
-    console.log(error)
-    res.status(500).json(error)
-  }
-}
-
-const backupRestore = async (req: Request, res: Response) => {
-  try {
-    const restoreProcess = Object.keys(backupModels).map(async (el: string) => {
-      const folderName = req.params['date']
-      const Model = backupModels[el]
-
-      if (folderName && Model) {
-        const fileContent: any = await readBackupFile(folderName, `${el}.json`)
-
-        await Model.deleteMany({})
-        await Model.insertMany(fileContent)
-
-        return el
-      } else {
-        throw new Error('Something went wrong')
-      }
-    })
-
-    await Promise.all(restoreProcess)
-    res.status(201).json({ message: 'Data restore completed successfully' })
-  } catch (error) {
-    res.status(500).json(error)
-  }
-}
-
-const backupDelete = (req: Request, res: Response) => {
-  try {
-    const folderName = req.params['date']
-
-    if (folderName) {
-      fs.rm(
-        path.join(__dirname, '../backups', folderName),
-        { recursive: true },
-        (error) => {
-          if (error) throw new Error(error.message || 'Something went wrong')
-          res.status(201).json({ message: 'Backup was successfully deleted' })
-        }
-      )
-    } else {
-      throw new Error('Backup folder is not exist')
+export class BackupController {
+  static async save(req: Request, res: Response, next: (error: unknown) => void) {
+    try {
+      const response = await backupServices.backupSave()
+      res.status(201).json(response)
+    } catch (error) {
+      next(error)
     }
-  } catch (error) {
-    console.log(error)
-    res.status(500).json(error)
+  }
+
+  static list(req: Request, res: Response, next: (error: unknown) => void) {
+    try {
+      const response = backupServices.backupList()
+      res.json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  static async restore(req: Request, res: Response, next: (error: unknown) => void) {
+    try {
+      const response = await backupServices.backupRestore(String(req.params['date']))
+      res.status(201).json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  static async remove(req: Request, res: Response, next: (error: unknown) => void) {
+    try {
+      const response = await backupServices.backupRemove(String(req.params['date']))
+      res.status(201).json(response)
+    } catch (error) {
+      next(error)
+    }
   }
 }
-
-// const clean = async (req: Request, res: Response) => {
-//   try {
-//     const albums = await readBackupFile('1642537794905', `albums.json`) as any[]
-//     const cleaned = albums.map((el: any) => {
-//       delete el.period
-//       return el
-//     })
-
-//     await writeBackupFile('albums.json', '1642537794905', cleaned)
-
-//     res.json({ message: 'success' })
-//   } catch (error) {
-//     res.status(500).json(error)
-//   }
-// }
-
-const controller = {
-  backupList,
-  backupSave,
-  backupRestore,
-  backupDelete
-}
-
-export default controller

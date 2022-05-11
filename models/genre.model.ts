@@ -1,6 +1,7 @@
+import 'module-alias/register'
 import { model, Schema } from 'mongoose'
-import mongoosePaginate from 'mongoose-paginate-v2'
 import { CategoryModel, ICategory } from '~/types/Category'
+import mongoosePaginate from 'mongoose-paginate-v2'
 
 const GenreSchema: Schema = new Schema({
   title: {

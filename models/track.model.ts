@@ -1,6 +1,7 @@
+import 'module-alias/register'
 import { model, Schema } from 'mongoose'
-import mongoosePaginate from 'mongoose-paginate-v2'
 import { TrackModelDocument, TrackModelPaginated } from '~/types/Track'
+import mongoosePaginate from 'mongoose-paginate-v2'
 
 const TrackSchema: Schema<TrackModelDocument> = new Schema({
   fileid: {

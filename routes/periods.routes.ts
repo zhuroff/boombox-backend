@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { Router } from 'express'
 import { PeriodsController } from '~/controllers/periods.controller'
 import upload from '~/middleware/upload'

@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { Frame } from '~/models/frame.model'
 import { Artist } from '~/models/artist.model'
 import { Genre } from '~/models/genre.model'

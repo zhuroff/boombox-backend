@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { RadioBrowserStation, RadioBrowserStationResponse } from '~/types/Radio'
 
 export class RadioStationDTO implements RadioBrowserStation {

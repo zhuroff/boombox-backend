@@ -1,6 +1,7 @@
+import 'module-alias/register'
 import { model, Schema } from 'mongoose'
-import mongoosePaginate from 'mongoose-paginate-v2'
 import { FrameModelDocument, FrameModelPaginated } from '~/types/Frame'
+import mongoosePaginate from 'mongoose-paginate-v2'
 
 const FrameSchema: Schema<FrameModelDocument> = new Schema({
 	title: {

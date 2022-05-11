@@ -1,6 +1,6 @@
-import { Model, PaginateModel } from "mongoose"
-import { AlbumResponse } from "./Album"
-import { CategoryResponse } from "./Category"
+import { Model, PaginateModel } from 'mongoose'
+import { AlbumResponse } from './Album'
+import { CategoryResponse } from './Category'
 
 type Populate = {
   path: string
@@ -25,6 +25,8 @@ type Pagination = {
   page?: number
 }
 
+type ModelResponse = PaginateModel<any> | Model<any, {}, {}>
+
 type ResponseMessage = {
   message: string | number
 }
@@ -45,7 +47,7 @@ type SearchResult = {
 }
 
 type SearchModel = {
-  instance: PaginateModel<any> | Model<any> | null
+  instance: ModelResponse | null
   title: string
   options: { [index: string]: boolean }
   populates?: {
@@ -63,6 +65,7 @@ export {
   ListConfig,
   PaginationOptions,
   Pagination,
+  ModelResponse,
   ResponseMessage,
   SearchPayload,
   SearchModelKey,

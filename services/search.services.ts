@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { AlbumResponse } from '~/types/Album'
 import { CategoryResponse } from '~/types/Category'
 import { SearchModel, SearchModelKey, SearchModelsSchema, SearchParams, SearchPayload, SearchResult } from '~/types/ReqRes'
@@ -71,7 +72,7 @@ class SearchServices {
 const searchSchema: SearchModelsSchema = {
   albums: {
     instance: Album,
-    title: 'Альбомы',
+    title: 'Albums',
     options: {
       _id: true,
       title: true,
@@ -89,7 +90,7 @@ const searchSchema: SearchModelsSchema = {
 
   frames: {
     instance: Frame,
-    title: 'Фреймы',
+    title: 'Frames',
     options: {
       _id: true,
       title: true,
@@ -106,31 +107,31 @@ const searchSchema: SearchModelsSchema = {
 
   artists: {
     instance: Artist,
-    title: 'Артисты',
+    title: 'Artists',
     options: { _id: true, title: true, avatar: true }
   },
 
   genres: {
     instance: Genre,
-    title: 'Жанры',
+    title: 'Genres',
     options: { _id: true, title: true, avatar: true }
   },
 
   periods: {
     instance: Period,
-    title: 'Даты',
+    title: 'Years',
     options: { _id: true, title: true, avatar: true }
   },
 
   collections: {
     instance: Collection,
-    title: 'Коллекции',
+    title: 'Collections',
     options: { _id: true, title: true, avatar: true }
   },
 
   playlists: {
     instance: Playlist,
-    title: 'Плейлисты',
+    title: 'Playlists',
     options: { _id: true, title: true, avatar: true }
   }
 }

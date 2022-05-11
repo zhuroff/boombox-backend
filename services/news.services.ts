@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { ApiError } from '~/exceptions/api-errors'
 import { CloudLib } from '~/lib/cloud.lib'
 import { PaginationDTO } from '~/dtos/pagination.dto'

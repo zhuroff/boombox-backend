@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { Types } from 'mongoose'
 import { PlaylistItemDTO } from '~/dtos/playlist.dto'
 import { ApiError } from '~/exceptions/api-errors'

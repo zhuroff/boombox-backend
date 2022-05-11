@@ -1,11 +1,12 @@
+import 'module-alias/register'
 import { Router } from 'express'
-import controller from '~/controllers/backup.controller'
+import { BackupController} from '~/controllers/backup.controller'
 
 const router = Router()
 
-router.get('/list', controller.backupList)
-router.post('/save', controller.backupSave)
-router.post('/restore/:date', controller.backupRestore)
-router.delete('/:date', controller.backupDelete)
+router.get('/list', BackupController.list)
+router.post('/save', BackupController.save)
+router.post('/restore/:date', BackupController.restore)
+router.delete('/:date', BackupController.remove)
 
 export default router

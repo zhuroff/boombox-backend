@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { Router } from 'express'
 import { ArtistsController } from '~/controllers/artists.controller'
 import upload from '~/middleware/upload'

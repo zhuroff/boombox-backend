@@ -1,3 +1,4 @@
+import 'module-alias/register'
 import { Router } from 'express'
 import { RadioController } from '~/controllers/radio.controller'
 
