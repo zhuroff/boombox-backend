@@ -14,23 +14,3 @@ export class SearchController {
     }
   }
 }
-
-// const discogs = async (req: Request, res: Response) => {
-//   const discogsUrl = `
-//     type=release
-//     &artist=${req.body.artist}
-//     &release_title=${req.body.album}
-//     &page=${req.body.page}
-//     &sort=released
-//     &per_page=100
-//   `
-
-//   try {
-//     const discogsQuery = CloudLib.discogsQueryLink(discogsUrl)
-//     const discogsResponse = await CloudLib.get(encodeURI(discogsQuery))
-
-//     res.json(discogsResponse.data)
-//   } catch (error) {
-//     res.status(500).json(error)
-//   }
-// }

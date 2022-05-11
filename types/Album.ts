@@ -73,6 +73,12 @@ type AlbumPageResponse = {
   pagination: PaginationDTO
 }
 
+type DiscogsPayload = {
+  artist: string
+  album: string
+  page: number
+}
+
 interface IAlbum extends Document, AlbumModel {}
 
 export {
@@ -84,5 +90,6 @@ export {
   AlbumResponse,
   AlbumPageResponse,
   AlbumModel,
+  DiscogsPayload,
   IAlbum
 }
