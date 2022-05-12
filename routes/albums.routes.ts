@@ -8,6 +8,5 @@ router.post('/', AlbumsController.list)
 router.get('/:id', AlbumsController.single)
 router.get('/:id/:booklet', AlbumsController.booklet)
 router.patch('/:id/description', AlbumsController.description)
-router.post('/:id/discogs', AlbumsController.discogs)
 
 export default router

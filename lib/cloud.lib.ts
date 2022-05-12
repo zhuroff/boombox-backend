@@ -13,6 +13,10 @@ export class CloudLib {
     return `${process.env['DISCOGS_DOMAIN']}/database/search?${param}&key=${process.env['DISCOGS_KEY']}&secret=${process.env['DISCOGS_SECRET']}`
   }
 
+  static discogsReleaseLink(id: number) {
+    return `${process.env['DISCOGS_DOMAIN']}/releases/${id}?key=${process.env['DISCOGS_KEY']}&secret=${process.env['DISCOGS_SECRET']}`
+  }
+
   static async getImageLink(id: number) {
     const query = this.cloudQueryLink(`getfilelink?fileid=${id}`)
     const response = await this.get(query)

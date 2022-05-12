@@ -3,7 +3,7 @@ import { Request } from 'express'
 import { ApiError } from '~/exceptions/api-errors'
 import { Album } from '~/models/album.model'
 import { CloudLib } from '~/lib/cloud.lib'
-import { AlbumResponse, AlbumPageResponse, CloudAlbumFile, DiscogsPayload } from '~/types/Album'
+import { AlbumResponse, AlbumPageResponse, CloudAlbumFile } from '~/types/Album'
 import { PaginationOptions, Populate, ResponseMessage } from '~/types/ReqRes'
 import { AlbumItemDTO, AlbumSingleDTO } from '~/dtos/album.dto'
 import { PaginationDTO } from '~/dtos/pagination.dto'
@@ -78,21 +78,6 @@ class AlbumsServices {
     const albumBooklet = await CloudLib.covers(preparedData)
 
     return albumBooklet.map((el) => el.albumCover)
-  }
-
-  async discogs({ artist, album, page }: DiscogsPayload) {
-    const discogsUrl = `
-      type=release
-      &artist=${artist}
-      &release_title=${album}
-      &page=${page}
-      &sort=released
-      &per_page=100
-    `
-    const discogsQuery = CloudLib.discogsQueryLink(discogsUrl)
-    const discogsResponse = await CloudLib.get(encodeURI(discogsQuery))
-
-    return discogsResponse.data
   }
 }
 

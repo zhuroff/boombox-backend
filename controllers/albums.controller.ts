@@ -38,15 +38,4 @@ export class AlbumsController {
       next(error)
     }
   }
-
-  static async discogs(req: Request, res: Response, next: (error: unknown) => void) {
-    const { artist, album, page } = req.body
-
-    try {
-      const result = await albumsServices.discogs({ artist, album, page })
-      res.json(result)
-    } catch (error) {
-      next(error)
-    }
-  }
 }
