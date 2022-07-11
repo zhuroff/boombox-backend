@@ -28,7 +28,7 @@ class AlbumsServices {
       select: { title: true, albumCover: true }
     }
 
-    const dbList: PaginateResult<Document<{}, {}, AlbumResponse>> = await Album.paginate<PaginationOptions>({}, options)
+    const dbList: PaginateResult<Document<{}, {}, AlbumResponse>> = await Album.paginate({}, options)
 
     if (dbList) {
       const { totalDocs, totalPages, page } = dbList
