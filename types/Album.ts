@@ -1,95 +1,58 @@
 import 'module-alias/register'
 import { Document, Types } from 'mongoose'
-import { CloudTrack, TrackModel, TrackResponse } from './Track'
 import { CategoryBasic } from './Category'
 import { AlbumItemDTO } from '~/dtos/album.dto'
 import { PaginationDTO } from '~/dtos/pagination.dto'
+import { TrackReqPayload, TrackResponse } from './Track'
 
-type CloudFolder = {
-  isfolder: true
-  name: string
-  folderid: number
-  modified: string
-}
-
-type CloudAlbumFile = {
-  isfolder: false
-  name: string
-  contenttype: string
-  fileid: number
-}
-
-type CloudAlbumTrack = CloudAlbumFile & {
-  title: string
-}
-
-type CloudAlbumContent = CloudFolder | CloudAlbumFile | CloudAlbumTrack
-
-type PreparedAlbum = {
+export type AlbumPreform = {
+  resource_id: string
   title: string
   artist: string
   genre: string
   period: string
-  albumCover: number | string
-  albumCoverArt: number
-  coverID?: number
-  toStay?: boolean
-  folderid: number
-  modified: Date | string
+  albumCover: string
+  albumCoverArt?: string
+  modified: string
   description: string
-  folderTracks: CloudTrack[]
+  folderTracks: TrackReqPayload[]
 }
 
-type AlbumCommon = {
+export type AlbumModel = {
+  resource_id: string
   title: string
-  albumCoverArt: number
-  folderid: number
-  description: string
-  inCollections: Types.ObjectId[]
-}
-
-type AlbumModel = AlbumCommon & {
   artist: Types.ObjectId
   genre: Types.ObjectId
   period: Types.ObjectId
   dateCreated: Date
-  albumCover: number
+  albumCover: string
+  albumCoverArt?: string
   modified: Date
-  tracks: Types.ObjectId[] | TrackModel[]
-  toStay?: boolean
+  description: string
+  tracks: Types.ObjectId[]
+  inCollections: Types.ObjectId[]
 }
 
-type AlbumResponse = AlbumCommon & {
-  _id: Types.ObjectId
+type ExcludedAlbumFields = 'artist' | 'genre' | 'period' | 'inCollections' | 'tracks'
+
+export type AlbumResponse = Omit<AlbumModel, ExcludedAlbumFields> & {
+  _id: string
   artist: CategoryBasic
   genre: CategoryBasic
   period: CategoryBasic
-  albumCover: string | number
+  inCollections: CategoryBasic[]
   tracks: TrackResponse[]
 }
 
-type AlbumPageResponse = {
+export type AlbumPageResponse = {
   docs: AlbumItemDTO[]
   pagination: PaginationDTO
 }
 
-type DiscogsPayload = {
+export type DiscogsPayload = {
   artist: string
   album: string
   page: number
 }
 
-interface IAlbum extends Document, AlbumModel {}
-
-export {
-  CloudFolder,
-  CloudAlbumFile,
-  CloudAlbumTrack,
-  CloudAlbumContent,
-  PreparedAlbum,
-  AlbumResponse,
-  AlbumPageResponse,
-  AlbumModel,
-  DiscogsPayload,
-  IAlbum
-}
+export interface AlbumDocument extends Document, AlbumModel { }

@@ -1,54 +1,42 @@
-import { Document, Types, PaginateModel } from 'mongoose'
-import { CategoryBasic } from './Category'
+import { Document, Types } from 'mongoose';
+import { CategoryBasic } from './Category';
+import { CloudFile } from './Cloud';
 
-type CloudTrack = {
-  modified: string
-  isfolder: false
-  fileid: number
-  contenttype: 'audio/flac'
+export type TrackModel = {
+  resource_id: string
   title: string
-}
-
-type TrackCommon = {
-  _id: Types.ObjectId
-  fileid: number
-  title: string
-  duration: number
-  listened: number
+  dateCreated: Date
+  created: string
+  path: string
+  mime_type: string
+  media_type: string
+  lyrics?: string
+  duration?: number
+  listened?: number
   inAlbum: Types.ObjectId
-  inPlaylists: Types.ObjectId[]
-}
-
-type TrackModel = TrackCommon & {
-  lyrics: string
+  inPlaylists?: Types.ObjectId[]
   artist: Types.ObjectId
 }
 
-type TrackResponse = TrackCommon & {
-  link: string
-  artist: CategoryBasic
+export type TrackReqPayload = Omit<CloudFile, 'file' | 'name' | 'type'> & {
+  title: string
 }
 
-type TrackSearchPayload = {
-  title: string
-  thumbnail: string
-  artist: string
+type ExcludedTrackFields = 'resource_id' | 'dateCreated' | 'created' | 'artist' | 'inAlbum' | 'inPlaylists'
+
+export type TrackResponse = Omit<TrackModel, ExcludedTrackFields> & {
+  _id: string
+  file: string
+  artist: CategoryBasic
+  inAlbum: CategoryBasic
+  inPlaylists?: CategoryBasic[]
+}
+
+export type TrackSearchPayload = {
+  title: string,
+  thumbnail: string,
+  artist: string,
   lyrics: string
 }
 
-interface TrackModelDocument extends TrackModel, Document {
-  _id: Types.ObjectId
-  _doc: TrackModel
-  dateCreated: Date
-}
-
-interface TrackModelPaginated<T extends Document> extends PaginateModel<T> {}
-
-export {
-  CloudTrack,
-  TrackModel,
-  TrackResponse,
-  TrackSearchPayload,
-  TrackModelDocument,
-  TrackModelPaginated
-}
+export interface TrackDocument extends Document, TrackModel { }

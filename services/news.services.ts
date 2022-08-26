@@ -18,7 +18,7 @@ class NewsServices {
       fields: 'id,title,dates,description,is_free,images,site_url,price',
     }
 
-    const response: AxiosResponse<NewsResponse> = await CloudLib.get('https://kudago.com/public-api/v1.4/events/', { params })
+    const response: AxiosResponse<NewsResponse> = await CloudLib.get('events/', { params }, 'https://kudago.com/public-api/v1.4')
 
     if (response?.status === 200) {
       const paginationPayload = {
@@ -38,9 +38,9 @@ class NewsServices {
           return 0
         })
         .map((el) => new NewsItemDTO(el))
-      
+
       const pagination = new PaginationDTO(paginationPayload)
-      
+
       return { docs, pagination }
     }
 

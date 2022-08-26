@@ -1,12 +1,13 @@
 import 'module-alias/register'
-import { model, Schema } from 'mongoose'
-import { CategoryModel, ICategory } from '~/types/Category'
-import mongoosePaginate from 'mongoose-paginate-v2'
+import { model, Schema, PaginateModel } from 'mongoose'
+import { CategoryDocument } from '~/types/Category'
+import paginate from 'mongoose-paginate-v2'
 
-const ArtistSchema: Schema<CategoryModel> = new Schema({
+const ArtistSchema = new Schema({
   title: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
 
   dateCreated: {
@@ -41,7 +42,5 @@ const ArtistSchema: Schema<CategoryModel> = new Schema({
   ]
 })
 
-ArtistSchema.index({ title: 'text' })
-ArtistSchema.plugin(mongoosePaginate)
-
-export const Artist = model<CategoryModel>('artists', ArtistSchema) as ICategory<CategoryModel>
+ArtistSchema.plugin(paginate)
+export const Artist = model<CategoryDocument, PaginateModel<CategoryDocument>>('artists', ArtistSchema)

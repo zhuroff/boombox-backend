@@ -1,12 +1,13 @@
 import 'module-alias/register'
-import { model, Schema } from 'mongoose'
-import { CategoryModel, ICategory } from '~/types/Category'
-import mongoosePaginate from 'mongoose-paginate-v2'
+import { model, Schema, PaginateModel } from 'mongoose'
+import { CategoryDocument } from '~/types/Category'
+import paginate from 'mongoose-paginate-v2'
 
-const GenreSchema: Schema = new Schema({
+const GenreSchema = new Schema({
   title: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
 
   dateCreated: {
@@ -41,7 +42,5 @@ const GenreSchema: Schema = new Schema({
   ]
 })
 
-GenreSchema.index({ title: 'text' })
-GenreSchema.plugin(mongoosePaginate)
-
-export const Genre = model<CategoryModel>('genres', GenreSchema) as ICategory<CategoryModel>
+GenreSchema.plugin(paginate)
+export const Genre = model<CategoryDocument, PaginateModel<CategoryDocument>>('genres', GenreSchema)

@@ -1,53 +1,37 @@
 import 'module-alias/register'
-import { Types } from 'mongoose'
 import { AlbumResponse } from '~/types/Album'
 import { CategoryBasic } from '~/types/Category'
 import { TrackDTO } from '~/dtos/track.dto'
 
 export class AlbumItemDTO {
-  _id: Types.ObjectId
+  _id: string
   title: string
-  albumCover: string | number
-  inCollections: Types.ObjectId[]
+  albumCover: string
+  inCollections: CategoryBasic[]
   artist: CategoryBasic
   genre: CategoryBasic
   period: CategoryBasic
 
-  constructor(album: AlbumResponse) {
+  constructor(album: AlbumResponse, albumCover: string) {
     this._id = album._id
     this.title = album.title
-    this.albumCover = album.albumCover
+    this.albumCover = albumCover
     this.inCollections = album.inCollections
-    this.artist = { _id: album.artist._id, title: album.artist.title }
-    this.genre = { _id: album.genre._id, title: album.genre.title }
-    this.period = { _id: album.period._id, title: album.period.title }
+    this.artist = album.artist
+    this.genre = album.genre
+    this.period = album.period
   }
 }
 
-export class AlbumSingleDTO {
-  title: string
-  artist: CategoryBasic
-  genre: CategoryBasic
-  period: CategoryBasic
-  albumCoverArt: number
-  folderid: number
+export class AlbumSingleDTO extends AlbumItemDTO {
+  albumCoverArt?: string
   description: string
-  _id: Types.ObjectId
   tracks: TrackDTO[]
-  albumCover: string | number
-  inCollections: Types.ObjectId[]
 
-  constructor(album: AlbumResponse, albumCover: string | number, tracks: TrackDTO[]) {
-    this._id = album._id
-    this.title = album.title
-    this.artist = { _id: album.artist._id, title: album.artist.title }
-    this.genre = { _id: album.genre._id, title: album.genre.title }
-    this.period = { _id: album.period._id, title: album.period.title }
-    this.albumCover = albumCover
+  constructor(album: AlbumResponse, albumCover: string, tracks: TrackDTO[]) {
+    super(album, albumCover)
     this.albumCoverArt = album.albumCoverArt
-    this.folderid = album.folderid
     this.description = album.description
     this.tracks = tracks
-    this.inCollections = album.inCollections
   }
 }

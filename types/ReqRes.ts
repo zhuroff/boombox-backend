@@ -5,6 +5,7 @@ import { CategoryResponse } from './Category'
 type Populate = {
   path: string
   select: string[]
+  [key: string]: unknown
 }
 
 type ListConfig = {
@@ -13,7 +14,7 @@ type ListConfig = {
   sort: { [index: string]: number }
 }
 
-type PaginationOptions = ListConfig & {  
+type PaginationOptions = ListConfig & {
   select: { [index: string]: boolean }
   populate?: Populate | Populate[]
   lean?: boolean

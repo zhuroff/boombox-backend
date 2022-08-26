@@ -1,12 +1,18 @@
 import 'module-alias/register'
-import { model, PaginateModel, Schema } from 'mongoose'
-import { AlbumModel } from '~/types/Album'
-import mongoosePaginate from 'mongoose-paginate-v2'
+import { model, Schema, PaginateModel } from 'mongoose'
+import { AlbumDocument } from '~/types/Album'
+import paginate from 'mongoose-paginate-v2'
 
-const AlbumSchema: Schema<AlbumModel> = new Schema({
+const AlbumSchema = new Schema({
+  resource_id: {
+    type: String,
+    requried: true
+  },
+
   title: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
 
   artist: {
@@ -33,18 +39,13 @@ const AlbumSchema: Schema<AlbumModel> = new Schema({
   },
 
   albumCover: {
-    type: Number,
+    type: String,
     required: true
   },
 
   albumCoverArt: {
-    type: Number,
+    type: String,
     required: false
-  },
-
-  folderid: {
-    type: Number,
-    required: true
   },
 
   modified: {
@@ -74,7 +75,5 @@ const AlbumSchema: Schema<AlbumModel> = new Schema({
   ]
 })
 
-AlbumSchema.index({ title: 'text' })
-AlbumSchema.plugin(mongoosePaginate)
-
-export const Album = model<AlbumModel, PaginateModel<AlbumModel>>('albums', AlbumSchema)
+AlbumSchema.plugin(paginate)
+export const Album = model<AlbumDocument, PaginateModel<AlbumDocument>>('albums', AlbumSchema)

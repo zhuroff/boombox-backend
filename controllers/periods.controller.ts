@@ -2,7 +2,7 @@ import 'module-alias/register'
 import { Request, Response } from 'express'
 import { Period } from '~/models/period.model'
 import { PaginateModel } from 'mongoose'
-import { CategoryModel } from '~/types/Category'
+import { CategoryDocument } from '~/types/Category'
 import categoriesServices from '~/services/categories.services'
 import filesServices from '~/services/files.services'
 
@@ -36,7 +36,7 @@ export class PeriodsController {
 
   static async upload(req: Request, res: Response, next: (error: unknown) => void) {
     try {
-      const response = await filesServices.upload<PaginateModel<CategoryModel>>(Period, req)
+      const response = await filesServices.upload<PaginateModel<CategoryDocument>>(Period, req)
       return res.json(response)
     } catch (error) {
       next(error)

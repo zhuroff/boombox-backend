@@ -1,28 +1,29 @@
 import 'module-alias/register'
-import { Types } from 'mongoose'
-import { TrackResponse } from '~/types/Track'
 import { CategoryBasic } from '~/types/Category'
+import { TrackResponse } from '~/types/Track'
 
-export class TrackDTO {  
-  link: string
+export class TrackDTO {
+  _id: string
   title: string
-  fileid: number
-  duration: number
-  listened: number
+  link: string
+  mime_type: string
+  media_type: string
+  duration?: number
+  listened?: number
   artist: CategoryBasic
-  _id: Types.ObjectId
-  inAlbum: Types.ObjectId
-  inPlaylists: Types.ObjectId[]
+  inAlbum: CategoryBasic
+  inPlaylists?: CategoryBasic[]
 
   constructor(track: TrackResponse) {
-    this.link = track.link
+    this._id = track._id
     this.title = track.title
-    this.fileid = track.fileid
+    this.link = track.file
+    this.mime_type = track.mime_type
+    this.media_type = track.media_type
     this.duration = track.duration
     this.listened = track.listened
-    this.artist = { _id: track.artist._id, title: track.artist.title }
+    this.artist = track.artist
     this.inPlaylists = track.inPlaylists
-    this._id = track._id
     this.inAlbum = track.inAlbum
   }
 }

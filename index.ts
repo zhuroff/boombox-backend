@@ -4,6 +4,7 @@ import express, { json } from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
 import morgan from 'morgan'
+import axios from 'axios'
 import newsRoutes from '~/routes/news.routes'
 import albumsRoutes from '~/routes/albums.routes'
 import discogsRoutes from '~/routes/discogs.routes'
@@ -24,9 +25,13 @@ dotenv.config()
 const app = express()
 const PORT = 3000
 
+export const cloudApi = axios.create({
+  headers: { Authorization: String(process.env['CLOUD_OAUTH_TOKEN']) }
+})
+
 mongoose.connect(process.env['MONGO_URI'] as string)
-.then(() => console.log('MongoDB connected'))
-.catch((error) => console.log(error))
+  .then(() => console.log('MongoDB connected'))
+  .catch((error) => console.log(error))
 
 app.use(cors())
 app.use(morgan('tiny'))

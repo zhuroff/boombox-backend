@@ -1,12 +1,13 @@
 import 'module-alias/register'
-import { model, Schema } from 'mongoose'
-import { CategoryModel, ICategory } from '~/types/Category'
-import mongoosePaginate from 'mongoose-paginate-v2'
+import { model, Schema, PaginateModel } from 'mongoose'
+import { CategoryDocument } from '~/types/Category'
+import paginate from 'mongoose-paginate-v2'
 
-const PeriodSchema: Schema = new Schema({
+const PeriodSchema = new Schema({
   title: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
 
   dateCreated: {
@@ -41,7 +42,5 @@ const PeriodSchema: Schema = new Schema({
   ]
 })
 
-PeriodSchema.index({ title: 'text' })
-PeriodSchema.plugin(mongoosePaginate)
-
-export const Period = model<CategoryModel>('periods', PeriodSchema) as ICategory<CategoryModel>
+PeriodSchema.plugin(paginate)
+export const Period = model<CategoryDocument, PaginateModel<CategoryDocument>>('periods', PeriodSchema)

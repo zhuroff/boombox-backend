@@ -1,26 +1,25 @@
 import 'module-alias/register'
-import { Document, Types, PaginateModel } from 'mongoose'
+import { Document, Types } from 'mongoose'
 import { CategoryItemDTO } from '~/dtos/category.dto'
 import { PaginationDTO } from '~/dtos/pagination.dto'
 import { AlbumResponse } from './Album'
 
-type CategoryKeys = {
+export type CategoryKeys = {
   artist: Types.ObjectId
   genre: Types.ObjectId
   period: Types.ObjectId
 }
 
-type CategoryBasic = {
+export type CategoryBasic = {
   _id: Types.ObjectId
   title: string
 }
 
-interface CategoryAlbum {
+export type CategoryAlbum = {
   [key: string]: Types.ObjectId | string | undefined
 }
 
-interface CategoryModel extends Document {
-  _id: Types.ObjectId
+export type CategoryModel = {
   title: string
   dateCreated: Date
   poster: string
@@ -29,9 +28,7 @@ interface CategoryModel extends Document {
   framesAlbums: Types.ObjectId[]
 }
 
-interface ICategory<T extends Document> extends PaginateModel<T> {}
-
-type CategoryResponse = {
+export type CategoryResponse = {
   _id: Types.ObjectId,
   title: string,
   avatar: string,
@@ -39,23 +36,14 @@ type CategoryResponse = {
   framesAlbums: Types.ObjectId[]
 }
 
-type CategoryPageResponse = CategoryResponse & {
+export type CategoryPageResponse = CategoryResponse & {
   poster: string
   albums: AlbumResponse[]
 }
 
-type CategoriesPageResponse = {
+export type CategoriesPageResponse = {
   docs: CategoryItemDTO[]
   pagination: PaginationDTO
 }
 
-export {
-  CategoryKeys,
-  CategoryBasic,
-  CategoryModel,
-  CategoryAlbum,
-  ICategory,
-  CategoryResponse,
-  CategoryPageResponse,
-  CategoriesPageResponse
-}
+export interface CategoryDocument extends Document, CategoryModel { }

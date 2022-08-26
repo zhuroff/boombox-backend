@@ -1,7 +1,7 @@
 import 'module-alias/register'
 import { Request } from 'express'
 import { Document, PaginateModel, PaginateResult } from 'mongoose'
-import { CategoryModel, CategoryResponse, CategoryPageResponse } from '~/types/Category'
+import { CategoryResponse, CategoryPageResponse, CategoryDocument } from '~/types/Category'
 import { PaginationOptions } from '~/types/ReqRes'
 import { CategoryItemDTO, CategoryPageDTO } from '~/dtos/category.dto'
 import { PaginationDTO } from '~/dtos/pagination.dto'
@@ -14,7 +14,7 @@ class CategoriesServices {
       { path: 'albums', select: ['_id'] },
       { path: 'framesAlbums', select: ['_id'], model: Frame }
     ]
-  
+
     const options: PaginationOptions = {
       page: req.body.page,
       limit: req.body.limit,
@@ -68,7 +68,7 @@ class CategoriesServices {
     return result
   }
 
-  async create(Model: PaginateModel<CategoryModel>, title: string) {
+  async create(Model: PaginateModel<CategoryDocument>, title: string) {
     const payload = {
       title,
       albums: [],

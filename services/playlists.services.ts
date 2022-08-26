@@ -16,7 +16,7 @@ class PlaylistsServices {
       title,
       tracks: [{ track, order: 1 }]
     }
-    
+
     const newPlaylist = new Playlist(payload)
 
     await newPlaylist.save()
@@ -75,17 +75,16 @@ class PlaylistsServices {
         ]
       })
       .lean()
-    
+
     if (response) {
       const preparedTracks = response.tracks.map(async (el) => {
         const cover = await CloudLib.getImageLink(Number(el.track.inAlbum.albumCover))
-        const link = await CloudLib.tracks([el.track])
+        // const link = await CloudLib.tracks([el.track])
 
         return {
           order: el.order,
           ...{
             ...el.track,
-            link: link[0]?.link,
             inAlbum: {
               ...el.track.inAlbum,
               albumCover: cover
@@ -128,7 +127,7 @@ class PlaylistsServices {
 
   async reorder({ oldOrder, newOrder }: CollectionReorder, _id: string): Promise<ResponseMessage> {
     const targetPlaylist = await Playlist.findById(_id).exec()
-    
+
     if (targetPlaylist) {
       targetPlaylist.tracks.splice(
         newOrder, 0,

@@ -1,12 +1,18 @@
 import 'module-alias/register'
-import { model, Schema } from 'mongoose'
-import { TrackModelDocument, TrackModelPaginated } from '~/types/Track'
-import mongoosePaginate from 'mongoose-paginate-v2'
+import { model, Schema, PaginateModel } from 'mongoose'
+import { TrackDocument } from '~/types/Track'
+import paginate from 'mongoose-paginate-v2'
 
-const TrackSchema: Schema<TrackModelDocument> = new Schema({
-  fileid: {
-    type: Number,
+const TrackSchema = new Schema({
+  resource_id: {
+    type: String,
     required: true
+  },
+
+  title: {
+    type: String,
+    required: true,
+    index: true
   },
 
   dateCreated: {
@@ -14,7 +20,22 @@ const TrackSchema: Schema<TrackModelDocument> = new Schema({
     default: Date.now
   },
 
-  title: {
+  created: {
+    type: String,
+    required: true
+  },
+
+  path: {
+    type: String,
+    required: true
+  },
+
+  mime_type: {
+    type: String,
+    required: true
+  },
+
+  media_type: {
     type: String,
     required: true
   },
@@ -56,7 +77,5 @@ const TrackSchema: Schema<TrackModelDocument> = new Schema({
   }
 })
 
-TrackSchema.index({ title: 'text' })
-TrackSchema.plugin(mongoosePaginate)
-
-export const Track = model<TrackModelDocument>('tracks', TrackSchema) as TrackModelPaginated<TrackModelDocument>
+TrackSchema.plugin(paginate)
+export const Track = model<TrackDocument, PaginateModel<TrackDocument>>('tracks', TrackSchema)

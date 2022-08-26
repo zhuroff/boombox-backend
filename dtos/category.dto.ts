@@ -30,6 +30,7 @@ export class CategoryPageDTO extends CategoryItemDTO {
     this.poster = category.poster
     this.title = category.title
     this._id = category._id
+    // @ts-ignore
     this.albums = albums.map((album) => new AlbumItemDTO(album))
     this.frames = category.framesAlbums
   }
