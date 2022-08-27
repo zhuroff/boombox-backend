@@ -3,15 +3,16 @@ import { Request } from 'express'
 import { ApiError } from '~/exceptions/api-errors'
 import { Album } from '~/models/album.model'
 import { CloudLib } from '~/lib/cloud.lib'
-import { AlbumResponse, AlbumPageResponse } from '~/types/Album'
+import { AlbumResponse } from '~/types/Album'
 import { PaginationOptions, Populate, ResponseMessage } from '~/types/ReqRes'
 import { AlbumItemDTO, AlbumSingleDTO } from '~/dtos/album.dto'
 import { PaginationDTO } from '~/dtos/pagination.dto'
 import { TrackDTO } from '~/dtos/track.dto'
 import { CloudFile, CloudFolder } from '~/types/Cloud'
+import { sanitizeURL } from '~/controllers/synchronize.controller'
 
 class AlbumsServices {
-  async list(req: Request): Promise<AlbumPageResponse> {
+  async list(req: Request) {
     const populate: Populate[] = [
       { path: 'artist', select: ['title'] },
       { path: 'genre', select: ['title'] },
@@ -47,7 +48,7 @@ class AlbumsServices {
     throw ApiError.BadRequest('Incorrect request options')
   }
 
-  async single(id: string): Promise<AlbumSingleDTO> {
+  async single(id: string) {
     const dbSingle: AlbumResponse = await Album.findById(id)
       .populate({ path: 'artist', select: ['title'] })
       .populate({ path: 'genre', select: ['title'] })
@@ -74,14 +75,9 @@ class AlbumsServices {
     return { message: 'Description updated' }
   }
 
-  async booklet(id: string): Promise<(string | number)[]> {
-    const folderQuery = CloudLib.cloudQueryLink(`listfolder?folderid=${id}`)
-    const listFolder = await CloudLib.get<any>(folderQuery)
-    const fileContents: CloudFolder[] = listFolder.data.metadata.contents
-    const preparedData = fileContents.map((el) => ({ albumCover: el.path }))
-    const albumBooklet = await CloudLib.covers(preparedData)
-
-    return albumBooklet.map((el) => el.albumCover)
+  async booklet(path: string) {
+    const bookletRes = await CloudLib.get<CloudFolder>(sanitizeURL(path))
+    return bookletRes.data._embedded.items.map((item) => 'file' in item && item.file)
   }
 }
 

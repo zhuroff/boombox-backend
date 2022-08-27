@@ -14,7 +14,7 @@ import { AlbumPreform, AlbumDocumentExt } from '~/types/Album'
 import { CloudFolder, CloudFolderItem } from '~/types/Cloud'
 import { TrackExtPlaylist, TrackReqPayload } from '~/types/Track'
 
-const sanitizeURL = (path: string) => (
+export const sanitizeURL = (path: string) => (
   encodeURIComponent(path.replace('disk:/', ''))
 )
 
@@ -117,7 +117,7 @@ const saveTracksToDatabase = async (
   }
 }
 
-const buildAlbumsData = (folders: CloudFolderItem[], isModified = false) => {
+const buildAlbumsData = (folders: CloudFolderItem[]) => {
   const albumsMap = folders.map(async (el) => {
     const content = await CloudLib.get<CloudFolder>(sanitizeURL(el.path))
     const preparedAlbumData: AlbumPreform = {
@@ -135,11 +135,6 @@ const buildAlbumsData = (folders: CloudFolderItem[], isModified = false) => {
 
     return preparedAlbumData
   })
-
-  if (isModified) {
-    console.log('Have to be modified!')
-    // modifyAlbumsInDataBase(Promise.all(albumsMap))
-  }
 
   return Promise.all(albumsMap)
 }
@@ -382,25 +377,13 @@ const dbUpdateSplitter = async (cloudAlbums?: CloudFolderItem[], dbAlbums?: Albu
 
   const albumsToAdd: CloudFolderItem[] = []
   const albumsToDel: AlbumDocumentExt[] = []
-  const albumsToFix: { old: AlbumDocumentExt; new: CloudFolderItem }[] = []
 
   cloudAlbums.forEach((cloudAlbum) => {
     const matched: AlbumDocumentExt | undefined = dbAlbums.find(({ resource_id }) => (
       resource_id === cloudAlbum.resource_id
     ))
 
-    if (matched) {
-      matched.toStay = true
-
-      const dbModifiedDate = new Date(matched.modified).getTime()
-      const cloudModifiedDate = new Date(cloudAlbum.modified).getTime()
-
-      if (dbModifiedDate !== cloudModifiedDate) {
-        albumsToFix.push({ old: matched, new: cloudAlbum })
-      }
-    } else {
-      albumsToAdd.push(cloudAlbum)
-    }
+    matched ? matched.toStay = true : albumsToAdd.push(cloudAlbum)
   })
 
   albumsToDel.push(...dbAlbums.filter((el) => !el.toStay))
@@ -411,10 +394,6 @@ const dbUpdateSplitter = async (cloudAlbums?: CloudFolderItem[], dbAlbums?: Albu
 
   if (albumsToDel.length) {
     await deleteDatabaseEntries(albumsToDel)
-  }
-
-  if (albumsToFix.length) {
-    console.log(albumsToFix)
   }
 
   return true
@@ -452,8 +431,6 @@ const synchronize = async (req: Request, res: Response) => {
     })
 }
 
-const controller = {
-  synchronize
-}
+const controller = { synchronize }
 
 export default controller
