@@ -14,6 +14,7 @@ import { Period } from '~/models/period.model'
 import {
   AlbumPreform,
   AlbumDocument,
+  AlbumDocumentExt,
 } from '~/types/Album'
 import { CloudFolder, CloudFolderItem } from '~/types/Cloud'
 import { TrackReqPayload } from '~/types/Track'
@@ -378,7 +379,7 @@ const createDatabaseEntries = async (albums: AlbumPreform[]) => {
 
 /* ========================== PREPARING ============================= */
 
-const dbUpdateSplitter = async (cloudAlbums?: CloudFolderItem[], dbAlbums?: AlbumDocument[]) => {
+const dbUpdateSplitter = async (cloudAlbums?: CloudFolderItem[], dbAlbums?: AlbumDocumentExt[]) => {
   if (!cloudAlbums) {
     throw new Error('Cloud root directory is not exist')
   }
@@ -391,57 +392,45 @@ const dbUpdateSplitter = async (cloudAlbums?: CloudFolderItem[], dbAlbums?: Albu
     return await createDatabaseEntries(await buildAlbumsData(cloudAlbums))
   }
 
-  console.log(cloudAlbums, dbAlbums)
+  const albumsToAdd: CloudFolderItem[] = []
+  const albumsToDel: AlbumDocumentExt[] = []
+  const albumsToFix: { old: AlbumDocument; new: CloudFolderItem }[] = []
 
-  // const albumsToAdd: CloudFolder[] = []
-  // const albumsToDel: AlbumDocument[] = []
+  cloudAlbums.forEach((cloudAlbum) => {
+    const matched: AlbumDocumentExt | undefined = dbAlbums.find((dbAlbum) => (
+      dbAlbum.resource_id === cloudAlbum.resource_id
+    ))
 
-  // cloudAlbums.forEach((cloudAlbum) => {
-  //   console.log(
-  //     'cloud: ', cloudAlbum.created,
-  //     dbAlbums[0].
-  //   )
-  // })
+    if (matched) {
+      matched.toStay = true
+
+      const dbModifiedDate = new Date(matched.modified).getTime()
+      const cloudModifiedDate = new Date(cloudAlbum.modified).getTime()
+
+      if (dbModifiedDate !== cloudModifiedDate) {
+        albumsToFix.push({ old: matched, new: cloudAlbum })
+      }
+    } else {
+      albumsToAdd.push(cloudAlbum)
+    }
+  })
+
+  albumsToDel.push(...dbAlbums.filter((el) => !el.toStay))
+
+  if (albumsToAdd.length) {
+    await createDatabaseEntries(await buildAlbumsData(albumsToAdd))
+  }
+
+  if (albumsToDel.length) {
+    console.log(777, albumsToDel)
+    // await deleteDatabaseEntries(albumsToDel)
+  }
+
+  if (albumsToFix.length) {
+    console.log(albumsToFix)
+  }
 
   return true
-
-  // const albumsToFix = [] as { old: AlbumDocument, new: CloudFolder }[]
-
-  // cloudAlbums.forEach((cloudAlbum) => {
-  //   const matched = dbAlbums.find((dbAlbum) => (
-  //     dbAlbum.folderid === cloudAlbum.folderid
-  //   ))
-
-  //   if (matched) {
-  //     // use Type & { toStay: boolean }
-  //     matched.toStay = true
-
-  //     const dbModifiedDate = new Date(matched.modified).getTime()
-  //     const cloudModifiedDate = new Date(cloudAlbum.modified).getTime()
-
-  //     if (dbModifiedDate !== cloudModifiedDate) {
-  //       albumsToFix.push({ old: matched, new: cloudAlbum })
-  //     }
-  //   } else {
-  //     albumsToAdd.push(cloudAlbum)
-  //   }
-  // })
-
-  // albumsToDel.push(...dbAlbums.filter((el) => !el.toStay))
-
-  // if (albumsToAdd.length) {
-  //   await createDatabaseEntries(albumsToAdd)
-  // }
-
-  // if (albumsToDel.length) {
-  //   await deleteDatabaseEntries(albumsToDel)
-  // }
-
-  // if (albumsToFix.length) {
-  //   console.log(albumsToFix)
-  // }
-
-  // return true
 }
 
 const fetchDatabaseAlbums = async () => {

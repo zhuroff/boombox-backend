@@ -56,3 +56,4 @@ export type DiscogsPayload = {
 }
 
 export interface AlbumDocument extends Document, AlbumModel { }
+export type AlbumDocumentExt = AlbumDocument & { toStay?: true }
