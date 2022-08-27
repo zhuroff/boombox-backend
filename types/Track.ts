@@ -18,6 +18,11 @@ export type TrackModel = {
   artist: Types.ObjectId
 }
 
+export type TrackExtPlaylist = {
+  _id: Types.ObjectId
+  inPlaylists: Types.ObjectId[]
+}
+
 export type TrackReqPayload = Omit<CloudFile, 'file' | 'name' | 'type'> & {
   title: string
 }

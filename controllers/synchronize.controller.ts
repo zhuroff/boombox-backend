@@ -7,24 +7,12 @@ import { Track } from '~/models/track.model'
 import { Artist } from '~/models/artist.model'
 import { Genre } from '~/models/genre.model'
 import { Period } from '~/models/period.model'
-// import { Collection } from '~/models/collection.model'
-// import { Playlist } from '~/models/playlist.model'
-// import { CategoryModel } from '~/types/Category'
-// import { CloudTrack/*, TrackModel */} from '~/types/Track'
-import {
-  AlbumPreform,
-  AlbumDocument,
-  AlbumDocumentExt,
-} from '~/types/Album'
+import { Collection } from '~/models/collection.model'
+import { Playlist } from '~/models/playlist.model'
+import { CategoryDocument } from '~/types/Category'
+import { AlbumPreform, AlbumDocumentExt } from '~/types/Album'
 import { CloudFolder, CloudFolderItem } from '~/types/Cloud'
-import { TrackReqPayload } from '~/types/Track'
-
-// type CreatingResponse = {
-//   albumID: Types.ObjectId,
-//   artistID: Types.ObjectId,
-//   genreID: Types.ObjectId,
-//   periodID: Types.ObjectId
-// }
+import { TrackExtPlaylist, TrackReqPayload } from '~/types/Track'
 
 const sanitizeURL = (path: string) => (
   encodeURIComponent(path.replace('disk:/', ''))
@@ -232,150 +220,150 @@ const createDatabaseEntries = async (albums: AlbumPreform[]) => {
 
 /* ========================== DELETE ENTRY ============================= */
 
-// const dropTrack = async (trackID: Types.ObjectId) => {
-//   try {
-//     return await Track.deleteOne({ _id: trackID })
-//   } catch (error) {
-//     throw error
-//   }
-// }
+const dropTrack = async (trackID: Types.ObjectId) => {
+  try {
+    return await Track.deleteOne({ _id: trackID })
+  } catch (error) {
+    throw error
+  }
+}
 
-// const deleteTracksFromDatabase = async (tracks: TrackModel[]) => {
-//   try {
-//     const deletingTracks = tracks.map(async (track) => (
-//       await dropTrack(track._id)
-//     ))
+const deleteTracksFromDatabase = async (tracks: TrackExtPlaylist[]) => {
+  try {
+    const deletingTracks = tracks.map(async ({ _id }) => (
+      await dropTrack(_id)
+    ))
 
-//     return await Promise.all(deletingTracks)
-//   } catch (error) {
-//     throw error
-//   }
-// }
+    return await Promise.all(deletingTracks)
+  } catch (error) {
+    throw error
+  }
+}
 
-// const dropAlbum = async (id: Types.ObjectId) => {
-//   try {
-//     await Album.deleteOne({ _id: id })
-//   } catch (error) {
-//     throw error
-//   }
-// }
+const dropAlbum = async (id: Types.ObjectId) => {
+  try {
+    await Album.deleteOne({ _id: id })
+  } catch (error) {
+    throw error
+  }
+}
 
-// const deleteAlbumsFromDatabase = async (albums: AlbumDocument[]) => {
-//   try {
-//     const dbDeleting = albums.map(async (album) => (
-//       await dropAlbum(album._id)
-//     ))
+const deleteAlbumsFromDatabase = async (albums: AlbumDocumentExt[]) => {
+  try {
+    const dbDeleting = albums.map(async (album) => (
+      await dropAlbum(album._id)
+    ))
 
-//     return await Promise.all(dbDeleting)
-//   } catch (error) {
-//     throw error
-//   }
-// }
+    return await Promise.all(dbDeleting)
+  } catch (error) {
+    throw error
+  }
+}
 
-// const unlinkCategory = async (
-//   ...args: [PaginateModel<CategoryModel>, Types.ObjectId, Types.ObjectId]
-// ): Promise<any> => {
-//   const [Model, albumID, categoryID] = args
-//   const query = { _id: categoryID }
-//   const update = { $pull: { albums: albumID } }
-//   const options = { new: true }
+const unlinkCategory = async (
+  ...args: [PaginateModel<CategoryDocument>, Types.ObjectId, Types.ObjectId]
+): Promise<any> => {
+  const [Model, albumID, categoryID] = args
+  const query = { _id: categoryID }
+  const update = { $pull: { albums: albumID } }
+  const options = { new: true }
 
-//   return await Model.findOneAndUpdate(query, update, options)
-// }
+  return await Model.findOneAndUpdate(query, update, options)
+}
 
-// const unlinkCategoriesFromAlbum = async (albums: AlbumDocument[]) => {
-//   try {
-//     const dbUnlinked = albums.map(async (album) => {
-//       await unlinkCategory(Artist, album._id, album.artist)
-//       await unlinkCategory(Genre, album._id, album.genre)
-//       await unlinkCategory(Period, album._id, album.period)
-//       return true
-//     })
+const unlinkCategoriesFromAlbum = async (albums: AlbumDocumentExt[]) => {
+  try {
+    const dbUnlinked = albums.map(async (album) => {
+      await unlinkCategory(Artist, album._id, album.artist)
+      await unlinkCategory(Genre, album._id, album.genre)
+      await unlinkCategory(Period, album._id, album.period)
+      return true
+    })
 
-//     return await Promise.all(dbUnlinked)
-//   } catch (error) {
-//     throw error
-//   }
-// }
+    return await Promise.all(dbUnlinked)
+  } catch (error) {
+    throw error
+  }
+}
 
-// const unlinkCollection = async (collectionID: Types.ObjectId, albumID: Types.ObjectId) => {
-//   const query = { _id: collectionID }
-//   const update = { $pull: { albums: { album: albumID } } }
-//   const options = { new: true }
+const unlinkCollection = async (collectionID: Types.ObjectId, albumID: Types.ObjectId) => {
+  const query = { _id: collectionID }
+  const update = { $pull: { albums: { album: albumID } } }
+  const options = { new: true }
 
-//   try {
-//     return await Collection.findOneAndUpdate(query, update, options)
-//   } catch (error) {
-//     throw error
-//   }
-// }
+  try {
+    return await Collection.findOneAndUpdate(query, update, options)
+  } catch (error) {
+    throw error
+  }
+}
 
-// const unlinkAlbum = async (album: AlbumDocument) => {
-//   if (!album.inCollections.length) return true
+const unlinkAlbum = async (album: AlbumDocumentExt) => {
+  if (!album.inCollections.length) return true
 
-//   const unlinked = album.inCollections.map(async (collectionID) => (
-//     await unlinkCollection(collectionID, album._id)
-//   ))
+  const unlinked = album.inCollections.map(async (collectionID) => (
+    await unlinkCollection(collectionID, album._id)
+  ))
 
-//   return await Promise.all(unlinked)
-// }
+  return await Promise.all(unlinked)
+}
 
-// const unlinkAlbumsFromCollections = async (albums: AlbumDocument[]) => {
-//   const unlinked = albums.map(async (album) => (
-//     await unlinkAlbum(album)
-//   ))
+const unlinkAlbumsFromCollections = async (albums: AlbumDocumentExt[]) => {
+  const unlinked = albums.map(async (album) => (
+    await unlinkAlbum(album)
+  ))
 
-//   return await Promise.all(unlinked)
-// }
+  return await Promise.all(unlinked)
+}
 
-// const unlinkPlaylist = async (playlistID: Types.ObjectId, trackID: Types.ObjectId) => {
-//   const query = { _id: playlistID }
-//   const update = { $pull: { tracks: { track: trackID } } }
-//   const options = { new: true }
+const unlinkPlaylist = async (playlistID: Types.ObjectId, trackID: Types.ObjectId) => {
+  const query = { _id: playlistID }
+  const update = { $pull: { tracks: { track: trackID } } }
+  const options = { new: true }
 
-//   try {
-//     return await Playlist.findOneAndUpdate(query, update, options)
-//   } catch (error) {
-//     throw error
-//   }
-// }
+  try {
+    return await Playlist.findOneAndUpdate(query, update, options)
+  } catch (error) {
+    throw error
+  }
+}
 
-// const unlinkTrack = async (track: TrackModel) => {
-//   if (!track.inPlaylists.length) return true
+const unlinkTrack = async (track: TrackExtPlaylist) => {
+  if (!track.inPlaylists.length) return true
 
-//   const unlinked = track.inPlaylists.map(async (playlistID) => (
-//     await unlinkPlaylist(playlistID, track._id)
-//   ))
+  const unlinked = track.inPlaylists.map(async (playlistID) => (
+    await unlinkPlaylist(playlistID, track._id)
+  ))
 
-//   return await Promise.all(unlinked)
-// }
+  return await Promise.all(unlinked)
+}
 
-// const unlinkTracksFromPlaylists = async (tracks: TrackModel[]) => {
-//   const unlinked = tracks.map(async (track) => (
-//     await unlinkTrack(track)
-//   ))
+const unlinkTracksFromPlaylists = async (tracks: TrackExtPlaylist[]) => {
+  const unlinked = tracks.map(async (track) => (
+    await unlinkTrack(track)
+  ))
 
-//   return await Promise.all(unlinked)
-// }
+  return await Promise.all(unlinked)
+}
 
-// const deleteDatabaseEntries = async (albums: AlbumDocument[]) => {
-//   const tracks = albums.flatMap((album) => (
-//     album.tracks as TrackModel[]
-//   ))
+const deleteDatabaseEntries = async (albums: AlbumDocumentExt[]) => {
+  const tracks = albums.flatMap((album) => (
+    album.tracks
+  ))
 
 
-//   try {
-//     await unlinkAlbumsFromCollections(albums)
-//     await unlinkTracksFromPlaylists(tracks)
-//     await deleteTracksFromDatabase(tracks)
-//     await deleteAlbumsFromDatabase(albums)
-//     await unlinkCategoriesFromAlbum(albums)
+  try {
+    await unlinkAlbumsFromCollections(albums)
+    await unlinkTracksFromPlaylists(tracks)
+    await deleteTracksFromDatabase(tracks)
+    await deleteAlbumsFromDatabase(albums)
+    await unlinkCategoriesFromAlbum(albums)
 
-//     return true
-//   } catch (error) {
-//     throw error
-//   }
-// }
+    return true
+  } catch (error) {
+    throw error
+  }
+}
 
 /* ========================== PREPARING ============================= */
 
@@ -394,11 +382,11 @@ const dbUpdateSplitter = async (cloudAlbums?: CloudFolderItem[], dbAlbums?: Albu
 
   const albumsToAdd: CloudFolderItem[] = []
   const albumsToDel: AlbumDocumentExt[] = []
-  const albumsToFix: { old: AlbumDocument; new: CloudFolderItem }[] = []
+  const albumsToFix: { old: AlbumDocumentExt; new: CloudFolderItem }[] = []
 
   cloudAlbums.forEach((cloudAlbum) => {
-    const matched: AlbumDocumentExt | undefined = dbAlbums.find((dbAlbum) => (
-      dbAlbum.resource_id === cloudAlbum.resource_id
+    const matched: AlbumDocumentExt | undefined = dbAlbums.find(({ resource_id }) => (
+      resource_id === cloudAlbum.resource_id
     ))
 
     if (matched) {
@@ -422,8 +410,7 @@ const dbUpdateSplitter = async (cloudAlbums?: CloudFolderItem[], dbAlbums?: Albu
   }
 
   if (albumsToDel.length) {
-    console.log(777, albumsToDel)
-    // await deleteDatabaseEntries(albumsToDel)
+    await deleteDatabaseEntries(albumsToDel)
   }
 
   if (albumsToFix.length) {
@@ -445,7 +432,9 @@ const fetchDatabaseAlbums = async () => {
   }
 
   return await Album.find({}, searchConfig)
-    .populate({ path: 'tracks', select: ['inPlaylists'] })
+    .populate<
+      { tracks: TrackExtPlaylist[] }
+    >({ path: 'tracks', select: ['inPlaylists'] })
     .exec()
 }
 
@@ -455,7 +444,8 @@ const synchronize = async (req: Request, res: Response) => {
   await CloudLib.get<CloudFolder>('Music%26Movies/Music')
     .then((response) => response.data._embedded.items)
     .then(async (cloudFolder) => {
-      await dbUpdateSplitter(cloudFolder, dbAlbums) && res.status(200).json({ message: 'Successfully synchronized' })
+      await dbUpdateSplitter(cloudFolder, dbAlbums)
+        && res.status(200).json({ message: 'Successfully synchronized' })
     })
     .catch((error) => {
       res.status(500).json(error)

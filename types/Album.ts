@@ -3,7 +3,7 @@ import { Document, Types } from 'mongoose'
 import { CategoryBasic } from './Category'
 import { AlbumItemDTO } from '~/dtos/album.dto'
 import { PaginationDTO } from '~/dtos/pagination.dto'
-import { TrackReqPayload, TrackResponse } from './Track'
+import { TrackExtPlaylist, TrackReqPayload, TrackResponse } from './Track'
 
 export type AlbumPreform = {
   resource_id: string
@@ -56,4 +56,4 @@ export type DiscogsPayload = {
 }
 
 export interface AlbumDocument extends Document, AlbumModel { }
-export type AlbumDocumentExt = AlbumDocument & { toStay?: true }
+export type AlbumDocumentExt = Omit<AlbumDocument, 'tracks'> & { toStay?: true; tracks: TrackExtPlaylist[] }
