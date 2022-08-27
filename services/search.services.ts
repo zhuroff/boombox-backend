@@ -1,6 +1,6 @@
 import 'module-alias/register'
 import { AlbumResponse } from '~/types/Album'
-import { CategoryResponse } from '~/types/Category'
+import { CategoryDocument } from '~/types/Category'
 import { SearchModel, SearchModelKey, SearchModelsSchema, SearchParams, SearchPayload, SearchResult } from '~/types/ReqRes'
 import { Album } from '~/models/album.model'
 import { Frame } from '~/models/frame.model'
@@ -14,7 +14,7 @@ import { CloudLib } from '~/lib/cloud.lib'
 
 class SearchServices {
   async search({ query, key }: SearchPayload) {
-    const mappedResult = new Map<SearchModelKey, Partial<AlbumResponse | CategoryResponse>[]>()
+    const mappedResult = new Map<SearchModelKey, Partial<AlbumResponse | CategoryDocument>[]>()
 
     if (key) {
       mappedResult.set(key, await this.searchSplitter({ query, key }))
@@ -38,7 +38,7 @@ class SearchServices {
           data: next[1]
         })
       }
-      
+
       return acc
     }, [])
   }
@@ -49,7 +49,7 @@ class SearchServices {
     if (key === 'albums') {
       return await CloudLib.covers(await this.searchEntry<Partial<AlbumResponse>[]>(searchParams, searchSchema[key]))
     } else {
-      return await this.searchEntry<Partial<CategoryResponse>[]>(searchParams, searchSchema[key])
+      return await this.searchEntry<Partial<CategoryDocument>[]>(searchParams, searchSchema[key])
     }
   }
 
