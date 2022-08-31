@@ -6,8 +6,7 @@ import paginate from 'mongoose-paginate-v2'
 const ArtistSchema = new Schema({
   title: {
     type: String,
-    required: true,
-    index: true
+    required: true
   },
 
   dateCreated: {
@@ -42,5 +41,6 @@ const ArtistSchema = new Schema({
   ]
 })
 
+ArtistSchema.index({ title: 'text' })
 ArtistSchema.plugin(paginate)
 export const Artist = model<CategoryDocument, PaginateModel<CategoryDocument>>('artists', ArtistSchema)

@@ -1,12 +1,16 @@
 import 'module-alias/register'
 import { Request } from 'express'
 import { PaginateModel } from 'mongoose'
-import { /* CategoryResponse, CategoryPageResponse, */CategoryDocument } from '~/types/Category'
+import { CategoryResponse, CategoryDocument } from '~/types/Category'
 import { PaginationOptions } from '~/types/ReqRes'
-import { CategoryItemDTO/*, CategoryPageDTO */ } from '~/dtos/category.dto'
+import { CategoryItemDTO, CategoryPageDTO } from '~/dtos/category.dto'
 import { PaginationDTO } from '~/dtos/pagination.dto'
-// import { CloudLib } from '~/lib/cloud.lib'
 import { Frame } from '~/models/frame.model'
+import { AlbumResponse } from '~/types/Album'
+import { CloudLib } from '~/lib/cloud.lib'
+import { CloudFile } from '~/types/Cloud'
+import { FrameResponse } from '~/types/Frame'
+import { AlbumItemDTO } from '~/dtos/album.dto'
 
 class CategoriesServices {
   async list<T>(Model: PaginateModel<T>, req: Request) {
@@ -40,32 +44,36 @@ class CategoriesServices {
     }
   }
 
-  async single(Model: PaginateModel<any>, req: Request) {
-    // const response = await Model.findById(req.params['id'])
-    //   .populate({
-    //     path: 'albums',
-    //     select: ['title', 'albumCover', 'folderid'],
-    //     populate: [
-    //       { path: 'artist', select: ['title', '_id'] },
-    //       { path: 'genre', select: ['title', '_id'] },
-    //       { path: 'period', select: ['title', '_id'] }
-    //     ]
-    //   })
-    //   .populate({
-    //     path: 'framesAlbums',
-    //     select: ['title', 'frame'],
-    //     populate: [
-    //       { path: 'artist', select: ['title', '_id'] },
-    //       { path: 'genre', select: ['title', '_id'] },
-    //       { path: 'period', select: ['title', '_id'] }
-    //     ]
-    //   })
-    //   .lean()
+  async single<T>(Model: PaginateModel<T>, req: Request) {
+    const categorySingle: CategoryResponse = await Model.findById(req.params['id'])
+      .populate<AlbumResponse[]>({
+        path: 'albums',
+        select: ['title', 'albumCover'],
+        populate: [
+          { path: 'artist', select: ['title', '_id'] },
+          { path: 'genre', select: ['title', '_id'] },
+          { path: 'period', select: ['title', '_id'] }
+        ]
+      })
+      .populate<FrameResponse[]>({
+        path: 'framesAlbums',
+        select: ['title', 'frame'],
+        populate: [
+          { path: 'artist', select: ['title', '_id'] },
+          { path: 'genre', select: ['title', '_id'] },
+          { path: 'period', select: ['title', '_id'] }
+        ]
+      })
+      .lean()
 
-    // const albums = await CloudLib.covers(response.albums)
-    // const result = new CategoryPageDTO(response, albums)
+    const coveredAlbumsRes = categorySingle.albums.map(async (album) => {
+      const albumCover = await CloudLib.get<CloudFile>(album.albumCover)
+      return new AlbumItemDTO(album, albumCover.data.file)
+    })
 
-    // return result
+    const coveredAlbums = await Promise.all(coveredAlbumsRes)
+
+    return new CategoryPageDTO(categorySingle, coveredAlbums)
   }
 
   async create(Model: PaginateModel<CategoryDocument>, title: string) {
@@ -82,6 +90,11 @@ class CategoriesServices {
       _id: savedCategory._id,
       title: savedCategory.title
     }
+  }
+
+  async remove<T>(Model: PaginateModel<T>, _id: string) {
+    await Model.deleteOne({ _id })
+    return { message: 'Category successfully deleted' }
   }
 }
 

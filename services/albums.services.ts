@@ -4,7 +4,7 @@ import { ApiError } from '~/exceptions/api-errors'
 import { Album } from '~/models/album.model'
 import { CloudLib } from '~/lib/cloud.lib'
 import { AlbumResponse } from '~/types/Album'
-import { PaginationOptions, Populate, ResponseMessage } from '~/types/ReqRes'
+import { PaginationOptions, Populate } from '~/types/ReqRes'
 import { AlbumItemDTO, AlbumSingleDTO } from '~/dtos/album.dto'
 import { PaginationDTO } from '~/dtos/pagination.dto'
 import { TrackDTO } from '~/dtos/track.dto'
@@ -53,7 +53,13 @@ class AlbumsServices {
       .populate({ path: 'artist', select: ['title'] })
       .populate({ path: 'genre', select: ['title'] })
       .populate({ path: 'period', select: ['title'] })
-      .populate({ path: 'tracks', populate: { path: 'artist', select: ['title'] } })
+      .populate({
+        path: 'tracks',
+        populate: [
+          { path: 'artist', select: ['title'] },
+          { path: 'inAlbum', select: ['title'] }
+        ]
+      })
       .lean()
 
     if (dbSingle) {
@@ -69,7 +75,7 @@ class AlbumsServices {
     throw ApiError.BadRequest('Incorrect request options')
   }
 
-  async description(_id: string, description: string): Promise<ResponseMessage> {
+  async description(_id: string, description: string) {
     const $set = { description }
     await Album.updateOne({ _id }, { $set })
     return { message: 'Description updated' }

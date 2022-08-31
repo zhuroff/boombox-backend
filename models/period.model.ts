@@ -6,8 +6,7 @@ import paginate from 'mongoose-paginate-v2'
 const PeriodSchema = new Schema({
   title: {
     type: String,
-    required: true,
-    index: true
+    required: true
   },
 
   dateCreated: {
@@ -42,5 +41,6 @@ const PeriodSchema = new Schema({
   ]
 })
 
+PeriodSchema.index({ title: 'text' })
 PeriodSchema.plugin(paginate)
 export const Period = model<CategoryDocument, PaginateModel<CategoryDocument>>('periods', PeriodSchema)

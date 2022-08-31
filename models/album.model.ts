@@ -11,8 +11,7 @@ const AlbumSchema = new Schema({
 
   title: {
     type: String,
-    required: true,
-    index: true
+    required: true
   },
 
   artist: {
@@ -75,5 +74,6 @@ const AlbumSchema = new Schema({
   ]
 })
 
+AlbumSchema.index({ title: 'text' })
 AlbumSchema.plugin(paginate)
 export const Album = model<AlbumDocument, PaginateModel<AlbumDocument>>('albums', AlbumSchema)

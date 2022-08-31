@@ -1,25 +1,23 @@
-import { Document, Types, PaginateModel } from 'mongoose'
+import { Document, Types } from 'mongoose'
+import { CategoryBasic } from './Category'
 
-interface FrameModel {
-  _id?: Types.ObjectId
+export type FrameModel = {
   title: string
   artist: Types.ObjectId
   genre: Types.ObjectId
   period: Types.ObjectId
   frame: string,
-  inCollections: Types.ObjectId[]
+  inCollections?: Types.ObjectId[]
 }
 
-interface FrameModelDocument extends FrameModel, Document {
-  _id: Types.ObjectId
-  _doc: FrameModel
-  dateCreated: Date
+type ExcludedFrameFields = 'artist' | 'genre' | 'period' | 'inCollections'
+
+export type FrameResponse = Omit<FrameModel, ExcludedFrameFields> & {
+  _id: string
+  artist: CategoryBasic
+  genre: CategoryBasic
+  period: CategoryBasic
+  inCollections: CategoryBasic[]
 }
 
-interface FrameModelPaginated<T extends Document> extends PaginateModel<T> {}
-
-export {
-  FrameModel,
-  FrameModelDocument,
-  FrameModelPaginated
-}
+export interface FrameDocument extends Document, FrameModel { }

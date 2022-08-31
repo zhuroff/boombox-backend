@@ -40,5 +40,4 @@ const CollectionSchema: Schema<CollectionModel> = new Schema({
 })
 
 CollectionSchema.index({ title: 'text' })
-
 export const Collection = model<CollectionModel>('collections', CollectionSchema)

@@ -7,7 +7,6 @@ import { PaginateModel, Types } from 'mongoose'
 import { ApiError } from '~/exceptions/api-errors'
 import { ListConfig, PaginationOptions, Populate } from '~/types/ReqRes'
 import { PaginationDTO } from '~/dtos/pagination.dto'
-import { CategoryKeys } from '~/types/Category'
 
 class FramesServices {
   async create(frame: any) {
@@ -47,7 +46,7 @@ class FramesServices {
     }
 
     const dbList = await Frame.paginate({}, options)
-    
+
     if (dbList) {
       const { totalDocs, totalPages, page } = dbList
       const pagination = new PaginationDTO({ totalDocs, totalPages, page })
@@ -72,7 +71,7 @@ class FramesServices {
     throw ApiError.BadRequest('Incorrect request options')
   }
 
-  async remove(_id: string, { artist, genre, period }: CategoryKeys) {
+  async remove(_id: string, { artist, genre, period }: any) {
     await Frame.deleteOne({ _id })
 
     await this.removeAlbumFromCategory(Artist, artist, _id)

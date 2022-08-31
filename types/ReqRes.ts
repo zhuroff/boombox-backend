@@ -28,10 +28,6 @@ type Pagination = {
 
 type ModelResponse = PaginateModel<any> | Model<any, {}, {}>
 
-type ResponseMessage = {
-  message: string | number
-}
-
 type SearchPayload = {
   query: string
   key?: SearchModelKey
@@ -67,7 +63,6 @@ export {
   PaginationOptions,
   Pagination,
   ModelResponse,
-  ResponseMessage,
   SearchPayload,
   SearchModelKey,
   SearchParams,

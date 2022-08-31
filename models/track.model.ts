@@ -11,8 +11,7 @@ const TrackSchema = new Schema({
 
   title: {
     type: String,
-    required: true,
-    index: true
+    required: true
   },
 
   dateCreated: {
@@ -77,5 +76,6 @@ const TrackSchema = new Schema({
   }
 })
 
+TrackSchema.index({ title: 'text' })
 TrackSchema.plugin(paginate)
 export const Track = model<TrackDocument, PaginateModel<TrackDocument>>('tracks', TrackSchema)

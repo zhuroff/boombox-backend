@@ -42,4 +42,13 @@ export class ArtistsController {
       next(error)
     }
   }
+
+  static async remove(req: Request, res: Response, next: (error: unknown) => void) {
+    try {
+      const response = await categoriesServices.remove(Artist, String(req.params['id']))
+      return res.json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
 }

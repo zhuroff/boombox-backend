@@ -1,9 +1,9 @@
 import 'module-alias/register'
-import { model, Schema } from 'mongoose'
-import { FrameModelDocument, FrameModelPaginated } from '~/types/Frame'
-import mongoosePaginate from 'mongoose-paginate-v2'
+import { model, Schema, PaginateModel } from 'mongoose'
+import { FrameDocument } from '~/types/Frame'
+import paginate from 'mongoose-paginate-v2'
 
-const FrameSchema: Schema<FrameModelDocument> = new Schema({
+const FrameSchema = new Schema({
 	title: {
 		type: String,
 		required: true
@@ -28,9 +28,9 @@ const FrameSchema: Schema<FrameModelDocument> = new Schema({
 	},
 
 	dateCreated: {
-    type: Date,
-    default: Date.now
-  },
+		type: Date,
+		default: Date.now
+	},
 
 	frame: {
 		type: String,
@@ -38,15 +38,14 @@ const FrameSchema: Schema<FrameModelDocument> = new Schema({
 	},
 
 	inCollections: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'collections',
-      required: false
-    }
-  ]
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'collections',
+			required: false
+		}
+	]
 })
 
 FrameSchema.index({ title: 'text' })
-FrameSchema.plugin(mongoosePaginate)
-
-export const Frame = model<FrameModelDocument>('frames', FrameSchema) as FrameModelPaginated<FrameModelDocument>
+FrameSchema.plugin(paginate)
+export const Frame = model<FrameDocument, PaginateModel<FrameDocument>>('frames', FrameSchema)

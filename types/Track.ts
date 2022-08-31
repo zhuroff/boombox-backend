@@ -27,7 +27,7 @@ export type TrackReqPayload = Omit<CloudFile, 'file' | 'name' | 'type'> & {
   title: string
 }
 
-type ExcludedTrackFields = 'resource_id' | 'dateCreated' | 'created' | 'artist' | 'inAlbum' | 'inPlaylists'
+type ExcludedTrackFields = 'artist' | 'inAlbum' | 'inPlaylists'
 
 export type TrackResponse = Omit<TrackModel, ExcludedTrackFields> & {
   _id: string

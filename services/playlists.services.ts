@@ -2,16 +2,14 @@ import 'module-alias/register'
 import { Types } from 'mongoose'
 import { PlaylistItemDTO } from '~/dtos/playlist.dto'
 import { ApiError } from '~/exceptions/api-errors'
-import { CloudLib } from '~/lib/cloud.lib'
 import { Playlist } from '~/models/playlist.model'
 import { Track } from '~/models/track.model'
 import { CollectionReorder } from '~/types/Collection'
 import { PlayListCreatePayload, PlayListUpdatePayload, PlaylistResponse } from '~/types/Playlist'
-import { ResponseMessage } from '~/types/ReqRes'
 import filesServices from '~/services/files.services'
 
 class PlaylistsServices {
-  async create({ title, track }: PlayListCreatePayload): Promise<ResponseMessage> {
+  async create({ title, track }: PlayListCreatePayload) {
     const payload = {
       title,
       tracks: [{ track, order: 1 }]
@@ -25,7 +23,7 @@ class PlaylistsServices {
     return { message: 'Playlist successfully created' }
   }
 
-  async update({ _id, inList, track, order }: PlayListUpdatePayload): Promise<ResponseMessage> {
+  async update({ _id, inList, track, order }: PlayListUpdatePayload) {
     const query = { _id }
     const update = inList
       ? { $pull: { tracks: { track } } }
@@ -78,7 +76,7 @@ class PlaylistsServices {
 
     if (response) {
       const preparedTracks = response.tracks.map(async (el) => {
-        const cover = await CloudLib.getImageLink(Number(el.track.inAlbum.albumCover))
+        // const cover = await CloudLib.getImageLink(Number(el.track.inAlbum.albumCover))
         // const link = await CloudLib.tracks([el.track])
 
         return {
@@ -87,7 +85,7 @@ class PlaylistsServices {
             ...el.track,
             inAlbum: {
               ...el.track.inAlbum,
-              albumCover: cover
+              albumCover: ''// cover
             }
           }
         }
@@ -102,7 +100,7 @@ class PlaylistsServices {
     throw ApiError.BadRequest('Incorrect request options')
   }
 
-  async remove(_id: string): Promise<ResponseMessage> {
+  async remove(_id: string) {
     const response = await Playlist.findByIdAndDelete({ _id })
     const tracks = response?.tracks
     const images = [response?.poster, response?.avatar]
@@ -125,7 +123,7 @@ class PlaylistsServices {
     return { message: 'Playlist was successfully deleted' }
   }
 
-  async reorder({ oldOrder, newOrder }: CollectionReorder, _id: string): Promise<ResponseMessage> {
+  async reorder({ oldOrder, newOrder }: CollectionReorder, _id: string) {
     const targetPlaylist = await Playlist.findById(_id).exec()
 
     if (targetPlaylist) {
@@ -146,7 +144,7 @@ class PlaylistsServices {
     throw ApiError.BadRequest('Incorrect request options')
   }
 
-  async rename(_id: string, title: string): Promise<ResponseMessage> {
+  async rename(_id: string, title: string) {
     const query = { _id }
     const update = { title }
 

@@ -40,5 +40,4 @@ const PlaylistSchema: Schema<PlayListModel> = new Schema({
 })
 
 PlaylistSchema.index({ title: 'text' })
-
 export const Playlist = model<PlayListModel>('playlists', PlaylistSchema)

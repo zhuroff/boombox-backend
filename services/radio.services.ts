@@ -2,7 +2,6 @@ import 'module-alias/register'
 import { Radio } from '~/models/radio.model'
 import { ApiError } from '~/exceptions/api-errors'
 import { RadioBrowserStationResponse, RadioRequestConfig, RadioSavePayload } from '~/types/Radio'
-import { ResponseMessage } from '~/types/ReqRes'
 import { RadioStationDTO } from '~/dtos/radio.dto'
 import RadioBrowser from 'radio-browser'
 
@@ -37,7 +36,7 @@ class RadioServices {
     }
 
     const response: RadioBrowserStationResponse[] = await RadioBrowser.getStations(filter)
-    
+
     if (response) {
       return response
         .sort((a, b) => b.votes - a.votes)
@@ -47,7 +46,7 @@ class RadioServices {
     throw ApiError.BadRequest('Incorrect request options')
   }
 
-  async saveStation({ stationuuid, name }: RadioSavePayload): Promise<ResponseMessage> {
+  async saveStation({ stationuuid, name }: RadioSavePayload) {
     const newStation = new Radio({ stationuuid, name })
 
     await newStation.save()
@@ -55,7 +54,7 @@ class RadioServices {
     return { message: 'Station was successfully saved' }
   }
 
-  async deleteStation(stationuuid: string): Promise<ResponseMessage> {
+  async deleteStation(stationuuid: string) {
     const response = await Radio.findOneAndDelete({ stationuuid })
 
     if (response) {

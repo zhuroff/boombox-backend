@@ -1,10 +1,8 @@
 import 'module-alias/register'
 import { ApiError } from '~/exceptions/api-errors'
-import { CloudLib } from '~/lib/cloud.lib'
 import { Collection } from '~/models/collection.model'
 import { Album } from '~/models/album.model'
 import { AlbumResponse } from '~/types/Album'
-import { ResponseMessage } from '~/types/ReqRes'
 import { CollectionItemDTO } from '~/dtos/collection.dto'
 import {
   CollectionListItem,
@@ -15,12 +13,12 @@ import {
 } from '~/types/Collection'
 
 class CollectionsServices {
-  async create(title: string, album: string): Promise<ResponseMessage> {
+  async create(title: string, album: string) {
     const payload = {
       title: title,
       albums: [{ album, order: 1 }]
     }
-    
+
     const newCollection = new Collection(payload)
 
     await newCollection.save()
@@ -31,7 +29,7 @@ class CollectionsServices {
 
   async remove(_id: string) {
     const response = await Collection.findByIdAndDelete(_id)
-    
+
     if (response) {
       await this.cleanAlbums(response.albums, _id)
       return { message: 'Collection successfully removed' }
@@ -87,17 +85,18 @@ class CollectionsServices {
       if (a.order > b.order) return 1
       return 0
     })
-    
+
     if (deletedAlbums.length) {
       console.log('Album was deleted!!!')
       // deletedAlbums.map(async (album) => await removeItemFromCollection(album))
     }
-    
+
     const coveredAlbums = existingAlbums.length
       ? existingAlbums.map(async (el) => {
-          const coveredAlbum = await CloudLib.covers([el.album])
-          return { ...el, album: coveredAlbum[0] }
-        })
+        return await el
+        // const coveredAlbum = await CloudLib.covers([el.album])
+        // return { ...el, album: coveredAlbum[0] }
+      })
       : []
 
     const result = {
@@ -125,10 +124,10 @@ class CollectionsServices {
       message: inList
         ? 'Album successfully removed from collection'
         : 'Album successfully added to collection'
-    } as ResponseMessage
+    }
   }
 
-  async reorder({ oldOrder, newOrder }: CollectionReorder, _id: string): Promise<ResponseMessage> {
+  async reorder({ oldOrder, newOrder }: CollectionReorder, _id: string) {
     const targetCollection = await Collection.findById(_id).exec()
 
     if (targetCollection) {
@@ -149,14 +148,14 @@ class CollectionsServices {
     throw ApiError.BadRequest('Incorrect request options')
   }
 
-  async updateAlbum({listID, itemID, inList}: Partial<CollectionUpdateProps>) {
+  async updateAlbum({ listID, itemID, inList }: Partial<CollectionUpdateProps>) {
     try {
       const query = { _id: itemID }
       const update = inList
         ? { $pull: { inCollections: listID } }
         : { $push: { inCollections: listID } }
       const options = { new: true }
-  
+
       await Album.findOneAndUpdate(query, update, options)
     } catch (error) {
       throw error
@@ -168,7 +167,7 @@ class CollectionsServices {
       const query = { _id: album.album }
       const update = { $pull: { inCollections: listID } }
       const options = { new: true }
-      
+
       return await Album.findOneAndUpdate(query, update, options)
     })
 

@@ -6,8 +6,7 @@ import paginate from 'mongoose-paginate-v2'
 const GenreSchema = new Schema({
   title: {
     type: String,
-    required: true,
-    index: true
+    required: true
   },
 
   dateCreated: {
@@ -42,5 +41,6 @@ const GenreSchema = new Schema({
   ]
 })
 
+GenreSchema.index({ title: 'text' })
 GenreSchema.plugin(paginate)
 export const Genre = model<CategoryDocument, PaginateModel<CategoryDocument>>('genres', GenreSchema)
