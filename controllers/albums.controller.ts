@@ -38,4 +38,13 @@ export class AlbumsController {
       next(error)
     }
   }
+
+  static async undisposed(req: Request, res: Response, next: (error: unknown) => void) {
+    try {
+      const result = await albumsServices.undisposed(String(req.body['path']), req.body['id'])
+      res.status(200).json(result)
+    } catch (error) {
+      next(error)
+    }
+  }
 }

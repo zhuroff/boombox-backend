@@ -85,6 +85,26 @@ class AlbumsServices {
     const bookletRes = await CloudLib.get<CloudFolder>(sanitizeURL(path))
     return bookletRes.data._embedded.items.map((item) => 'file' in item && item.file)
   }
+
+  async undisposed(path: string, id?: string) {
+    const response = await CloudLib.get<CloudFolder>(sanitizeURL(path))
+    let ddd
+
+    if (typeof id !== 'undefined') {
+      const ttt = response.data._embedded.items.map(async (el) => {
+        if (el.type === 'dir') {
+          const xxx = await CloudLib.get<CloudFolder>(sanitizeURL(el.path))
+          return xxx.data._embedded.items
+        }
+        return el
+      })
+
+      ddd = await Promise.all(ttt)
+      return ddd.flat().filter((track) => 'media_type' in track && track.media_type === 'audio')
+    } else {
+      return response.data._embedded.items
+    }
+  }
 }
 
 export default new AlbumsServices()
