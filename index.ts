@@ -17,6 +17,7 @@ import playlistsRoutes from '~/routes/playlists.routes'
 import searchRoutes from '~/routes/search.routes'
 import collectionsRoutes from '~/routes/collections.routes'
 import radioRoutes from './routes/radio.routes'
+import moviesRoutes from './routes/movies.routes'
 import backupRoutes from './routes/backup.routes'
 import synchronizeRoutes from './routes/synchronize.routes'
 
@@ -50,6 +51,7 @@ app.use('/api/playlists', playlistsRoutes)
 app.use('/api/search', searchRoutes)
 app.use('/api/collections', collectionsRoutes)
 app.use('/api/radio', radioRoutes)
+app.use('/api/movies', moviesRoutes)
 app.use('/api/backup', backupRoutes)
 app.use('/api/sync', synchronizeRoutes)
 
