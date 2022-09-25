@@ -94,13 +94,25 @@ class AlbumsServices {
       const ttt = response.data._embedded.items.map(async (el) => {
         if (el.type === 'dir') {
           const xxx = await CloudLib.get<CloudFolder>(sanitizeURL(el.path))
-          return xxx.data._embedded.items
+          return xxx.data._embedded.items.map((el) => ({ ...el, album: response.data.name, artist: response.data.path }))
         }
-        return el
+        return { ...el, album: response.data.name, artist: response.data.path }
       })
 
       ddd = await Promise.all(ttt)
-      return ddd.flat().filter((track) => 'media_type' in track && track.media_type === 'audio')
+      console.log(ddd)
+      const tracks = ddd
+        .flat()
+        .filter((track) => 'media_type' in track && track.media_type === 'audio')
+        .map((track) => ({
+          _id: track.resource_id,
+          title: track.name,
+          link: 'file' in track && track.file,
+          artist: { _id: track.resource_id.split(':')[0], title: 'artist' in track && track.artist },
+          inAlbum: { _id: track.resource_id.split(':')[1], title: track.album }
+        }))
+
+      return { _id: id, tracks }
     } else {
       return response.data._embedded.items
     }
