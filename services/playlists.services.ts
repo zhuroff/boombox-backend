@@ -7,6 +7,9 @@ import { Track } from '~/models/track.model'
 import { CollectionReorder } from '~/types/Collection'
 import { PlayListCreatePayload, PlayListUpdatePayload, PlaylistResponse } from '~/types/Playlist'
 import filesServices from '~/services/files.services'
+import { CloudLib } from '~/lib/cloud.lib'
+import { CloudFile } from '~/types/Cloud'
+import { TrackDTO } from '~/dtos/track.dto'
 
 class PlaylistsServices {
   async create({ title, track }: PlayListCreatePayload) {
@@ -52,10 +55,10 @@ class PlaylistsServices {
   }
 
   async single(id: string) {
-    const response: PlaylistResponse = await Playlist.findById(id)
+    const dbPlaylist: PlaylistResponse = await Playlist.findById(id)
       .populate({
         path: 'tracks.track',
-        select: ['title', 'listened', 'duration', 'fileid'],
+        select: ['title', 'listened', 'duration', 'path'],
         populate: [
           {
             path: 'artist',
@@ -73,28 +76,24 @@ class PlaylistsServices {
         ]
       })
       .lean()
-
-    if (response) {
-      const preparedTracks = response.tracks.map(async (el) => {
-        // const cover = await CloudLib.getImageLink(Number(el.track.inAlbum.albumCover))
-        // const link = await CloudLib.tracks([el.track])
-
+      
+    if (dbPlaylist) {
+      const promisedTracks = dbPlaylist.tracks.map(async ({ track, order }) => {
+        const trackRes = await CloudLib.get<CloudFile>(track.path)
+        const albumCoverRes = await CloudLib.get<CloudFile>(track.inAlbum.albumCover)
         return {
-          order: el.order,
+          order,
           ...{
-            ...el.track,
+            ...new TrackDTO({ ...track, ...trackRes.data }),
             inAlbum: {
-              ...el.track.inAlbum,
-              albumCover: ''// cover
+              ...track.inAlbum,
+              albumCover: albumCoverRes.data.file
             }
           }
         }
       })
 
-      return {
-        ...response,
-        tracks: await Promise.all(preparedTracks)
-      }
+      return { ...dbPlaylist, tracks: await Promise.all(promisedTracks) }
     }
 
     throw ApiError.BadRequest('Incorrect request options')
@@ -113,6 +112,7 @@ class PlaylistsServices {
       }, [])
 
     if (tracks && tracks.length > 0) {
+      // @ts-ignore
       tracks.map(async (el) => await this.updateTrack(_id, el.track, true))
     }
 

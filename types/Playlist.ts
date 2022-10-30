@@ -16,7 +16,7 @@ type PlayListUpdatePayload = {
 
 type PlayListTrack = {
   _id: Types.ObjectId
-  track: Types.ObjectId
+  track: TrackResponse
   order: number
 }
 
