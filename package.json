@@ -5,10 +5,7 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development nodemon index.ts --watch * --ignore backups uploads"
-  },
-  "_moduleAliases": {
-    "~": "."
+    "dev": "cross-env NODE_ENV=development nodemon src/index.ts --watch * --ignore backups uploads"
   },
   "author": "Eugene Zhurov",
   "license": "ISC",
@@ -21,11 +18,10 @@
     "dotenv": "^12.0.4",
     "express": "^4.17.2",
     "express-validator": "^6.14.0",
-    "genius-lyrics": "^4.3.5",
+    "genius-lyrics": "^4.4.0",
     "js-cookie": "^3.0.1",
     "jsonwebtoken": "^8.5.1",
     "jwt-decode": "^3.1.2",
-    "module-alias": "^2.2.2",
     "mongoose": "^6.1.6",
     "mongoose-paginate-v2": "^1.5.0",
     "morgan": "^1.10.0",

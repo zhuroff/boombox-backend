@@ -2,27 +2,34 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "commonjs",
-    "lib": ["esnext"],
+    "moduleResolution": "node",
+    "isolatedModules": true,
+    "allowSyntheticDefaultImports": true,
+    "lib": [
+      "esnext"
+    ],
     "sourceMap": true,
-    "rootDir": "./",
+    "rootDir": "src",
+    "outDir": "dist",
     "removeComments": true,
     "noEmitOnError": false,
     "strict": true,
+    "noImplicitReturns": true,
     "noImplicitAny": true,
+    "downlevelIteration": true,
     "strictNullChecks": true,
     "noUnusedLocals": true,
     "noUncheckedIndexedAccess": true,
+    "emitDeclarationOnly": true,
+    "declaration": true,
     "noPropertyAccessFromIndexSignature": true,
     "baseUrl": ".",
-    "paths": {
-      "~/*": ["./*"]
-    },
-    "types": [
-      "@types/node",
-      "./types"
-    ],
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }
