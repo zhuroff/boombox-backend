@@ -14,7 +14,7 @@ class ToyServices {
     throw ApiError.BadRequest('Incorrect request options')
   }
 
-  async years(path: string, dirOnly?: boolean) {
+  async years(path: string, dirOnly: boolean = true) {
     const response = await CloudLib.get<CloudFolder>(sanitizeURL(path))
 
     if (response) {
