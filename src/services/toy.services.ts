@@ -1,6 +1,7 @@
 import { CloudLib } from '../lib/cloud.lib'
 import { CloudFolder } from '../types/Cloud'
 import { ApiError } from '../exceptions/api-errors'
+import { TOYPage } from '../models/toy.model'
 import { sanitizeURL } from '../controllers/synchronize.controller'
 
 class ToyServices {
@@ -8,7 +9,9 @@ class ToyServices {
     const response = await CloudLib.get<CloudFolder>('Music%26Movies/TOY')
 
     if (response) {
-      return response.data._embedded.items.filter((item) => item.type === 'dir')
+      return response.data._embedded.items.filter((item) => (
+        item.type === 'dir' || item.mime_type === 'image/webp'
+      ))
     }
 
     throw ApiError.BadRequest('Incorrect request options')
@@ -23,6 +26,11 @@ class ToyServices {
     }
 
     throw ApiError.BadRequest('Incorrect request options')
+  }
+
+  async year(folderId: string) {
+    const response = await TOYPage.findOne({ folderId })
+    return response || { notExist: true }
   }
 }
 

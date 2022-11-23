@@ -19,4 +19,13 @@ export class ToyController {
       return next(error)
     }
   }
+
+  static async year(req: Request, res: Response, next: (error: unknown) => void) {
+    try {
+      const result = await toyServices.year(String(req.params['id']))
+      return res.json(result)
+    } catch (error) {
+      return next(error)
+    }
+  }
 }

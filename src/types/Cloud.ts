@@ -8,6 +8,7 @@ export type CloudCommon = {
 }
 
 export type CloudFolder = CloudCommon & {
+  mime_type?: string
   _embedded: {
     items: CloudFolderItem[]
   }
