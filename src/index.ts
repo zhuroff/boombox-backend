@@ -3,8 +3,6 @@ import express, { json } from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
 import morgan from 'morgan'
-import axios from 'axios'
-import newsRoutes from './routes/news.routes'
 import albumsRoutes from './routes/albums.routes'
 import toyRoutes from './routes/toy.routes'
 import discogsRoutes from './routes/discogs.routes'
@@ -17,18 +15,16 @@ import playlistsRoutes from './routes/playlists.routes'
 import searchRoutes from './routes/search.routes'
 import collectionsRoutes from './routes/collections.routes'
 import radioRoutes from './routes/radio.routes'
-import moviesRoutes from './routes/movies.routes'
 import backupRoutes from './routes/backup.routes'
-import synchronizeRoutes from './routes/synchronize.routes'
+import synchronizeRoutes from './routes/sync.routes'
+import { cloudApiGetter } from './clouds'
 
 dotenv.config()
 
 const app = express()
 const PORT = 3000
 
-export const cloudApi = axios.create({
-  headers: { Authorization: String(process.env['CLOUD_OAUTH_TOKEN']) }
-})
+export const cloud = cloudApiGetter(process.env['CURRENT_API'] || '')
 
 mongoose.connect(process.env['MONGO_URI'] as string)
   .then(() => console.log('MongoDB connected'))
@@ -39,7 +35,6 @@ app.use(morgan('tiny'))
 app.use(express.urlencoded({ extended: true }))
 app.use(json())
 
-app.use('/api/news', newsRoutes)
 app.use('/api/albums', albumsRoutes)
 app.use('/api/toy', toyRoutes)
 app.use('/api/discogs', discogsRoutes)
@@ -52,7 +47,6 @@ app.use('/api/playlists', playlistsRoutes)
 app.use('/api/search', searchRoutes)
 app.use('/api/collections', collectionsRoutes)
 app.use('/api/radio', radioRoutes)
-app.use('/api/movies', moviesRoutes)
 app.use('/api/backup', backupRoutes)
 app.use('/api/sync', synchronizeRoutes)
 

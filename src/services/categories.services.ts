@@ -1,5 +1,5 @@
 import { Request } from 'express'
-import { PaginateModel } from 'mongoose'
+import { PaginateModel, Types } from 'mongoose'
 import { CategoryResponse, CategoryDocument } from '../types/Category'
 import { PaginationOptions } from '../types/ReqRes'
 import { CategoryItemDTO, CategoryPageDTO } from '../dtos/category.dto'
@@ -77,25 +77,23 @@ class CategoriesServices {
     return new CategoryPageDTO(categorySingle, coveredAlbums)
   }
 
-  async create(Model: PaginateModel<CategoryDocument>, title: string) {
-    const payload = {
-      title,
-      albums: [],
-      framesAlbums: []
-    }
+  async create(Model: PaginateModel<CategoryDocument>, title: string, _id?: Types.ObjectId) {
+    const query = { title }
+    const update = { $push: { albums: _id } }
+    const options = { upsert: true, new: true, setDefaultsOnInsert: true }
 
-    const newCategory = new Model(payload)
-    const savedCategory = await newCategory.save()
-
-    return {
-      _id: savedCategory._id,
-      title: savedCategory.title
-    }
+    return await Model.findOneAndUpdate(query, update, options)
   }
 
   async remove<T>(Model: PaginateModel<T>, _id: string) {
     await Model.deleteOne({ _id })
     return { message: 'Category successfully deleted' }
+  }
+
+  async cleanAlbums(Model: PaginateModel<CategoryDocument>, categoryId: Types.ObjectId, albumId: Types.ObjectId | string) {
+    const query = { _id: categoryId }
+    const update = { $pull: { albums: albumId } }
+    await Model.findOneAndUpdate(query, update)
   }
 }
 

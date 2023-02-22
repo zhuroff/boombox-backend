@@ -5,10 +5,10 @@ import { Playlist } from '../models/playlist.model'
 import { Track } from '../models/track.model'
 import { CollectionReorder } from '../types/Collection'
 import { PlayListCreatePayload, PlayListUpdatePayload, PlaylistResponse } from '../types/Playlist'
-import filesServices from '../services/files.services'
 import { CloudLib } from '../lib/cloud.lib'
 import { CloudFile } from '../types/Cloud'
 import { TrackDTO } from '../dtos/track.dto'
+import filesServices from '../services/files.services'
 
 class PlaylistsServices {
   async create({ title, track }: PlayListCreatePayload) {
@@ -40,6 +40,15 @@ class PlaylistsServices {
         ? 'Track successfully removed from playlist'
         : 'Track successfully added to playlist'
     }
+  }
+
+  async cleanPlaylist(playlists: Map<string, string[]>) {
+    return await Promise.all(Array.from(playlists).map(async ([playlistId, trackIds]) => (
+      await Playlist.updateMany(
+        { _id: playlistId },
+        { $pull: { tracks: { track: { $in: trackIds } } } }
+      )
+    )))
   }
 
   async list() {

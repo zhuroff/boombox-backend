@@ -1,9 +1,5 @@
 import { PaginateModel, Model } from 'mongoose'
 
-type BackupModel = {
+export type BackupModel = {
   [index: string]: PaginateModel<any> | Model<any, {}, {}>
-}
-
-export {
-  BackupModel
 }

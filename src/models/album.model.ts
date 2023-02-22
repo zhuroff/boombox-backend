@@ -3,12 +3,12 @@ import { AlbumDocument } from '../types/Album'
 import paginate from 'mongoose-paginate-v2'
 
 const AlbumSchema = new Schema({
-  resource_id: {
+  title: {
     type: String,
-    requried: true
+    required: true
   },
 
-  title: {
+  folderName: {
     type: String,
     required: true
   },
@@ -36,14 +36,9 @@ const AlbumSchema = new Schema({
     default: Date.now
   },
 
-  albumCover: {
-    type: String,
+  created: {
+    type: Date,
     required: true
-  },
-
-  albumCoverArt: {
-    type: String,
-    required: false
   },
 
   modified: {

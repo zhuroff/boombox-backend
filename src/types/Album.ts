@@ -2,24 +2,21 @@ import { Document, Types } from 'mongoose'
 import { CategoryBasic } from './Category'
 import { AlbumItemDTO } from '../dtos/album.dto'
 import { PaginationDTO } from '../dtos/pagination.dto'
-import { TrackExtPlaylist, TrackReqPayload, TrackResponse } from './Track'
+import { CloudEntityDTO } from '../dtos/cloud.dto'
+import { TrackExtPlaylist, TrackResponse } from './Track'
 
-export type AlbumPreform = {
-  resource_id: string
+export type AlbumShape = {
   title: string
+  folderName: string
   artist: string
   genre: string
   period: string
-  albumCover: string
-  albumCoverArt?: string
-  modified: string
-  description: string
-  folderTracks: TrackReqPayload[]
+  tracks: Array<Required<CloudEntityDTO>>
 }
 
 export type AlbumModel = {
-  resource_id: string
   title: string
+  folderName: string
   artist: Types.ObjectId
   genre: Types.ObjectId
   period: Types.ObjectId
@@ -27,6 +24,7 @@ export type AlbumModel = {
   albumCover: string
   albumCoverArt?: string
   modified: Date
+  created: Date
   description: string
   tracks: Types.ObjectId[]
   inCollections: Types.ObjectId[]

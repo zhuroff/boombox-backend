@@ -1,11 +1,29 @@
 // import Genius from 'genius-lyrics'
+import { Types } from 'mongoose'
+import { CloudEntityDTO } from '../dtos/cloud.dto'
 import { ApiError } from '../exceptions/api-errors'
 import { Track } from '../models/track.model'
+import utils from '../utils'
 // import { TrackSearchPayload } from '../types/Track'
 
 // const GClient = new Genius.Client(process.env['GENIUS_SECRET'])
 
 class TracksServices {
+  async create(track: Required<CloudEntityDTO>, albumId: Types.ObjectId, artistId: Types.ObjectId) {
+    const newTrack = new Track({
+      ...track,
+      title: utils.parseTrackTitle(track.title),
+      fileName: track.title,
+      inAlbum: albumId,
+      artist: artistId
+    })
+    return await newTrack.save()
+  }
+
+  async remove(tracks: (string | Types.ObjectId)[]) {
+    return await Track.deleteMany({ _id: { $in: tracks } })
+  }
+
   async incrementListening(id: string) {
     return await Track.findByIdAndUpdate(id, { $inc: { listened: 1 } })
   }

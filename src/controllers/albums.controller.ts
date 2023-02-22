@@ -1,10 +1,43 @@
 import { Request, Response } from 'express'
+import { CloudEntityDTO } from '../dtos/cloud.dto'
 import albumsServices from '../services/albums.services'
 
 export class AlbumsController {
+  static async create(albums: CloudEntityDTO[]) {
+    try {
+      const albumShapes = await Promise.all(albums.map(async (album) => (
+        await albumsServices.createShape(album)
+      )))
+      return await Promise.all(albumShapes.map(async (shape) => (
+        await albumsServices.createAlbum(shape)
+      )))
+    } catch (error) {
+      throw error
+    }
+  }
+
+  static async remove(albums: string[]) {
+    try {
+      return await Promise.all(albums.map(async (_id) => (
+        await albumsServices.removeAlbum(_id)
+      )))
+    } catch (error) {
+      throw error
+    }
+  }
+
   static async list(req: Request, res: Response, next: (error: unknown) => void) {
     try {
       const result = await albumsServices.list(req)
+      return res.json(result)
+    } catch (error) {
+      return next(error)
+    }
+  }
+
+  static async random(req: Request, res: Response, next: (error: unknown) => void) {
+    try {
+      const result = await albumsServices.random(parseInt(req.params?.['quantity'] || '8'))
       return res.json(result)
     } catch (error) {
       return next(error)
@@ -35,15 +68,6 @@ export class AlbumsController {
       res.json(result)
     } catch (error) {
       return next(error)
-    }
-  }
-
-  static async undisposed(req: Request, res: Response, next: (error: unknown) => void) {
-    try {
-      const result = await albumsServices.undisposed(String(req.body['path']), req.body['id'])
-      res.status(200).json(result)
-    } catch (error) {
-      next(error)
     }
   }
 }

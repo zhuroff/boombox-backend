@@ -3,13 +3,13 @@ import { CategoryBasic } from './Category';
 import { CloudFile } from './Cloud';
 
 export type TrackModel = {
-  resource_id: string
   title: string
+  fileName: string
   dateCreated: Date
-  created: string
+  created: Date
+  modified: Date
   path: string
-  mime_type: string
-  media_type: string
+  mimeType: string
   lyrics?: string
   duration?: number
   listened?: number

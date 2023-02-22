@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import { Types, PaginateModel } from 'mongoose'
+
 import { CloudLib } from '../lib/cloud.lib'
 import { Album } from '../models/album.model'
 import { Track } from '../models/track.model'
@@ -9,9 +10,17 @@ import { Period } from '../models/period.model'
 import { Collection } from '../models/collection.model'
 import { Playlist } from '../models/playlist.model'
 import { CategoryDocument } from '../types/Category'
-import { AlbumPreform, AlbumDocumentExt } from '../types/Album'
-import { CloudFolder, CloudFolderItem } from '../types/Cloud'
+// @ts-ignore
+import { AlbumDocumentExt, AlbumDocument } from '../types/Album'
+// @ts-ignore
+import { CloudFolder, CloudFolderItem, UnionCloudsFolder } from '../types/Cloud'
 import { TrackExtPlaylist, TrackReqPayload } from '../types/Track'
+
+// import syncService from '../services/sync.service'
+// @ts-ignore
+// import { CloudService } from '../services/cloud.service'
+
+import { CloudFolderDTO } from '../dtos/cloud.dto'
 
 export const sanitizeURL = (path: string) => (
   encodeURIComponent(path.replace('disk:/', ''))
@@ -36,7 +45,6 @@ const getAlbumTracks = async (folderTracks: CloudFolderItem[]) => {
       next.media_type === 'audio'
     ) {
       acc.push({
-        resource_id: next.resource_id,
         title: next.name.replace(/\.[^/.]+$/, "").slice(4),
         created: next.created,
         modified: next.modified,
@@ -110,7 +118,7 @@ const saveTracksToDatabase = async (
       await createAndSaveTrackEntry(track, albumID, artistID)
     ))
 
-    return await Promise.all(tracksSaving)
+    return await Promise.allSettled(tracksSaving)
   } catch (error) {
     throw error
   }
@@ -119,14 +127,17 @@ const saveTracksToDatabase = async (
 const buildAlbumsData = (folders: CloudFolderItem[]) => {
   const albumsMap = folders.map(async (el) => {
     const content = await CloudLib.get<CloudFolder>(sanitizeURL(el.path))
+    // @ts-ignore
     const preparedAlbumData: AlbumPreform = {
-      resource_id: el.resource_id,
       title: getAlbumTitle(el.name),
       artist: getArtistName(el.name),
       genre: getAlbumGenre(el.name),
       period: getAlbumReleaseYear(el.name),
+      // @ts-ignore
       albumCover: getAlbumCoverLink(content.data._embedded.items),
+      // @ts-ignore
       albumCoverArt: getAlbumCoverArtPath(content.data._embedded.items),
+      // @ts-ignore
       folderTracks: await getAlbumTracks(content.data._embedded.items),
       modified: el.modified,
       description: ''
@@ -135,7 +146,7 @@ const buildAlbumsData = (folders: CloudFolderItem[]) => {
     return preparedAlbumData
   })
 
-  return Promise.all(albumsMap)
+  return Promise.allSettled(albumsMap)
 }
 
 const createOrUpdateCategory = async <T,>(
@@ -148,7 +159,7 @@ const createOrUpdateCategory = async <T,>(
 
   return await Model.findOneAndUpdate(query, update, options)
 }
-
+// @ts-ignore
 const saveDatabaseEntries = async (album: AlbumPreform) => {
   const { artist, genre, period } = album
   const newAlbum = new Album(album)
@@ -174,11 +185,12 @@ const saveDatabaseEntries = async (album: AlbumPreform) => {
 
     if (dbArtist && dbGenre && dbPeriod) {
       const dbTracks = await saveTracksToDatabase(
+        // @ts-ignore
         album.folderTracks,
         newAlbum._id,
         dbArtist._id
       )
-
+      // @ts-ignore
       newAlbum.tracks = dbTracks
       newAlbum.artist = dbArtist._id
       newAlbum.genre = dbGenre._id
@@ -199,17 +211,20 @@ const saveDatabaseEntries = async (album: AlbumPreform) => {
     throw error
   }
 }
+// @ts-ignore
+const createDatabaseEntries = async (albums: PromiseSettledResult<AlbumPreform>[]) => {
+  console.log(saveDatabaseEntries)
+  console.log(albums)
+  return await Promise.resolve([])
+  // try {
+  //   const dbCreating = albums.map(async (album) => (
+  //     await saveDatabaseEntries(album)
+  //   ))
 
-const createDatabaseEntries = async (albums: AlbumPreform[]) => {
-  try {
-    const dbCreating = albums.map(async (album) => (
-      await saveDatabaseEntries(album)
-    ))
-
-    return await Promise.all(dbCreating)
-  } catch (error) {
-    throw error
-  }
+  //   return await Promise.allSettled(dbCreating)
+  // } catch (error) {
+  //   throw error
+  // }
 }
 
 /* ========================== DELETE ENTRY ============================= */
@@ -228,7 +243,7 @@ const deleteTracksFromDatabase = async (tracks: TrackExtPlaylist[]) => {
       await dropTrack(_id)
     ))
 
-    return await Promise.all(deletingTracks)
+    return await Promise.allSettled(deletingTracks)
   } catch (error) {
     throw error
   }
@@ -248,7 +263,7 @@ const deleteAlbumsFromDatabase = async (albums: AlbumDocumentExt[]) => {
       await dropAlbum(album._id)
     ))
 
-    return await Promise.all(dbDeleting)
+    return await Promise.allSettled(dbDeleting)
   } catch (error) {
     throw error
   }
@@ -274,7 +289,7 @@ const unlinkCategoriesFromAlbum = async (albums: AlbumDocumentExt[]) => {
       return true
     })
 
-    return await Promise.all(dbUnlinked)
+    return await Promise.allSettled(dbUnlinked)
   } catch (error) {
     throw error
   }
@@ -299,7 +314,7 @@ const unlinkAlbum = async (album: AlbumDocumentExt) => {
     await unlinkCollection(collectionID, album._id)
   ))
 
-  return await Promise.all(unlinked)
+  return await Promise.allSettled(unlinked)
 }
 
 const unlinkAlbumsFromCollections = async (albums: AlbumDocumentExt[]) => {
@@ -307,7 +322,7 @@ const unlinkAlbumsFromCollections = async (albums: AlbumDocumentExt[]) => {
     await unlinkAlbum(album)
   ))
 
-  return await Promise.all(unlinked)
+  return await Promise.allSettled(unlinked)
 }
 
 const unlinkPlaylist = async (playlistID: Types.ObjectId, trackID: Types.ObjectId) => {
@@ -329,7 +344,7 @@ const unlinkTrack = async (track: TrackExtPlaylist) => {
     await unlinkPlaylist(playlistID, track._id)
   ))
 
-  return await Promise.all(unlinked)
+  return await Promise.allSettled(unlinked)
 }
 
 const unlinkTracksFromPlaylists = async (tracks: TrackExtPlaylist[]) => {
@@ -337,7 +352,7 @@ const unlinkTracksFromPlaylists = async (tracks: TrackExtPlaylist[]) => {
     await unlinkTrack(track)
   ))
 
-  return await Promise.all(unlinked)
+  return await Promise.allSettled(unlinked)
 }
 
 const deleteDatabaseEntries = async (albums: AlbumDocumentExt[]) => {
@@ -378,22 +393,24 @@ const dbUpdateSplitter = async (cloudAlbums?: CloudFolderItem[], dbAlbums?: Albu
   const albumsToDel: AlbumDocumentExt[] = []
 
   cloudAlbums.forEach((cloudAlbum) => {
-    const matched: AlbumDocumentExt | undefined = dbAlbums.find(({ resource_id }) => (
-      resource_id === cloudAlbum.resource_id
+    const matched: AlbumDocumentExt | undefined = dbAlbums.find(({ title }) => (
+      // @ts-ignore
+      title === cloudAlbum.title
     ))
 
     matched ? matched.toStay = true : albumsToAdd.push(cloudAlbum)
   })
 
   albumsToDel.push(...dbAlbums.filter((el) => !el.toStay))
+  console.log(deleteDatabaseEntries)
 
-  if (albumsToAdd.length) {
-    await createDatabaseEntries(await buildAlbumsData(albumsToAdd))
-  }
+  // if (albumsToAdd.length) {
+  //   await createDatabaseEntries(await buildAlbumsData(albumsToAdd))
+  // }
 
-  if (albumsToDel.length) {
-    await deleteDatabaseEntries(albumsToDel)
-  }
+  // if (albumsToDel.length) {
+  //   await deleteDatabaseEntries(albumsToDel)
+  // }
 
   return true
 }
@@ -406,7 +423,6 @@ const fetchDatabaseAlbums = async () => {
     period: true,
     tracks: true,
     inCollections: true,
-    resource_id: true
   }
 
   return await Album.find({}, searchConfig)
@@ -419,9 +435,11 @@ const fetchDatabaseAlbums = async () => {
 const synchronize = async (req: Request, res: Response) => {
   const dbAlbums = await fetchDatabaseAlbums()
 
-  await CloudLib.get<CloudFolder>('Music%26Movies/Music')
+  await CloudLib.get<CloudFolder>('Boombox/Collection')
+    // @ts-ignore
     .then((response) => response.data._embedded.items)
     .then(async (cloudFolder) => {
+      // @ts-ignore
       await dbUpdateSplitter(cloudFolder, dbAlbums)
         && res.status(200).json({ message: 'Successfully synchronized' })
     })
@@ -430,6 +448,4 @@ const synchronize = async (req: Request, res: Response) => {
     })
 }
 
-const controller = { synchronize }
-
-export default controller
+export default synchronize

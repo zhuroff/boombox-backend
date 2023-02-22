@@ -73,7 +73,6 @@ export class PlaylistsController {
   }
 
   static async rename(req: Request, res: Response, next: (error: unknown) => void) {
-    console.log(req.body)
     try {
       const response = await playlistsServices.rename(String(req.params['id']), req.body['title'])
       res.status(201).json(response)

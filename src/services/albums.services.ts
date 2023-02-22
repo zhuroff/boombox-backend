@@ -1,16 +1,97 @@
 import { Request } from 'express'
+import { Types } from 'mongoose'
 import { ApiError } from '../exceptions/api-errors'
 import { Album } from '../models/album.model'
+import { Artist } from '../models/artist.model'
+import { Genre } from '../models/genre.model'
+import { Period } from '../models/period.model'
 import { CloudLib } from '../lib/cloud.lib'
-import { AlbumResponse } from '../types/Album'
+import { AlbumResponse, AlbumShape } from '../types/Album'
 import { PaginationOptions, Populate } from '../types/ReqRes'
 import { AlbumItemDTO, AlbumSingleDTO } from '../dtos/album.dto'
 import { PaginationDTO } from '../dtos/pagination.dto'
 import { TrackDTO } from '../dtos/track.dto'
-import { CloudFile, CloudFolder } from '../types/Cloud'
-import { sanitizeURL } from '../controllers/synchronize.controller'
+import { CloudEntityDTO } from '../dtos/cloud.dto'
+import { CloudFile } from '../types/Cloud'
+import { cloud } from '../'
+import utils from '../utils'
+import categoriesServices from './categories.services'
+import tracksServices from './tracks.services'
+import collectionsServices from './collections.services'
+import playlistsServices from './playlists.services'
 
 class AlbumsServices {
+  async dbAlbumEntries() {
+    return await Album.find({}, { folderName: true, tracks: true })
+  }
+
+  async createShape(album: CloudEntityDTO): Promise<AlbumShape> {
+    return {
+      folderName: album.title,
+      title: utils.parseAlbumTitle(album.title),
+      artist: utils.parseArtistName(album.title),
+      genre: utils.parseAlbumGenre(album.title),
+      period: utils.getAlbumReleaseYear(album.title),
+      tracks: utils.fileFilter(await cloud.getFolderContent(
+        `${process.env['COLLECTION_ROOT'] || ''}/${album.path}`
+      ) || [], utils.audioMimeTypes)
+    }
+  }
+
+  async createAlbum(shape: AlbumShape) {
+    const newAlbum = new Album(shape)
+    const newArtist = await categoriesServices.create(Artist, shape.artist, newAlbum._id)
+    const newGenre = await categoriesServices.create(Genre, shape.genre, newAlbum._id)
+    const newPeriod = await categoriesServices.create(Period, shape.period, newAlbum._id)
+
+    if (newArtist && newGenre && newPeriod) {
+      const albumTracks = await Promise.all(shape.tracks.map(async (track) => (
+        await tracksServices.create(track, newAlbum._id, newArtist._id)
+      )))
+
+      newAlbum.$set({ artist: newArtist._id })
+      newAlbum.$set({ genre: newGenre._id })
+      newAlbum.$set({ period: newPeriod._id })
+      newAlbum.$set({ created: new Date() })
+      newAlbum.$set({ modified: new Date() })
+      newAlbum.$set({ tracks: albumTracks.map(({ _id }) => _id) })
+
+      return await newAlbum.save()
+    }
+    return false
+  }
+
+  async removeAlbum(_id: Types.ObjectId | string) {
+    const album = await this.single(_id)
+    const collections = album.inCollections?.map(({ _id }) => _id)
+    const playlists = album.tracks.reduce<Map<string, string[]>>((acc, next) => {
+      const playlistsIds = next.inPlaylists?.map(({ _id }) => _id)
+      if (playlistsIds?.length) {
+        playlistsIds.forEach((key) => {
+          acc.has(key.toString())
+            ? acc.get(key.toString())?.push(next._id)
+            : acc.set(key.toString(), [next._id])
+        })
+      }
+      return acc
+    }, new Map())
+
+    await categoriesServices.cleanAlbums(Artist, album.artist._id, _id)
+    await categoriesServices.cleanAlbums(Genre, album.genre._id, _id)
+    await categoriesServices.cleanAlbums(Period, album.period._id, _id)
+    await tracksServices.remove(album.tracks.map(({ _id }) => _id))
+
+    if (collections?.length) {
+      await collectionsServices.cleanCollection(collections, _id)
+    }
+
+    if (playlists.size > 0) {
+      await playlistsServices.cleanPlaylist(playlists)
+    }
+
+    return await Album.findByIdAndDelete(_id)
+  }
+
   async list(req: Request) {
     const populate: Populate[] = [
       { path: 'artist', select: ['title'] },
@@ -47,7 +128,55 @@ class AlbumsServices {
     throw ApiError.BadRequest('Incorrect request options')
   }
 
-  async single(id: string) {
+  async random(size: number) {
+    // console.log(size)
+    const response = await Album.aggregate([
+      {
+        $lookup: {
+          from: 'artists',
+          localField: 'artist',
+          foreignField: '_id',
+          as: 'artist'
+        }
+      },
+      {
+        $lookup: {
+          from: 'genres',
+          localField: 'genre',
+          foreignField: '_id',
+          as: 'genre'
+        }
+      },
+      {
+        $lookup: {
+          from: 'periods',
+          localField: 'period',
+          foreignField: '_id',
+          as: 'period'
+        }
+      },
+      { $sample: { size } }
+    ])
+    // console.log(response)
+
+    if (response) {
+      const coveredAlbums = response.map(async (album) => {
+        const albumCoverRes = await CloudLib.get<CloudFile>(album.albumCover)
+        return new AlbumItemDTO({
+          ...album,
+          artist: Array.isArray(album.artist) ? album.artist[0] : album.artist,
+          genre: Array.isArray(album.genre) ? album.genre[0] : album.genre,
+          period: Array.isArray(album.period) ? album.period[0] : album.period
+        }, albumCoverRes.data.file)
+      })
+
+      return await Promise.all(coveredAlbums)
+    }
+
+    throw ApiError.BadRequest('Incorrect request options')
+  }
+
+  async single(id: string | Types.ObjectId) {
     const dbSingle: AlbumResponse = await Album.findById(id)
       .populate({ path: 'artist', select: ['title'] })
       .populate({ path: 'genre', select: ['title'] })
@@ -81,40 +210,9 @@ class AlbumsServices {
   }
 
   async booklet(path: string) {
-    const bookletRes = await CloudLib.get<CloudFolder>(sanitizeURL(path))
-    return bookletRes.data._embedded.items.map((item) => 'file' in item && item.file)
-  }
-
-  async undisposed(path: string, id?: string) {
-    const response = await CloudLib.get<CloudFolder>(sanitizeURL(path))
-    let ddd
-
-    if (typeof id !== 'undefined') {
-      const ttt = response.data._embedded.items.map(async (el) => {
-        if (el.type === 'dir') {
-          const xxx = await CloudLib.get<CloudFolder>(sanitizeURL(el.path))
-          return xxx.data._embedded.items.map((el) => ({ ...el, album: response.data.name, artist: response.data.path }))
-        }
-        return { ...el, album: response.data.name, artist: response.data.path }
-      })
-
-      ddd = await Promise.all(ttt)
-      console.log(ddd)
-      const tracks = ddd
-        .flat()
-        .filter((track) => 'media_type' in track && track.media_type === 'audio')
-        .map((track) => ({
-          _id: track.resource_id,
-          title: track.name,
-          link: 'file' in track && track.file,
-          artist: { _id: track.resource_id.split(':')[0], title: 'artist' in track && track.artist },
-          inAlbum: { _id: track.resource_id.split(':')[1], title: track.album }
-        }))
-
-      return { _id: id, tracks }
-    } else {
-      return response.data._embedded.items
-    }
+    // const bookletRes = await CloudLib.get<CloudFolder>(sanitizeURL(path))
+    // // @ts-ignore
+    // return bookletRes.data._embedded.items.map((item) => 'file' in item && item.file)
   }
 }
 

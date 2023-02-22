@@ -1,12 +1,21 @@
+import { Types } from 'mongoose'
 import { CategoryDocument, CategoryResponse } from '../types/Category'
 import { FrameResponse } from '../types/Frame'
 import { AlbumItemDTO } from './album.dto'
 
-export class CategoryItemDTO {
+export class CategoryBasicDTO {
+  title: string
+  _id: Types.ObjectId
+
+  constructor(id: Types.ObjectId, title: string) {
+    this.title = title
+    this._id = id
+  }
+}
+
+export class CategoryItemDTO extends CategoryBasicDTO {
   albums: number
   avatar: string
-  title: string
-  _id: string
 
   #calcAlbumsLength(category: CategoryDocument) {
     return (
@@ -16,10 +25,9 @@ export class CategoryItemDTO {
   }
 
   constructor(category: CategoryDocument) {
+    super(category._id, category.title)
     this.albums = this.#calcAlbumsLength(category)
     this.avatar = category.avatar
-    this.title = category.title
-    this._id = category._id
   }
 }
 

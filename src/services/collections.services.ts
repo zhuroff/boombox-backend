@@ -1,3 +1,4 @@
+import { Types } from 'mongoose'
 import { ApiError } from '../exceptions/api-errors'
 import { Collection } from '../models/collection.model'
 import { Album } from '../models/album.model'
@@ -124,6 +125,13 @@ class CollectionsServices {
         ? 'Album successfully removed from collection'
         : 'Album successfully added to collection'
     }
+  }
+
+  async cleanCollection(collectionIds: Types.ObjectId[], albumId: Types.ObjectId | string) {
+    return await Collection.updateMany(
+      { _id: { $in: collectionIds } },
+      { $pull: { albums: { album: albumId } } }
+    )
   }
 
   async reorder({ oldOrder, newOrder }: CollectionReorder, _id: string) {

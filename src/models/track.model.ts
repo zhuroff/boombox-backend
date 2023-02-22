@@ -3,12 +3,12 @@ import { TrackDocument } from '../types/Track'
 import paginate from 'mongoose-paginate-v2'
 
 const TrackSchema = new Schema({
-  resource_id: {
+  title: {
     type: String,
     required: true
   },
 
-  title: {
+  fileName: {
     type: String,
     required: true
   },
@@ -19,7 +19,12 @@ const TrackSchema = new Schema({
   },
 
   created: {
-    type: String,
+    type: Date,
+    required: true
+  },
+
+  modified: {
+    type: Date,
     required: true
   },
 
@@ -28,12 +33,7 @@ const TrackSchema = new Schema({
     required: true
   },
 
-  mime_type: {
-    type: String,
-    required: true
-  },
-
-  media_type: {
+  mimeType: {
     type: String,
     required: true
   },

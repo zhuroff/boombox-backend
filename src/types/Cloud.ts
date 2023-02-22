@@ -1,6 +1,8 @@
+import { AxiosRequestConfig } from "axios"
+import { CloudEntityDTO } from "../dtos/cloud.dto"
+
 export type CloudCommon = {
   name: string
-  resource_id: string
   created: string
   modified: string
   path: string
@@ -21,3 +23,44 @@ export type CloudFile = CloudCommon & {
 }
 
 export type CloudFolderItem = CloudFolder | CloudFile
+
+// NEW
+export type CloudCommonEntity = {
+  name: string
+  path: string
+  created: string
+  modified: string
+}
+
+export type PCloudEntity = CloudCommonEntity & {
+  id: string
+  isfolder: boolean
+  contenttype?: string
+}
+
+export type YandexCloudEntity = CloudCommonEntity & {
+  resource_id: string
+  type: 'dir' | 'file'
+  mime_type?: string
+}
+
+export type UnionCloudsEntity =
+  PCloudEntity |
+  YandexCloudEntity
+
+export type PCloudResponse<T> = {
+  metadata: {
+    contents: T[]
+  }
+}
+
+export type YandexCloudResponse<T> = {
+  _embedded: {
+    items: T[]
+  }
+}
+
+export interface CloudAPI {
+  getFolders: (path: string, params?: AxiosRequestConfig) => Promise<void | CloudEntityDTO[]>
+  getFolderContent: (path: string) => Promise<void | CloudEntityDTO[]>
+}
