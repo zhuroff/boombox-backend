@@ -4,7 +4,7 @@ import { TrackResponse } from '../types/Track'
 export class TrackDTO {
   _id: string
   title: string
-  link: string
+  path: string
   duration?: number
   listened?: number
   artist: CategoryBasic
@@ -14,7 +14,7 @@ export class TrackDTO {
   constructor(track: TrackResponse) {
     this._id = track._id
     this.title = track.title
-    this.link = track.file
+    this.path = track.path
     this.duration = track.duration
     this.listened = track.listened
     this.artist = track.artist

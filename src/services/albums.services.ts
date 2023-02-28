@@ -5,14 +5,12 @@ import { Album } from '../models/album.model'
 import { Artist } from '../models/artist.model'
 import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
-import { CloudLib } from '../lib/cloud.lib'
 import { AlbumResponse, AlbumShape } from '../types/Album'
 import { PaginationOptions, Populate } from '../types/ReqRes'
 import { AlbumItemDTO, AlbumSingleDTO } from '../dtos/album.dto'
 import { PaginationDTO } from '../dtos/pagination.dto'
 import { TrackDTO } from '../dtos/track.dto'
 import { CloudEntityDTO } from '../dtos/cloud.dto'
-import { CloudFile } from '../types/Cloud'
 import { cloud } from '../'
 import utils from '../utils'
 import categoriesServices from './categories.services'
@@ -106,7 +104,7 @@ class AlbumsServices {
       sort: req.body.sort,
       populate,
       lean: true,
-      select: { title: true, albumCover: true }
+      select: { title: true, folderName: true }
     }
 
     const dbList = await Album.paginate({}, options)
@@ -116,12 +114,11 @@ class AlbumsServices {
       const pagination = new PaginationDTO({ totalDocs, totalPages, page })
 
       const dbDocs = dbList.docs as unknown as AlbumResponse[]
-      const promisedDocs = dbDocs.map(async (album) => {
-        const albumCoverRes = await CloudLib.get<CloudFile>(album.albumCover)
-        return new AlbumItemDTO(album, albumCoverRes.data.file)
-      })
+      const docs = await Promise.all(dbDocs.map(async (album) => {
+        const cover = await cloud.getFile(`${process.env['COLLECTION_ROOT']}/${utils.sanitizeURL(album.folderName)}/cover.webp`)
+        return new AlbumItemDTO(album, cover || undefined)
+      }))
 
-      const docs = await Promise.all(promisedDocs)
       return { docs, pagination }
     }
 
@@ -129,7 +126,6 @@ class AlbumsServices {
   }
 
   async random(size: number) {
-    // console.log(size)
     const response = await Album.aggregate([
       {
         $lookup: {
@@ -157,17 +153,16 @@ class AlbumsServices {
       },
       { $sample: { size } }
     ])
-    // console.log(response)
 
     if (response) {
       const coveredAlbums = response.map(async (album) => {
-        const albumCoverRes = await CloudLib.get<CloudFile>(album.albumCover)
+        const cover = await cloud.getFile(`${process.env['COLLECTION_ROOT']}/${utils.sanitizeURL(album.folderName)}/cover.webp`)
         return new AlbumItemDTO({
           ...album,
           artist: Array.isArray(album.artist) ? album.artist[0] : album.artist,
           genre: Array.isArray(album.genre) ? album.genre[0] : album.genre,
           period: Array.isArray(album.period) ? album.period[0] : album.period
-        }, albumCoverRes.data.file)
+        }, cover || undefined)
       })
 
       return await Promise.all(coveredAlbums)
@@ -191,13 +186,12 @@ class AlbumsServices {
       .lean()
 
     if (dbSingle) {
-      const albumCoverRes = await CloudLib.get<CloudFile>(dbSingle.albumCover)
-      const promisedTracks = dbSingle.tracks.map(async (track) => {
-        const trackRes = await CloudLib.get<CloudFile>(track.path)
-        return new TrackDTO({ ...track, ...trackRes.data })
-      })
-      const albumTracks = await Promise.all(promisedTracks)
-      return new AlbumSingleDTO(dbSingle, albumCoverRes.data.file, albumTracks)
+      const cover = await cloud.getFile(`${process.env['COLLECTION_ROOT']}/${utils.sanitizeURL(dbSingle.folderName)}/cover.webp`)
+      return new AlbumSingleDTO(
+        dbSingle,
+        dbSingle.tracks.map((track) => new TrackDTO(track)),
+        cover || undefined
+      )
     }
 
     throw ApiError.BadRequest('Incorrect request options')

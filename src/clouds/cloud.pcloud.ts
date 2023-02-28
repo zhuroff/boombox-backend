@@ -43,4 +43,11 @@ export class PCloudApi implements CloudAPI {
       ))
       .catch((error) => console.info(error))
   }
+
+  async getFile(path: string) {
+    return await this.#client
+      .get<PCloudResponse<PCloudEntity>>(`${this.#domain}${path}`)
+      .then(({ data }) => data.file)
+      .catch((error) => console.info('getFile', error.message))
+  }
 }

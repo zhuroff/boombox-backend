@@ -49,12 +49,14 @@ export type UnionCloudsEntity =
   YandexCloudEntity
 
 export type PCloudResponse<T> = {
+  file?: string
   metadata: {
     contents: T[]
   }
 }
 
 export type YandexCloudResponse<T> = {
+  file?: string
   _embedded: {
     items: T[]
   }
@@ -63,4 +65,5 @@ export type YandexCloudResponse<T> = {
 export interface CloudAPI {
   getFolders: (path: string, params?: AxiosRequestConfig) => Promise<void | CloudEntityDTO[]>
   getFolderContent: (path: string) => Promise<void | CloudEntityDTO[]>
+  getFile: (path: string) => Promise<void | any>
 }

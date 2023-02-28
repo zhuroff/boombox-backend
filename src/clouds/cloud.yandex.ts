@@ -30,4 +30,11 @@ export class YandexCloudApi implements CloudAPI {
       ))
       .catch((error: AxiosError) => console.info('getFolderContent', error.message))
   }
+
+  async getFile(path: string) {
+    return await this.#client
+      .get<YandexCloudResponse<YandexCloudEntity>>(`${this.#domain}${path}`)
+      .then(({ data }) => data.file)
+      .catch((error: AxiosError) => console.info('getFile', error.message))
+  }
 }
