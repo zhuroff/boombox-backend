@@ -28,7 +28,7 @@ export class CloudEntityDTO {
 
   constructor(item: UnionCloudsEntity) {
     this.id = this.#idSetter(item)
-    this.path = utils.sanitizeURL(item.path, `${process.env['COLLECTION_ROOT']}/`)
+    this.path = utils.sanitizeURL(item.path, `${process.env['COLLECTION_ROOT']}/Collection/`)
     this.title = item.name
     this.created = new Date(item.created)
     this.modified = new Date(item.modified)

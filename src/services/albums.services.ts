@@ -31,7 +31,7 @@ class AlbumsServices {
       genre: utils.parseAlbumGenre(album.title),
       period: utils.getAlbumReleaseYear(album.title),
       tracks: utils.fileFilter(await cloud.getFolderContent(
-        `${process.env['COLLECTION_ROOT'] || ''}/${album.path}`
+        `${process.env['COLLECTION_ROOT'] || ''}/Collection/${album.path}`
       ) || [], utils.audioMimeTypes)
     }
   }
@@ -115,7 +115,7 @@ class AlbumsServices {
 
       const dbDocs = dbList.docs as unknown as AlbumResponse[]
       const docs = await Promise.all(dbDocs.map(async (album) => {
-        const cover = await cloud.getFile(`${process.env['COLLECTION_ROOT']}/${utils.sanitizeURL(album.folderName)}/cover.webp`)
+        const cover = await cloud.getFile(`${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(album.folderName)}/cover.webp`)
         return new AlbumItemDTO(album, cover || undefined)
       }))
 
@@ -156,7 +156,7 @@ class AlbumsServices {
 
     if (response) {
       const coveredAlbums = response.map(async (album) => {
-        const cover = await cloud.getFile(`${process.env['COLLECTION_ROOT']}/${utils.sanitizeURL(album.folderName)}/cover.webp`)
+        const cover = await cloud.getFile(`${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(album.folderName)}/cover.webp`)
         return new AlbumItemDTO({
           ...album,
           artist: Array.isArray(album.artist) ? album.artist[0] : album.artist,
@@ -186,7 +186,7 @@ class AlbumsServices {
       .lean()
 
     if (dbSingle) {
-      const cover = await cloud.getFile(`${process.env['COLLECTION_ROOT']}/${utils.sanitizeURL(dbSingle.folderName)}/cover.webp`)
+      const cover = await cloud.getFile(`${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(dbSingle.folderName)}/cover.webp`)
       return new AlbumSingleDTO(
         dbSingle,
         dbSingle.tracks.map((track) => new TrackDTO(track)),

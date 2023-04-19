@@ -36,8 +36,11 @@ export class AlbumsController {
   }
 
   static async random(req: Request, res: Response, next: (error: unknown) => void) {
+    if (Array.isArray(req.query)) {
+      throw new Error('Query should be a string in this request')
+    }
     try {
-      const result = await albumsServices.random(parseInt(req.params?.['quantity'] || '8'))
+      const result = await albumsServices.random(parseInt(String(req.query?.['quantity'] || 8)))
       return res.json(result)
     } catch (error) {
       return next(error)

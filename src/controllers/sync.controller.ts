@@ -41,7 +41,7 @@ export class SyncController {
   static async sync(req: Request, res: Response) {
     try {
       const cloudFolders = await cloud.getFolders(
-        process.env['COLLECTION_ROOT'] || '',
+        `${process.env['COLLECTION_ROOT'] || ''}/Collection`,
         { params: { limit: 5000 } }
       ) || []
       const dbFolders = await albumsServices.dbAlbumEntries()
