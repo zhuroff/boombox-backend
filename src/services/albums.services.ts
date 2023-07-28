@@ -91,6 +91,10 @@ class AlbumsServices {
   }
 
   async list(req: Request) {
+    if (req.body.isRandom) {
+      return await this.random(req.body.limit)
+    }
+
     const populate: Populate[] = [
       { path: 'artist', select: ['title'] },
       { path: 'genre', select: ['title'] },
@@ -165,7 +169,8 @@ class AlbumsServices {
         }, cover || undefined)
       })
 
-      return await Promise.all(coveredAlbums)
+      const albums = await Promise.all(coveredAlbums)
+      return { docs: albums }
     }
 
     throw ApiError.BadRequest('Incorrect request options')
