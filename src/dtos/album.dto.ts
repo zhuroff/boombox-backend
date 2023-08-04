@@ -26,10 +26,12 @@ export class AlbumItemDTO {
 export class AlbumSingleDTO extends AlbumItemDTO {
   description: string
   tracks: TrackDTO[]
+  folderName: string
 
   constructor(album: AlbumResponse, tracks: TrackDTO[], albumCover?: string) {
     super(album, albumCover)
     this.description = album.description
     this.tracks = tracks
+    this.folderName = album.folderName
   }
 }

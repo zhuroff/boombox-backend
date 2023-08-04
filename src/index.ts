@@ -25,7 +25,7 @@ dotenv.config()
 const app = express()
 const PORT = 3000
 
-export const cloud = cloudApiGetter(process.env['CURRENT_API'] || '')
+export const Cloud = cloudApiGetter(process.env['CURRENT_API'] || '')
 
 mongoose.connect(process.env['MONGO_URI'] as string)
   .then(() => console.log('MongoDB connected'))

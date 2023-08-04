@@ -3,7 +3,7 @@ import { Types } from 'mongoose'
 import { AlbumDocument } from 'src/types/Album'
 import { CloudEntityDTO } from '../dtos/cloud.dto'
 import { AlbumsController } from './albums.controller'
-import { cloud } from '../'
+import { Cloud } from '../'
 import albumsServices from '../services/albums.services'
 
 export class SyncController {
@@ -40,7 +40,7 @@ export class SyncController {
 
   static async sync(req: Request, res: Response) {
     try {
-      const cloudFolders = await cloud.getFolders(
+      const cloudFolders = await Cloud.getFolders(
         `${process.env['COLLECTION_ROOT'] || ''}/Collection`,
         { params: { limit: 5000 } }
       ) || []
