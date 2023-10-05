@@ -17,6 +17,7 @@ import categoriesServices from './categories.services'
 import tracksServices from './tracks.services'
 import collectionsServices from './collections.services'
 import playlistsServices from './playlists.services'
+import { PipelineStage } from 'mongoose'
 
 class AlbumsServices {
   async dbAlbumEntries() {
@@ -91,8 +92,18 @@ class AlbumsServices {
   }
 
   async list(req: Request) {
+    // const query = req.body.filters
+    //   ? req.body.filters.reduce((acc: any, next: any) => {
+    //     acc[next.entityType] = new Types.ObjectId(next.entityValue)
+    //     if (next.exclude) {
+    //       acc._id = { $ne: new Types.ObjectId(next.entityValue) }
+    //     }
+    //     return acc
+    //   }, {})
+    //   : {}
+
     if (req.body.isRandom) {
-      return await this.random(req.body.limit)
+      return await this.random(req.body.limit, req.body.filter)
     }
 
     const populate: Populate[] = [
@@ -129,8 +140,8 @@ class AlbumsServices {
     throw ApiError.BadRequest('Incorrect request options')
   }
 
-  async random(size: number) {
-    const response = await Album.aggregate([
+  async random(size: number, filter?: Record<string, Record<string, any>>) {
+    const basicConfig = [
       {
         $lookup: {
           from: 'artists',
@@ -156,7 +167,31 @@ class AlbumsServices {
         }
       },
       { $sample: { size } }
-    ])
+    ]
+
+    const config = basicConfig.reduce<PipelineStage[]>((acc, next) => {
+      acc.push(next)
+      if (filter && filter['from'] === next.$lookup?.from) {
+        acc.push({
+          $match: {
+            [String(filter['key'])]: new Types.ObjectId(String(filter['value']))
+          }
+        })
+
+        if (filter['excluded']) {
+          const lastProp = acc.at(-1)
+          if (lastProp) {
+            Object.entries(filter['excluded']).forEach(([key, value]) => {
+              // @ts-ignore
+              lastProp.$match[key] = { $ne: new Types.ObjectId(String(value)) }
+            })
+          }
+        }
+      }
+      return acc
+    }, [])
+
+    const response = await Album.aggregate(config)
 
     if (response) {
       const coveredAlbums = response.map(async (album) => {
@@ -195,7 +230,6 @@ class AlbumsServices {
       // const booklet = await Cloud.getFolderContent(
       //   `${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(dbSingle.folderName)}/booklet`
       // )
-      // console.log(booklet)
       return new AlbumSingleDTO(
         dbSingle,
         dbSingle.tracks.map((track) => new TrackDTO(track)),
