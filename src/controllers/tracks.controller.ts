@@ -58,4 +58,14 @@ export class TracksController {
       return next(error)
     }
   }
+
+  static async getAudio(req: Request, res: Response, next: (error: unknown) => void) {
+    try {
+      const response = await tracksServices.getTrack(req.body['path'])
+      res.json(response)
+    } catch (error) {
+      console.info(error)
+      return next(error)
+    }
+  }
 }

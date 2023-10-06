@@ -4,6 +4,7 @@ import { CloudEntityDTO } from '../dtos/cloud.dto'
 import { ApiError } from '../exceptions/api-errors'
 import { Track } from '../models/track.model'
 import utils from '../utils'
+import { Cloud } from '../'
 // import { TrackSearchPayload } from '../types/Track'
 
 // const GClient = new Genius.Client(process.env['GENIUS_SECRET'])
@@ -60,6 +61,10 @@ class TracksServices {
 
   async save(id: string, lyrics: string) {
     return await Track.findByIdAndUpdate(id, { $set: { lyrics } })
+  }
+
+  async getTrack(path: string) {
+    return await Cloud.getFile(`${process.env['COLLECTION_ROOT']}/Collection/${path}`)
   }
 }
 
