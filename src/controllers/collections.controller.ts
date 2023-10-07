@@ -6,9 +6,9 @@ import collectionsServices from '../services/collections.services'
 import filesServices from '../services/files.services'
 
 export class CollectionsController {
-  static async list(req: Request, res: Response, next: (error: unknown) => void) {
+  static async getCollectionsList(req: Request, res: Response, next: (error: unknown) => void) {
     try {
-      const response = await collectionsServices.list()
+      const response = await collectionsServices.getCollectionsList()
       res.json(response)
     } catch (error) {
       return next(error)

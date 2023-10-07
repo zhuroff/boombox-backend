@@ -1,5 +1,5 @@
 import { Types } from 'mongoose'
-import { AlbumResponse } from './Album'
+import { AlbumResponse } from './album.types'
 
 type CollectionModelAlbum = {
   _id: Types.ObjectId

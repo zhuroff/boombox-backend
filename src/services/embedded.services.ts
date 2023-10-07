@@ -1,30 +1,29 @@
-import { Frame } from '../models/frame.model'
+import { Embedded } from '../models/embedded.model'
 import { Artist } from '../models/artist.model'
 import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
 import { PaginateModel, Types } from 'mongoose'
-import { ApiError } from '../exceptions/api-errors'
 import { ListConfig, PaginationOptions, Populate } from '../types/ReqRes'
 import { PaginationDTO } from '../dtos/pagination.dto'
 
-class FramesServices {
+class EmbeddedServices {
   async create(frame: any) {
-    const newBCAlbum = new Frame(frame)
+    const newBCAlbum = new Embedded(frame)
     const dbAlbum = await newBCAlbum.save()
 
     await this.saveAlbumToCategory(Artist, frame.artist, dbAlbum._id)
     await this.saveAlbumToCategory(Genre, frame.genre, dbAlbum._id)
     await this.saveAlbumToCategory(Period, frame.period, dbAlbum._id)
 
-    const createdFrame = await Frame.findById(dbAlbum._id)
+    const createdDoc = await Embedded.findById(dbAlbum._id)
       .populate({ path: 'artist', select: ['title'] })
       .populate({ path: 'genre', select: ['title'] })
       .populate({ path: 'period', select: ['title'] })
 
-    return createdFrame
+    return createdDoc
   }
 
-  async list({ page, limit, sort }: ListConfig) {
+  async getAllEmbedded({ page, limit, sort }: ListConfig) {
     const populate: Populate[] = [
       { path: 'artist', select: ['title'] },
       { path: 'genre', select: ['title'] },
@@ -44,7 +43,7 @@ class FramesServices {
       }
     }
 
-    const dbList = await Frame.paginate({}, options)
+    const dbList = await Embedded.paginate({}, options)
 
     if (dbList) {
       const { totalDocs, totalPages, page } = dbList
@@ -54,11 +53,11 @@ class FramesServices {
       return { docs, pagination }
     }
 
-    throw ApiError.BadRequest('Incorrect request options')
+    throw new Error('Incorrect request options')
   }
 
   async single(id: string) {
-    const response = await Frame.findById(id)
+    const response = await Embedded.findById(id)
       .populate({ path: 'artist', select: ['title'] })
       .populate({ path: 'genre', select: ['title'] })
       .populate({ path: 'period', select: ['title'] })
@@ -67,11 +66,11 @@ class FramesServices {
       return response
     }
 
-    throw ApiError.BadRequest('Incorrect request options')
+    throw new Error('Incorrect request options')
   }
 
   async remove(_id: string, { artist, genre, period }: any) {
-    await Frame.deleteOne({ _id })
+    await Embedded.deleteOne({ _id })
 
     await this.removeAlbumFromCategory(Artist, artist, _id)
     await this.removeAlbumFromCategory(Genre, genre, _id)
@@ -99,4 +98,4 @@ class FramesServices {
   }
 }
 
-export default new FramesServices()
+export default new EmbeddedServices()

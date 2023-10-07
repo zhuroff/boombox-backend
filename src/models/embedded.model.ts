@@ -1,8 +1,8 @@
 import { model, Schema, PaginateModel } from 'mongoose'
-import { FrameDocument } from '../types/Frame'
+import { EmbeddedDocument } from '../types/Embedded'
 import paginate from 'mongoose-paginate-v2'
 
-const FrameSchema = new Schema({
+const EmbeddedSchema = new Schema({
 	title: {
 		type: String,
 		required: true
@@ -45,6 +45,6 @@ const FrameSchema = new Schema({
 	]
 })
 
-FrameSchema.index({ title: 'text' })
-FrameSchema.plugin(paginate)
-export const Frame = model<FrameDocument, PaginateModel<FrameDocument>>('frames', FrameSchema)
+EmbeddedSchema.index({ title: 'text' })
+EmbeddedSchema.plugin(paginate)
+export const Embedded = model<EmbeddedDocument, PaginateModel<EmbeddedDocument>>('frames', EmbeddedSchema)

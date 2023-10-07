@@ -1,7 +1,7 @@
 import { Document, Types } from 'mongoose'
 import { CategoryBasic } from './Category'
 
-export type FrameModel = {
+export type EmbeddedModel = {
   title: string
   artist: Types.ObjectId
   genre: Types.ObjectId
@@ -10,9 +10,9 @@ export type FrameModel = {
   inCollections?: Types.ObjectId[]
 }
 
-type ExcludedFrameFields = 'artist' | 'genre' | 'period' | 'inCollections'
+type ExcludedEmbeddedFields = 'artist' | 'genre' | 'period' | 'inCollections'
 
-export type FrameResponse = Omit<FrameModel, ExcludedFrameFields> & {
+export type EmbeddedResponse = Omit<EmbeddedModel, ExcludedEmbeddedFields> & {
   _id: string
   artist: CategoryBasic
   genre: CategoryBasic
@@ -20,4 +20,4 @@ export type FrameResponse = Omit<FrameModel, ExcludedFrameFields> & {
   inCollections: CategoryBasic[]
 }
 
-export interface FrameDocument extends Document, FrameModel { }
+export interface EmbeddedDocument extends Document, EmbeddedModel { }

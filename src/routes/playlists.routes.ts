@@ -5,7 +5,7 @@ import upload from '../middleware/upload'
 const router = Router()
 
 router.post('/', PlaylistsController.create)
-router.get('/', PlaylistsController.list)
+router.get('/', PlaylistsController.getAllPlaylists)
 router.get('/:id', PlaylistsController.single)
 router.patch('/:id', PlaylistsController.update)
 router.patch('/:id/reorder', PlaylistsController.reorder)

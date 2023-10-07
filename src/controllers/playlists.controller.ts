@@ -34,9 +34,9 @@ export class PlaylistsController {
     }
   }
 
-  static async list(req: Request, res: Response, next: (error: unknown) => void) {
+  static async getAllPlaylists(req: Request, res: Response, next: (error: unknown) => void) {
     try {
-      const response = await playlistsServices.list()
+      const response = await playlistsServices.getAllPlaylists()
       res.json(response)
     } catch (error) {
       return next(error)

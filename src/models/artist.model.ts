@@ -31,9 +31,9 @@ const ArtistSchema = new Schema({
     }
   ],
 
-  framesAlbums: [
+  embeddedAlbums: [
     {
-      ref: 'frames',
+      ref: 'embedded',
       type: Schema.Types.ObjectId,
       required: false
     }

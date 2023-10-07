@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { Types } from 'mongoose'
-import { AlbumDocument } from 'src/types/Album'
+import { AlbumDocument } from '../types/album.types'
 import { CloudEntityDTO } from '../dtos/cloud.dto'
 import { AlbumsController } from './albums.controller'
 import { Cloud } from '../'
@@ -38,13 +38,13 @@ export class SyncController {
     return Promise.resolve(true)
   }
 
-  static async sync(req: Request, res: Response) {
+  static async sync(_: Request, res: Response) {
     try {
       const cloudFolders = await Cloud.getFolders(
         `${process.env['COLLECTION_ROOT'] || ''}/Collection`,
         { params: { limit: 5000 } }
       ) || []
-      const dbFolders = await albumsServices.dbAlbumEntries()
+      const dbFolders = await albumsServices.getAlbumDocs()
       await SyncController.dbUpdateSplitter(cloudFolders, dbFolders)
         && res.status(200).json({ message: 'Successfully synchronized' })
     } catch (error) {

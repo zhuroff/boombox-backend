@@ -1,8 +1,8 @@
 import { CloudLib } from '../lib/cloud.lib'
-import { DiscogsPayload } from '../types/Album'
+import { DiscogsPayload } from '../types/album.types'
 
 class DiscogsServices {
-  async list({ artist, album, page }: DiscogsPayload) {
+  async getList({ artist, album, page }: DiscogsPayload) {
     const discogsUrl = `
       type=release
       &artist=${artist}

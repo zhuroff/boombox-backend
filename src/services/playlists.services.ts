@@ -1,6 +1,5 @@
 import { Types } from 'mongoose'
 import { PlaylistItemDTO } from '../dtos/playlist.dto'
-import { ApiError } from '../exceptions/api-errors'
 import { Playlist } from '../models/playlist.model'
 import { Track } from '../models/track.model'
 import { CollectionReorder } from '../types/Collection'
@@ -51,7 +50,7 @@ class PlaylistsServices {
     )))
   }
 
-  async list() {
+  async getAllPlaylists() {
     const config = { title: true, tracks: true, avatar: true }
     const response = await Playlist.find({}, config).sort({ title: 1 }).exec()
 
@@ -59,7 +58,7 @@ class PlaylistsServices {
       return response.map((el) => new PlaylistItemDTO(el))
     }
 
-    throw ApiError.BadRequest('Incorrect request options')
+    throw new Error('Incorrect request options')
   }
 
   async single(id: string) {
@@ -104,7 +103,7 @@ class PlaylistsServices {
       return { ...dbPlaylist, tracks: await Promise.all(promisedTracks) }
     }
 
-    throw ApiError.BadRequest('Incorrect request options')
+    throw new Error('Incorrect request options')
   }
 
   async remove(_id: string) {
@@ -149,7 +148,7 @@ class PlaylistsServices {
       return { message: 'Order successfully updated' }
     }
 
-    throw ApiError.BadRequest('Incorrect request options')
+    throw new Error('Incorrect request options')
   }
 
   async rename(_id: string, title: string) {

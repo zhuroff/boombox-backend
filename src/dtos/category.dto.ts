@@ -1,6 +1,6 @@
 import { Types } from 'mongoose'
 import { CategoryDocument, CategoryResponse } from '../types/Category'
-import { FrameResponse } from '../types/Frame'
+import { EmbeddedResponse } from '../types/Embedded'
 import { AlbumItemDTO } from './album.dto'
 
 export class CategoryBasicDTO {
@@ -20,7 +20,7 @@ export class CategoryItemDTO extends CategoryBasicDTO {
   #calcAlbumsLength(category: CategoryDocument) {
     return (
       (category.albums?.length || 0) +
-      (category.framesAlbums?.length || 0)
+      (category.embeddedAlbums?.length || 0)
     )
   }
 
@@ -37,7 +37,7 @@ export class CategoryPageDTO {
   poster?: string
   avatar?: string
   albums: AlbumItemDTO[]
-  framesAlbums: FrameResponse[]
+  embeddedAlbums: EmbeddedResponse[]
 
   constructor(category: CategoryResponse, albums: AlbumItemDTO[]) {
     this._id = category._id
@@ -45,6 +45,6 @@ export class CategoryPageDTO {
     this.poster = category.poster
     this.avatar = category.avatar
     this.albums = albums
-    this.framesAlbums = category.framesAlbums
+    this.embeddedAlbums = category.embeddedAlbums
   }
 }

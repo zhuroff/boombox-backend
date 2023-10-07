@@ -4,18 +4,18 @@ import { CategoryResponse, CategoryDocument } from '../types/Category'
 import { PaginationOptions } from '../types/ReqRes'
 import { CategoryItemDTO, CategoryPageDTO } from '../dtos/category.dto'
 import { PaginationDTO } from '../dtos/pagination.dto'
-import { Frame } from '../models/frame.model'
-import { AlbumResponse } from '../types/Album'
+import { Embedded } from '../models/embedded.model'
+import { AlbumResponse } from '../types/album.types'
 import { CloudLib } from '../lib/cloud.lib'
 import { CloudFile } from '../types/Cloud'
-import { FrameResponse } from '../types/Frame'
+import { EmbeddedResponse } from '../types/Embedded'
 import { AlbumItemDTO } from '../dtos/album.dto'
 
 class CategoriesServices {
-  async list<T>(Model: PaginateModel<T>, req: Request) {
+  async getCategoriesList<T>(Model: PaginateModel<T>, req: Request) {
     const populates = [
       { path: 'albums', select: ['_id'] },
-      { path: 'framesAlbums', select: ['_id'], model: Frame }
+      { path: 'embeddedAlbums', select: ['_id'], model: Embedded }
     ]
 
     const options: PaginationOptions = {
@@ -56,8 +56,8 @@ class CategoriesServices {
           { path: 'period', select: ['title', '_id'] }
         ]
       })
-      .populate<FrameResponse[]>({
-        path: 'framesAlbums',
+      .populate<EmbeddedResponse[]>({
+        path: 'embeddedAlbums',
         select: ['title', 'frame'],
         populate: [
           { path: 'artist', select: ['title', '_id'] },

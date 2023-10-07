@@ -1,7 +1,7 @@
 import { Album } from '../models/album.model'
 import { Artist } from '../models/artist.model'
 import { Collection } from '../models/collection.model'
-import { Frame } from '../models/frame.model'
+import { Embedded } from '../models/embedded.model'
 import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
 import { Playlist } from '../models/playlist.model'
@@ -17,7 +17,7 @@ class BackupServices {
     albums: Album,
     artists: Artist,
     collections: Collection,
-    frames: Frame,
+    embedded: Embedded,
     genres: Genre,
     periods: Period,
     playlists: Playlist,
@@ -25,7 +25,7 @@ class BackupServices {
     tracks: Track
   }
 
-  async backupSave() {
+  async saveBackup() {
     const timestamp = String(new Date().getTime())
 
     await this.createBackupFolder(timestamp)
@@ -46,11 +46,11 @@ class BackupServices {
     return { message: 'Data backup completed successfully' }
   }
 
-  backupList() {
+  getBackup() {
     return fs.readdirSync(path.join(__dirname, '../..', 'backups'))
   }
 
-  async backupRestore(date: string) {
+  async restoreBackup(date: string) {
     const restoreProcess = Object.keys(this.#backupModels).map(async (el: string) => {
       const folderName = date
       const Model = this.#backupModels[el]
@@ -71,7 +71,7 @@ class BackupServices {
     return { message: 'Data restore completed successfully' }
   }
 
-  async backupRemove(folderName: string) {
+  async removeBackup(folderName: string) {
     return new Promise((resolve, reject) => {
       fs.rm(
         path.join(__dirname, '../backups', folderName),

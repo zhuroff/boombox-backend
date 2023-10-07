@@ -1,14 +1,13 @@
-import { AlbumResponse } from '../types/Album'
+import { AlbumResponse } from '../types/album.types'
 import { CategoryDocument, CategoryResponse } from '../types/Category'
 import { SearchModel, SearchModelKey, SearchModelsSchema, SearchParams, SearchPayload, SearchResult } from '../types/ReqRes'
 import { Album } from '../models/album.model'
-import { Frame } from '../models/frame.model'
+import { Embedded } from '../models/embedded.model'
 import { Artist } from '../models/artist.model'
 import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
 import { Collection } from '../models/collection.model'
 import { Playlist } from '../models/playlist.model'
-import { ApiError } from '../exceptions/api-errors'
 import { CloudLib } from '../lib/cloud.lib'
 import { CloudFile } from '../types/Cloud'
 
@@ -31,9 +30,9 @@ const searchSchema: SearchModelsSchema = {
     ]
   },
 
-  frames: {
-    instance: Frame,
-    title: 'Frames',
+  embedded: {
+    instance: Embedded,
+    title: 'Embedded',
     options: {
       _id: true,
       title: true,
@@ -136,10 +135,10 @@ class SearchServices {
           .populate(model.populates)
           .lean()
       } else {
-        throw ApiError.BadRequest('Incorrect request options')
+        throw new Error('Incorrect request options')
       }
     } catch (error) {
-      throw ApiError.BadRequest('Incorrect request options')
+      throw new Error('Incorrect request options')
     }
   }
 }

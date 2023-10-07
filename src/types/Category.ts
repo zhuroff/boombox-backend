@@ -1,6 +1,6 @@
 import { Document, Types } from 'mongoose'
-import { AlbumResponse } from './Album'
-import { FrameResponse } from './Frame'
+import { AlbumResponse } from './album.types'
+import { EmbeddedResponse } from './Embedded'
 
 export type CategoryBasic = {
   _id: Types.ObjectId
@@ -13,13 +13,13 @@ export type CategoryModel = {
   poster: string
   avatar: string
   albums: Types.ObjectId[]
-  framesAlbums: Types.ObjectId[]
+  embeddedAlbums: Types.ObjectId[]
 }
 
-export type CategoryResponse = Omit<CategoryModel, 'albums' | 'framesAlbums'> & {
+export type CategoryResponse = Omit<CategoryModel, 'albums' | 'embeddedAlbums'> & {
   _id: string
   albums: AlbumResponse[]
-  framesAlbums: FrameResponse[]
+  embeddedAlbums: EmbeddedResponse[]
 }
 
 export interface CategoryDocument extends Document, CategoryModel { }

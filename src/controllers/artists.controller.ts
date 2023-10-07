@@ -6,9 +6,9 @@ import categoriesServices from '../services/categories.services'
 import filesServices from '../services/files.services'
 
 export class ArtistsController {
-  static async list(req: Request, res: Response, next: (error: unknown) => void) {
+  static async getArtistsList(req: Request, res: Response, next: (error: unknown) => void) {
     try {
-      const result = await categoriesServices.list(Artist, req)
+      const result = await categoriesServices.getCategoriesList(Artist, req)
       return res.json(result)
     } catch (error) {
       return next(error)

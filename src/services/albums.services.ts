@@ -1,11 +1,10 @@
 import { Request } from 'express'
-import { Types } from 'mongoose'
-import { ApiError } from '../exceptions/api-errors'
+import { Types, PipelineStage } from 'mongoose'
 import { Album } from '../models/album.model'
 import { Artist } from '../models/artist.model'
 import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
-import { AlbumResponse, AlbumShape } from '../types/Album'
+import { AlbumResponse, AlbumShape } from '../types/album.types'
 import { PaginationOptions, Populate } from '../types/ReqRes'
 import { AlbumItemDTO, AlbumSingleDTO } from '../dtos/album.dto'
 import { PaginationDTO } from '../dtos/pagination.dto'
@@ -17,10 +16,9 @@ import categoriesServices from './categories.services'
 import tracksServices from './tracks.services'
 import collectionsServices from './collections.services'
 import playlistsServices from './playlists.services'
-import { PipelineStage } from 'mongoose'
 
 class AlbumsServices {
-  async dbAlbumEntries() {
+  async getAlbumDocs() {
     return await Album.find({}, { folderName: true, tracks: true })
   }
 
@@ -61,7 +59,7 @@ class AlbumsServices {
   }
 
   async removeAlbum(_id: Types.ObjectId | string) {
-    const album = await this.single(_id)
+    const album = await this.getSingleAlbum(_id)
     const collections = album.inCollections?.map(({ _id }) => _id)
     const playlists = album.tracks.reduce<Map<string, string[]>>((acc, next) => {
       const playlistsIds = next.inPlaylists?.map(({ _id }) => _id)
@@ -91,7 +89,7 @@ class AlbumsServices {
     return await Album.findByIdAndDelete(_id)
   }
 
-  async list(req: Request) {
+  async getAlbumsList(req: Request) {
     // const query = req.body.filters
     //   ? req.body.filters.reduce((acc: any, next: any) => {
     //     acc[next.entityType] = new Types.ObjectId(next.entityValue)
@@ -103,7 +101,7 @@ class AlbumsServices {
     //   : {}
 
     if (req.body.isRandom) {
-      return await this.random(req.body.limit, req.body.filter)
+      return await this.getRandomAlbums(req.body.limit, req.body.filter)
     }
 
     const populate: Populate[] = [
@@ -137,10 +135,10 @@ class AlbumsServices {
       return { docs, pagination }
     }
 
-    throw ApiError.BadRequest('Incorrect request options')
+    throw new Error('Incorrect request options')
   }
 
-  async random(size: number, filter?: Record<string, Record<string, any>>) {
+  async getRandomAlbums(size: number, filter?: Record<string, Record<string, any>>) {
     const basicConfig = [
       {
         $lookup: {
@@ -208,10 +206,10 @@ class AlbumsServices {
       return { docs: albums }
     }
 
-    throw ApiError.BadRequest('Incorrect request options')
+    throw new Error('Incorrect request options')
   }
 
-  async single(id: string | Types.ObjectId) {
+  async getSingleAlbum(id: string | Types.ObjectId) {
     const dbSingle: AlbumResponse = await Album.findById(id)
       .populate({ path: 'artist', select: ['title'] })
       .populate({ path: 'genre', select: ['title'] })
@@ -227,9 +225,6 @@ class AlbumsServices {
 
     if (dbSingle) {
       const cover = await Cloud.getFile(`${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(dbSingle.folderName)}/cover.webp`)
-      // const booklet = await Cloud.getFolderContent(
-      //   `${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(dbSingle.folderName)}/booklet`
-      // )
       return new AlbumSingleDTO(
         dbSingle,
         dbSingle.tracks.map((track) => new TrackDTO(track)),
@@ -237,16 +232,10 @@ class AlbumsServices {
       )
     }
 
-    throw ApiError.BadRequest('Incorrect request options')
+    throw new Error('Incorrect request options')
   }
 
-  async description(_id: string, description: string) {
-    const $set = { description }
-    await Album.updateOne({ _id }, { $set })
-    return { message: 'Description updated' }
-  }
-
-  async booklet(path: string) {
+  async getAlbumBooklet(path: string) {
     // const bookletRes = await CloudLib.get<CloudFolder>(sanitizeURL(path))
     // // @ts-ignore
     // return bookletRes.data._embedded.items.map((item) => 'file' in item && item.file)

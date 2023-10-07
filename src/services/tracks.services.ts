@@ -1,7 +1,6 @@
 // import Genius from 'genius-lyrics'
 import { Types } from 'mongoose'
 import { CloudEntityDTO } from '../dtos/cloud.dto'
-import { ApiError } from '../exceptions/api-errors'
 import { Track } from '../models/track.model'
 import utils from '../utils'
 import { Cloud } from '../'
@@ -40,7 +39,7 @@ class TracksServices {
       return { lyrics: response.lyrics }
     }
 
-    throw ApiError.BadRequest('Incorrect request options')
+    throw new Error('Incorrect request options')
   }
 
   async lyricsExternal(query: string) {

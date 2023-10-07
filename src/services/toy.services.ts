@@ -1,6 +1,5 @@
 import { CloudLib } from '../lib/cloud.lib'
 import { CloudFolder } from '../types/Cloud'
-import { ApiError } from '../exceptions/api-errors'
 import { TOYPage } from '../models/toy.model'
 import utils from '../utils'
 
@@ -14,7 +13,7 @@ class ToyServices {
       ))
     }
 
-    throw ApiError.BadRequest('Incorrect request options')
+    throw new Error('Incorrect request options')
   }
 
   async years(path: string, dirOnly: boolean = true) {
@@ -25,7 +24,7 @@ class ToyServices {
       return dirOnly ? result.filter((item) => item.type === 'dir') : result
     }
 
-    throw ApiError.BadRequest('Incorrect request options')
+    throw new Error('Incorrect request options')
   }
 
   async year(folderId: string) {

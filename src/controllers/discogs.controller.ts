@@ -2,11 +2,11 @@ import { Request, Response } from 'express'
 import discogsServices from '../services/discogs.services'
 
 export class DiscogsController {
-  static async list(req: Request, res: Response, next: (error: unknown) => void) {
+  static async getList(req: Request, res: Response, next: (error: unknown) => void) {
     const { artist, album, page } = req.body
 
     try {
-      const result = await discogsServices.list({ artist, album, page })
+      const result = await discogsServices.getList({ artist, album, page })
       res.json(result)
     } catch (error) {
       return next(error)

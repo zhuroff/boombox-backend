@@ -6,9 +6,9 @@ import categoriesServices from '../services/categories.services'
 import filesServices from '../services/files.services'
 
 export class PeriodsController {
-  static async list(req: Request, res: Response, next: (error: unknown) => void) {
+  static async getPeriodsList(req: Request, res: Response, next: (error: unknown) => void) {
     try {
-      const result = await categoriesServices.list(Period, req)
+      const result = await categoriesServices.getCategoriesList(Period, req)
       return res.json(result)
     } catch (error) {
       return next(error)

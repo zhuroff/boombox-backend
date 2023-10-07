@@ -1,9 +1,7 @@
 import { Document, Types } from 'mongoose'
 import { CategoryBasic } from './Category'
-import { AlbumItemDTO } from '../dtos/album.dto'
-import { PaginationDTO } from '../dtos/pagination.dto'
 import { CloudEntityDTO } from '../dtos/cloud.dto'
-import { TrackExtPlaylist, TrackResponse } from './Track'
+import { TrackResponse } from './Track'
 
 export type AlbumShape = {
   title: string
@@ -25,12 +23,11 @@ export type AlbumModel = {
   albumCoverArt?: string
   modified: Date
   created: Date
-  description: string
   tracks: Types.ObjectId[]
   inCollections: Types.ObjectId[]
 }
 
-type ExcludedAlbumFields = 'artist' | 'genre' | 'period' | 'inCollections' | 'tracks'
+export type ExcludedAlbumFields = 'artist' | 'genre' | 'period' | 'inCollections' | 'tracks'
 
 export type AlbumResponse = Omit<AlbumModel, ExcludedAlbumFields> & {
   _id: string
@@ -41,11 +38,6 @@ export type AlbumResponse = Omit<AlbumModel, ExcludedAlbumFields> & {
   tracks: TrackResponse[]
 }
 
-export type AlbumPageResponse = {
-  docs: AlbumItemDTO[]
-  pagination: PaginationDTO
-}
-
 export type DiscogsPayload = {
   artist: string
   album: string
@@ -53,4 +45,3 @@ export type DiscogsPayload = {
 }
 
 export interface AlbumDocument extends Document, AlbumModel { }
-export type AlbumDocumentExt = Omit<AlbumDocument, 'tracks'> & { toStay?: true; tracks: TrackExtPlaylist[] }

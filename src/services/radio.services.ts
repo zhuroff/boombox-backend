@@ -1,5 +1,4 @@
 import { Radio } from '../models/radio.model'
-import { ApiError } from '../exceptions/api-errors'
 import { RadioBrowserStationResponse, RadioRequestConfig, RadioSavePayload } from '../types/Radio'
 import { RadioStationDTO } from '../dtos/radio.dto'
 // @ts-ignore
@@ -24,7 +23,7 @@ class RadioServices {
       return stations.filter((station) => station)
     }
 
-    throw ApiError.BadRequest('Incorrect request options')
+    throw new Error('Incorrect request options')
   }
 
   async allStations({ genre, offset }: RadioRequestConfig) {
@@ -43,7 +42,7 @@ class RadioServices {
         .map((station) => new RadioStationDTO(station))
     }
 
-    throw ApiError.BadRequest('Incorrect request options')
+    throw new Error('Incorrect request options')
   }
 
   async saveStation({ stationuuid, name }: RadioSavePayload) {
@@ -61,7 +60,7 @@ class RadioServices {
       return { message: 'Station was successfully deleted' }
     }
 
-    throw ApiError.BadRequest('Incorrect request options')
+    throw new Error('Incorrect request options')
   }
 }
 

@@ -1,5 +1,5 @@
 import { model, Schema, PaginateModel } from 'mongoose'
-import { AlbumDocument } from '../types/Album'
+import { AlbumDocument } from '../types/album.types'
 import paginate from 'mongoose-paginate-v2'
 
 const AlbumSchema = new Schema({
@@ -44,11 +44,6 @@ const AlbumSchema = new Schema({
   modified: {
     type: Date,
     required: true
-  },
-
-  description: {
-    type: String,
-    required: false
   },
 
   tracks: [

@@ -1,8 +1,7 @@
 import { Types } from 'mongoose'
-import { ApiError } from '../exceptions/api-errors'
 import { Collection } from '../models/collection.model'
 import { Album } from '../models/album.model'
-import { AlbumResponse } from '../types/Album'
+import { AlbumResponse } from '../types/album.types'
 import { CollectionItemDTO } from '../dtos/collection.dto'
 import {
   CollectionListItem,
@@ -35,10 +34,10 @@ class CollectionsServices {
       return { message: 'Collection successfully removed' }
     }
 
-    throw ApiError.BadRequest('Incorrect request options')
+    throw new Error('Incorrect request options')
   }
 
-  async list() {
+  async getCollectionsList() {
     const config = { title: true, avatar: true, 'albums.order': true }
     const response = await Collection.find({}, config).sort({ title: 1 })
       .populate({
@@ -50,7 +49,7 @@ class CollectionsServices {
       return response.map((el) => new CollectionItemDTO(el))
     }
 
-    throw ApiError.BadRequest('Incorrect request options')
+    throw new Error('Incorrect request options')
   }
 
   async single(id: string) {
@@ -152,7 +151,7 @@ class CollectionsServices {
       return { message: 'Order successfully changed' }
     }
 
-    throw ApiError.BadRequest('Incorrect request options')
+    throw new Error('Incorrect request options')
   }
 
   async updateAlbum({ listID, itemID, inList }: Partial<CollectionUpdateProps>) {

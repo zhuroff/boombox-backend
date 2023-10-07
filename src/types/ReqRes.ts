@@ -1,49 +1,49 @@
 import { Model, PaginateModel } from 'mongoose'
-import { AlbumResponse } from './Album'
+import { AlbumResponse } from './album.types'
 import { CategoryResponse } from './Category'
 
-type Populate = {
+export type Populate = {
   path: string
   select: string[]
   [key: string]: unknown
 }
 
-type ListConfig = {
+export type ListConfig = {
   page: number
   limit: number
   sort: { [index: string]: number }
 }
 
-type PaginationOptions = ListConfig & {
+export type PaginationOptions = ListConfig & {
   select: { [index: string]: boolean }
   populate?: Populate | Populate[]
   lean?: boolean
 }
 
-type Pagination = {
+export type Pagination = {
   totalDocs: number
   totalPages: number
   page?: number
 }
 
-type ModelResponse = PaginateModel<any> | Model<any, {}, {}>
+export type ModelResponse = PaginateModel<any> | Model<any, {}, {}>
 
-type SearchPayload = {
+export type SearchPayload = {
   query: string
   key?: SearchModelKey
 }
 
-type SearchModelKey = 'albums' | 'frames' | 'artists' | 'genres' | 'periods' | 'collections' | 'playlists'
+export type SearchModelKey = 'albums' | 'embedded' | 'artists' | 'genres' | 'periods' | 'collections' | 'playlists'
 
-type SearchParams = { '$text': { '$search': string } }
+export type SearchParams = { '$text': { '$search': string } }
 
-type SearchResult = {
+export type SearchResult = {
   title: string
   key: SearchModelKey
   data: Partial<AlbumResponse | CategoryResponse>[]
 }
 
-type SearchModel = {
+export type SearchModel = {
   instance: ModelResponse | null
   title: string
   options: { [index: string]: boolean }
@@ -53,20 +53,4 @@ type SearchModel = {
   }[] | null
 }
 
-type SearchModelsSchema = {
-  [K in SearchModelKey]: SearchModel
-}
-
-export {
-  Populate,
-  ListConfig,
-  PaginationOptions,
-  Pagination,
-  ModelResponse,
-  SearchPayload,
-  SearchModelKey,
-  SearchParams,
-  SearchResult,
-  SearchModel,
-  SearchModelsSchema
-}
+export type SearchModelsSchema = Record<SearchModelKey, SearchModel>
