@@ -1,13 +1,13 @@
 import { Types } from 'mongoose'
 import { AlbumResponse } from './album.types'
 
-type CollectionModelAlbum = {
+export type CollectionModelAlbum = {
   _id: Types.ObjectId
   album: Types.ObjectId | AlbumResponse
   order: number
 }
 
-type CollectionModel = {
+export type CollectionModel = {
   _id: Types.ObjectId
   title: string
   dateCreated: Date
@@ -16,34 +16,25 @@ type CollectionModel = {
   albums: CollectionModelAlbum[]
 }
 
-type CollectionListItem = {
+export type CollectionListItem = {
   _id: Types.ObjectId
   order: number
   album: Partial<AlbumResponse>
 }
 
-type DeletedCollectionAlbum = {
+export type DeletedCollectionAlbum = {
   listID: string
   itemID: Types.ObjectId
 }
 
-type CollectionUpdateProps = {
+export type CollectionUpdateProps = {
   inList: boolean
   itemID: string
   listID: string
   order: number
 }
 
-type CollectionReorder = {
+export type CollectionReorder = {
   oldOrder: number
   newOrder: number
-}
-
-export {
-  CollectionModelAlbum,
-  CollectionModel,
-  CollectionListItem,
-  DeletedCollectionAlbum,
-  CollectionUpdateProps,
-  CollectionReorder
 }

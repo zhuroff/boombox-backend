@@ -23,7 +23,7 @@ import { cloudApiGetter } from './clouds'
 dotenv.config()
 
 const app = express()
-const PORT = 3000
+const PORT = 3001
 
 export const Cloud = cloudApiGetter(process.env['CURRENT_API'] || '')
 

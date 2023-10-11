@@ -45,12 +45,13 @@ class AlbumsServices {
       const albumTracks = await Promise.all(shape.tracks.map(async (track) => (
         await tracksServices.create(track, newAlbum._id, newArtist._id)
       )))
+      const dateOfCreation = new Date()
 
       newAlbum.$set({ artist: newArtist._id })
       newAlbum.$set({ genre: newGenre._id })
       newAlbum.$set({ period: newPeriod._id })
-      newAlbum.$set({ created: new Date() })
-      newAlbum.$set({ modified: new Date() })
+      newAlbum.$set({ created: dateOfCreation })
+      newAlbum.$set({ modified: dateOfCreation })
       newAlbum.$set({ tracks: albumTracks.map(({ _id }) => _id) })
 
       return await newAlbum.save()
@@ -224,7 +225,9 @@ class AlbumsServices {
       .lean()
 
     if (dbSingle) {
-      const cover = await Cloud.getFile(`${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(dbSingle.folderName)}/cover.webp`)
+      const cover = await Cloud.getFile(
+        `${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(dbSingle.folderName)}/cover.webp`
+      )
       return new AlbumSingleDTO(
         dbSingle,
         dbSingle.tracks.map((track) => new TrackDTO(track)),

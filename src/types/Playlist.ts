@@ -2,31 +2,31 @@ import { Types } from 'mongoose'
 import { AlbumResponse } from './album.types'
 import { TrackResponse } from './Track'
 
-type PlayListCreatePayload = {
+export type PlayListCreatePayload = {
   title: string
   track: string
 }
 
-type PlayListUpdatePayload = {
+export type PlayListUpdatePayload = {
   _id: string
   inList: boolean
   track: string
   order: number
 }
 
-type PlayListTrack = {
+export type PlayListTrack = {
   _id: Types.ObjectId
   track: TrackResponse
   order: number
 }
 
-type PlaylistTrackResponse = {
+export type PlaylistTrackResponse = {
   _id: Types.ObjectId
   order: number
   track: TrackResponse & { inAlbum: AlbumResponse }
 }
 
-type PlayListModel = {
+export type PlayListModel = {
   _id: Types.ObjectId
   title: string
   dateCreated: Date
@@ -35,19 +35,10 @@ type PlayListModel = {
   tracks: PlayListTrack[]
 }
 
-type PlaylistResponse = {
+export type PlaylistResponse = {
   _id: Types.ObjectId
   title: string
   poster?: string
   cover?: string
   tracks: PlaylistTrackResponse[]
-}
-
-export {
-  PlayListCreatePayload,
-  PlayListUpdatePayload,
-  PlayListTrack,
-  PlaylistTrackResponse,
-  PlayListModel,
-  PlaylistResponse
 }

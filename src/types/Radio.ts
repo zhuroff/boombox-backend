@@ -1,18 +1,18 @@
 import { Types } from 'mongoose'
 
-type RadioModel = {
+export type RadioModel = {
   _id: Types.ObjectId
   name: string
   stationuuid: string
   dateCreated: Date
 }
 
-type RadioRequestConfig = {
+export type RadioRequestConfig = {
   genre: string
   offset: number
 }
 
-type RadioBrowserStation = {
+export type RadioBrowserStation = {
   stationuuid: string
   name: string
   url: string
@@ -21,19 +21,11 @@ type RadioBrowserStation = {
   tags: string
 }
 
-type RadioBrowserStationResponse = RadioBrowserStation & {
+export type RadioBrowserStationResponse = RadioBrowserStation & {
   votes: number
 }
 
-type RadioSavePayload = {
+export type RadioSavePayload = {
   stationuuid: string
   name: string
-}
-
-export {
-  RadioModel,
-  RadioRequestConfig,
-  RadioBrowserStation,
-  RadioBrowserStationResponse,
-  RadioSavePayload
 }
