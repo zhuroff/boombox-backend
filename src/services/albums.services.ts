@@ -211,7 +211,12 @@ class AlbumsServices {
   }
 
   async getSingleAlbum(id: string | Types.ObjectId) {
-    const dbSingle: AlbumResponse = await Album.findById(id)
+    if (id === 'random') {
+      const randomAlbum = await this.getRandomAlbum()
+      return randomAlbum
+    }
+
+    const singleAlbum: AlbumResponse = await Album.findById(id)
       .populate({ path: 'artist', select: ['title'] })
       .populate({ path: 'genre', select: ['title'] })
       .populate({ path: 'period', select: ['title'] })
@@ -224,17 +229,47 @@ class AlbumsServices {
       })
       .lean()
 
-    if (dbSingle) {
+    if (singleAlbum) {
       const cover = await Cloud.getFile(
-        `${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(dbSingle.folderName)}/cover.webp`
+        `${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(singleAlbum.folderName)}/cover.webp`
       )
       return new AlbumSingleDTO(
-        dbSingle,
-        dbSingle.tracks.map((track) => new TrackDTO(track)),
+        singleAlbum,
+        singleAlbum.tracks.map((track) => new TrackDTO(track)),
         cover || undefined
       )
     }
 
+    throw new Error('Incorrect request options')
+  }
+
+  async getRandomAlbum() {
+    const count = await Album.countDocuments()
+    const randomIndex = Math.floor(Math.random() * count)
+    const randomAlbum: AlbumResponse = await Album.findOne().skip(randomIndex)
+      .populate({ path: 'artist', select: ['title'] })
+      .populate({ path: 'genre', select: ['title'] })
+      .populate({ path: 'period', select: ['title'] })
+      .populate({
+        path: 'tracks',
+        populate: [
+          { path: 'artist', select: ['title'] },
+          { path: 'inAlbum', select: ['title'] }
+        ]
+      })
+      .lean()
+  
+    if (randomAlbum) {
+      const cover = await Cloud.getFile(
+        `${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(randomAlbum.folderName)}/cover.webp`
+      )
+      return new AlbumSingleDTO(
+        randomAlbum,
+        randomAlbum.tracks.map((track) => new TrackDTO(track)),
+        cover || undefined
+      )
+    }
+  
     throw new Error('Incorrect request options')
   }
 
