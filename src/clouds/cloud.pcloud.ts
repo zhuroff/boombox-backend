@@ -1,17 +1,20 @@
-import axios from 'axios'
 import utils from '../utils'
+import { CloudExternalApi } from './cloud.external';
 import { CloudEntityDTO } from '../dtos/cloud.dto';
 import { CloudAPI, PCloudEntity, PCloudResponse } from '../types/Cloud'
 
-export class PCloudApi implements CloudAPI {
+export class PCloudApi extends CloudExternalApi implements CloudAPI {
   #domain = process.env['PCLOUD_DOMAIN']
   #login = process.env['PCLOUD_LOGIN']
   #password = process.env['PCLOUD_PASSWORD']
   #digest = ''
-  #client = axios
+
+  constructor() {
+    super()
+  }
 
   async #getDigest() {
-    return this.#client
+    return this.client
       .get(`${this.#domain}/getdigest`)
       .then(({ data }) => data.digest)
       .catch((error) => console.info(error))
@@ -29,14 +32,14 @@ export class PCloudApi implements CloudAPI {
 
   async getFolders(path: string) {
     this.#digest = await this.#getDigest()
-    return await this.#client
+    return await this.client
       .get<PCloudResponse<PCloudEntity>>(this.#qBuilder(`listfolder?path=/${path}`))
       .then(({ data }) => data.metadata.contents.map((item) => new CloudEntityDTO(item)))
       .catch((error) => console.info(error))
   }
 
   async getFolderContent(path: string) {
-    return await this.#client
+    return await this.client
       .get<PCloudResponse<PCloudEntity>>(this.#qBuilder(`listfolder?path=/${path}`))
       .then(({ data }) => (
         data.metadata.contents.map((item) => new CloudEntityDTO(item))
@@ -45,7 +48,7 @@ export class PCloudApi implements CloudAPI {
   }
 
   async getFile(path: string) {
-    return await this.#client
+    return await this.client
       .get<PCloudResponse<PCloudEntity>>(`${this.#domain}${path}`)
       .then(({ data }) => data.file)
       .catch((error) => console.info('getFile', error.message))

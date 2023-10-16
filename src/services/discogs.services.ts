@@ -1,20 +1,23 @@
 import { CloudLib } from '../lib/cloud.lib'
+import { Cloud } from '../'
 import { DiscogsPayload } from '../types/album.types'
+import { DiscogsDTO } from '../dtos/discogs.dto'
+import { PaginationDTO } from '../dtos/pagination.dto'
 
 class DiscogsServices {
   async getList({ artist, album, page }: DiscogsPayload) {
-    const discogsUrl = `
-      type=release
-      &artist=${artist}
-      &release_title=${album}
-      &page=${page}
-      &sort=released
-      &per_page=100
-    `
-    const discogsQuery = CloudLib.discogsQueryLink(discogsUrl)
-    const response = await CloudLib.get(encodeURI(discogsQuery))
-
-    return response.data
+    const discogsUrl = String(
+      'type=release' +
+      '&artist='  + artist +
+      '&release_title=' + album +
+      '&page='  + page +
+      '&sort=released&per_page=100'
+    )
+    const response = await Cloud.getDiscogsList(discogsUrl)
+    return {
+      pagination: new PaginationDTO(response.pagination),
+      data: response.results.map((el) => new DiscogsDTO(el))
+    }
   }
 
   async single(id: number) {

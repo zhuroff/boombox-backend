@@ -1,19 +1,20 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+import { CloudExternalApi } from './cloud.external';
 import { CloudEntityDTO } from '../dtos/cloud.dto';
 import { CloudAPI, YandexCloudEntity, YandexCloudResponse } from '../types/Cloud';
 
-export class YandexCloudApi implements CloudAPI {
+export class YandexCloudApi extends CloudExternalApi implements CloudAPI {
   #domain = process.env['YCLOUD_DOMAIN']
-  #client
 
   constructor() {
-    this.#client = axios.create({
+    super()
+    this.client = axios.create({
       headers: { Authorization: String(process.env['YCLOUD_OAUTH_TOKEN']) }
     })
   }
 
   async getFolders(path: string, params?: AxiosRequestConfig) {
-    return await this.#client
+    return await this.client
       .get<YandexCloudResponse<YandexCloudEntity>>(
         `${this.#domain}/${path}`,
         params
@@ -23,7 +24,7 @@ export class YandexCloudApi implements CloudAPI {
   }
 
   async getFolderContent(path: string) {
-    return await this.#client
+    return await this.client
       .get<YandexCloudResponse<YandexCloudEntity>>(`${this.#domain}${path}`)
       .then(({ data }) => (
         data._embedded.items.map((item) => new CloudEntityDTO(item))
@@ -32,7 +33,7 @@ export class YandexCloudApi implements CloudAPI {
   }
 
   async getFile(path: string) {
-    return await this.#client
+    return await this.client
       .get<YandexCloudResponse<YandexCloudEntity>>(`${this.#domain}${path}`)
       .then(({ data }) => data.file)
       .catch((error: AxiosError) => console.info('getFile', error.message))

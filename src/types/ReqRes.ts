@@ -26,6 +26,12 @@ export type Pagination = {
   page?: number
 }
 
+export type DiscogsPagination = {
+  items: number
+  page: number
+  pages: number
+}
+
 export type ModelResponse = PaginateModel<any> | Model<any, {}, {}>
 
 export type SearchPayload = {
