@@ -11,14 +11,6 @@ export class SyncController {
     cloudFolders: CloudEntityDTO[],
     dbFolders: Array<AlbumDocument & { _id: Types.ObjectId }>
   ) {
-    if (!cloudFolders?.length) {
-      throw new Error('Cloud root directory is not exist or empty')
-    }
-
-    if (!dbFolders) {
-      throw new Error('Database album documents are not exist')
-    }
-
     if (!dbFolders.length && cloudFolders.length) {
       return await AlbumsController.create(cloudFolders)
     }
@@ -48,7 +40,9 @@ export class SyncController {
       await SyncController.dbUpdateSplitter(cloudFolders, dbFolders)
         && res.status(200).json({ message: 'Successfully synchronized' })
     } catch (error) {
-      res.status(500).json(error)
+      if (error instanceof Error) {
+        res.status(500).json({ errMessage: error.message })
+      }
     }
   }
 }

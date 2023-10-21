@@ -5,7 +5,7 @@ import utils from '../utils'
 
 class ToyServices {
   async genres() {
-    const response = await CloudLib.get<CloudFolder>('Boombox/TOY')
+    const response = await CloudLib.get<CloudFolder>(`${process.env['COLLECTION_ROOT']}/TOY`)
 
     if (response) {
       return response.data._embedded.items.filter((item) => (

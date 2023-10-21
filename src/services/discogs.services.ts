@@ -8,10 +8,10 @@ class DiscogsServices {
   async getList({ artist, album, page }: DiscogsPayload) {
     const discogsUrl = String(
       'type=release' +
-      '&artist='  + artist +
+      '&artist=' + artist +
       '&release_title=' + album +
-      '&page='  + page +
-      '&sort=released&per_page=100'
+      '&sort=year&sort_order=asc&per_page=100' +
+      '&page=' + page
     )
     const response = await Cloud.getDiscogsList(discogsUrl)
     return {

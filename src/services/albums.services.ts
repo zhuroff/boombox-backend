@@ -30,7 +30,7 @@ class AlbumsServices {
       genre: utils.parseAlbumGenre(album.title),
       period: utils.getAlbumReleaseYear(album.title),
       tracks: utils.fileFilter(await Cloud.getFolderContent(
-        `${process.env['COLLECTION_ROOT'] || ''}/Collection/${album.path}`
+        `${process.env['COLLECTION_ROOT'] || ''}/Collection/${album.path}&limit=100`
       ) || [], utils.audioMimeTypes)
     }
   }

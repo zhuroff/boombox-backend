@@ -13,6 +13,11 @@ export type DiscorsResponseItem = {
   style: string[]
   title: string
   year: string
+  type: string
+  master_id: number
+  thumb: string
+  community: { want: number; have: number }
+  format_quantity: number
 }
 
 export type DiscogsResponsePagination = {
