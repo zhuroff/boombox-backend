@@ -17,9 +17,10 @@ class DiscogsServices {
 
     results.push(...response.results.reduce<DiscogsDTO[]>((acc, next) => {
       const releaseAlbum = next.title.slice(next.title.indexOf(' - ') + 3)?.trim()
-      if (releaseAlbum?.toLowerCase() === album.toLowerCase()) {
-        acc.push(new DiscogsDTO(next))
-      }
+      if (
+        releaseAlbum?.toLowerCase() === album.toLowerCase()
+        && !next.format.includes('Unofficial Release')
+      ) acc.push(new DiscogsDTO(next))
       return acc
     }, []))
     
