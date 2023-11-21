@@ -5,8 +5,7 @@ export class DiscogsDTO {
   country: string
   cover: string
   releaseFormat: string[]
-  style: string[]
-  label?: string
+  label: string[]
   masterApiUrl: string
   releaseApiUrl: string
   pageURL: string
@@ -18,8 +17,7 @@ export class DiscogsDTO {
     this.country = item.country
     this.cover = item.thumb
     this.releaseFormat = item.format
-    this.style = item.style
-    this.label = [...new Set(item.label)].splice(0, 2).join(', ')
+    this.label = [...new Set(item.label)].splice(0, 2)
     this.masterApiUrl = item.master_url
     this.releaseApiUrl = item.resource_url
     this.pageURL = `https://www.discogs.com${item.uri}`
