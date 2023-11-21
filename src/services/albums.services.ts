@@ -30,7 +30,7 @@ class AlbumsServices {
       genre: utils.parseAlbumGenre(album.title),
       period: utils.getAlbumReleaseYear(album.title),
       tracks: utils.fileFilter(await Cloud.getFolderContent(
-        `${process.env['COLLECTION_ROOT'] || ''}/Collection/${album.path}&limit=100`
+        `${process.env['COLLECTION_ROOT']}/Collection/${album.path}&limit=100`
       ) || [], utils.audioMimeTypes)
     }
   }
@@ -271,12 +271,6 @@ class AlbumsServices {
     }
   
     throw new Error('Incorrect request options')
-  }
-
-  async getAlbumBooklet(path: string) {
-    // const bookletRes = await CloudLib.get<CloudFolder>(sanitizeURL(path))
-    // // @ts-ignore
-    // return bookletRes.data._embedded.items.map((item) => 'file' in item && item.file)
   }
 }
 

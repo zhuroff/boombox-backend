@@ -26,9 +26,10 @@ export class YandexCloudApi extends CloudExternalApi implements CloudAPI {
   async getFolderContent(path: string) {
     return await this.client
       .get<YandexCloudResponse<YandexCloudEntity>>(`${this.#domain}${path}`)
-      .then(({ data }) => (
-        data._embedded.items.map((item) => new CloudEntityDTO(item))
-      ))
+      .then(({ data }) => {
+        console.log(data)
+        return data._embedded.items.map((item) => new CloudEntityDTO(item))
+      })
       .catch((error: AxiosError) => console.info('getFolderContent', error.message))
   }
 

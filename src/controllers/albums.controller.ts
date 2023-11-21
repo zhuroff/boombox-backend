@@ -55,13 +55,4 @@ export class AlbumsController {
       return next(error)
     }
   }
-
-  static async getAlbumBooklet(req: Request<{ booklet: string }>, res: Response, next: (error: unknown) => void) {
-    try {
-      const result = await albumsServices.getAlbumBooklet(req.params['booklet'])
-      res.json(result)
-    } catch (error) {
-      return next(error)
-    }
-  }
 }

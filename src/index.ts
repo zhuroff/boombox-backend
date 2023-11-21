@@ -18,6 +18,7 @@ import collectionsRoutes from './routes/collections.routes'
 import radioRoutes from './routes/radio.routes'
 import backupRoutes from './routes/backup.routes'
 import synchronizeRoutes from './routes/sync.routes'
+import cloudRoutes from './routes/cloud.routes'
 import { cloudApiGetter } from './clouds'
 
 dotenv.config()
@@ -50,6 +51,7 @@ app.use('/api/collections', collectionsRoutes)
 app.use('/api/radio', radioRoutes)
 app.use('/api/backup', backupRoutes)
 app.use('/api/sync', synchronizeRoutes)
+app.use('/api/cloud', cloudRoutes)
 app.use('/uploads', express.static(__dirname + '/uploads'))
 
 app.listen(PORT, () => console.log(`App listening at http://localhost:${PORT}`))
