@@ -13,18 +13,23 @@ class CloudServices {
       .reduce((acc, next) => acc + utils.sanitizeURL(next) + '/', '')
       .slice(0, -1)
 
-    const files = await Cloud.getFolderContent(
-      `${process.env['COLLECTION_ROOT']}/Collection/${satitizedPath}&limit=100`
+    const content = await Cloud.getFolderContent(
+      `${process.env['COLLECTION_ROOT']}/Collection/${satitizedPath}&limit=${body['limit']}&offset=${body['offset']}`
     )
     
-    if (files) {
-      const result = await Promise.allSettled(
-        utils.fileFilter(files, utils.imagesMimeTypes)
-          .map(async (item) => await this.getImageWithURL(item))
-      )
+    if (content) {
+      const finalContent = {
+        ...content,
+        items: await Promise.allSettled(
+          utils.fileFilter(content.items, utils.imagesMimeTypes)
+            .map(async (item) => await this.getImageWithURL(item))
+        )
+      }
 
-      // @ts-ignore
-      return result.map(({ value }) => value)
+      return {
+        ...finalContent,
+        // @ts-ignore
+        items: finalContent.items.map(({ value }) => value)}
     }
 
     throw new Error('Files not found')

@@ -59,11 +59,23 @@ export type YandexCloudResponse<T> = {
   file?: string
   _embedded: {
     items: T[]
+    limit: number
+    offset: number
+    total: number
+    sort: string
   }
+}
+
+export type CloudFolderContent = {
+  items: CloudEntityDTO[]
+  limit: number
+  offset: number
+  total: number
+  sort?: string
 }
 
 export interface CloudAPI {
   getFolders: (path: string, params?: AxiosRequestConfig) => Promise<void | CloudEntityDTO[]>
-  getFolderContent: (path: string) => Promise<void | CloudEntityDTO[]>
+  getFolderContent: (path: string) => Promise<void | CloudFolderContent>
   getFile: (path: string) => Promise<void | any>
 }

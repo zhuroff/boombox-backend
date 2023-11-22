@@ -23,15 +23,17 @@ class AlbumsServices {
   }
 
   async createShape(album: CloudEntityDTO): Promise<AlbumShape> {
+    const albumContent = await Cloud.getFolderContent(
+      `${process.env['COLLECTION_ROOT']}/Collection/${album.path}&limit=100`
+    ) || { items: [] }
+    
     return {
       folderName: album.title,
       title: utils.parseAlbumTitle(album.title),
       artist: utils.parseArtistName(album.title),
       genre: utils.parseAlbumGenre(album.title),
       period: utils.getAlbumReleaseYear(album.title),
-      tracks: utils.fileFilter(await Cloud.getFolderContent(
-        `${process.env['COLLECTION_ROOT']}/Collection/${album.path}&limit=100`
-      ) || [], utils.audioMimeTypes)
+      tracks: utils.fileFilter(albumContent.items, utils.audioMimeTypes)
     }
   }
 

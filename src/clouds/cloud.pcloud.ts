@@ -37,13 +37,15 @@ export class PCloudApi extends CloudExternalApi implements CloudAPI {
       .then(({ data }) => data.metadata.contents.map((item) => new CloudEntityDTO(item)))
       .catch((error) => console.info(error))
   }
-
   async getFolderContent(path: string) {
     return await this.client
       .get<PCloudResponse<PCloudEntity>>(this.#qBuilder(`listfolder?path=/${path}`))
-      .then(({ data }) => (
-        data.metadata.contents.map((item) => new CloudEntityDTO(item))
-      ))
+      .then(({ data }) => ({
+        limit: -1,
+        offset: 0,
+        total: data.metadata.contents.length,
+        items: data.metadata.contents.map((item) => new CloudEntityDTO(item))
+      }))
       .catch((error) => console.info(error))
   }
 

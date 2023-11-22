@@ -22,13 +22,14 @@ export class YandexCloudApi extends CloudExternalApi implements CloudAPI {
       .then(({ data }) => data._embedded.items.map((item) => new CloudEntityDTO(item)))
       .catch((error: AxiosError) => console.info('getFolders', error.message))
   }
-
   async getFolderContent(path: string) {
     return await this.client
       .get<YandexCloudResponse<YandexCloudEntity>>(`${this.#domain}${path}`)
       .then(({ data }) => {
-        console.log(data)
-        return data._embedded.items.map((item) => new CloudEntityDTO(item))
+        return {
+          ...data._embedded,
+          items: data._embedded.items.map((item) => new CloudEntityDTO(item))
+        }
       })
       .catch((error: AxiosError) => console.info('getFolderContent', error.message))
   }
