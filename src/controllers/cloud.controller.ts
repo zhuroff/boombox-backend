@@ -1,13 +1,16 @@
 import { Request, Response } from 'express'
-import cloudServices from '../services/cloudServices'
+import cloudServices from '../services/cloud.services'
 
 export class CloudController {
-  static async getImages(req: Request, res: Response, next: (error: unknown) => void) {
+  static async getImages(req: Request, res: Response) {
     try {
       const result = await cloudServices.getImages(req.body)
-      return res.json(result)
+      res.json(result)
     } catch (error) {
-      return next(error)
+      if (error instanceof Error) {
+        console.error(error.message)
+        res.status(404).json({ message: error.message })
+      }
     }
   }
 }

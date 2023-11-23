@@ -1,4 +1,4 @@
-import { Cloud } from '../'
+import { Cloud } from '..'
 import { CloudEntityDTO } from '../dtos/cloud.dto'
 import utils from '../utils'
 
