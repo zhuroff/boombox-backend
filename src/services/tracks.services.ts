@@ -1,12 +1,12 @@
-// import Genius from 'genius-lyrics'
+import { Client } from 'genius-lyrics'
 import { Types } from 'mongoose'
 import { CloudEntityDTO } from '../dtos/cloud.dto'
 import { Track } from '../models/track.model'
-import utils from '../utils'
 import { Cloud } from '../'
-// import { TrackSearchPayload } from '../types/Track'
+import { TrackSearchPayload } from '../types/Track'
+import utils from '../utils'
 
-// const GClient = new Genius.Client(process.env['GENIUS_SECRET'])
+const GClient = new Client(process.env['GENIUS_SECRET'])
 
 class TracksServices {
   async create(track: Required<CloudEntityDTO>, albumId: Types.ObjectId, artistId: Types.ObjectId) {
@@ -43,19 +43,19 @@ class TracksServices {
   }
 
   async lyricsExternal(query: string) {
-    // const searches = await GClient.songs.search(query)
-    // const resultArray = searches.map(async (el) => {
-    //   const item: TrackSearchPayload = {
-    //     title: el.title,
-    //     thumbnail: el.thumbnail,
-    //     artist: el.artist.name,
-    //     lyrics: await el.lyrics()
-    //   }
+    const searches = await GClient.songs.search(query)
+    const resultArray = searches.map(async (el) => {
+      const item: TrackSearchPayload = {
+        title: el.title,
+        thumbnail: el.thumbnail,
+        artist: el.artist.name,
+        lyrics: await el.lyrics()
+      }
 
-    //   return item
-    // })
+      return item
+    })
 
-    // return await Promise.all(resultArray)
+    return await Promise.all(resultArray)
   }
 
   async save(id: string, lyrics: string) {
