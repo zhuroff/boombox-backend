@@ -1,3 +1,4 @@
+import { AlbumModel } from '../types/album.types'
 import { CategoryBasic } from '../types/Category'
 import { TrackResponse } from '../types/Track'
 
@@ -8,7 +9,7 @@ export class TrackDTO {
   duration?: number
   listened?: number
   artist: CategoryBasic
-  inAlbum: CategoryBasic
+  inAlbum: AlbumModel
   inPlaylists?: CategoryBasic[]
 
   constructor(track: TrackResponse) {

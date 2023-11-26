@@ -1,4 +1,5 @@
 import { AlbumResponse } from '../types/album.types'
+import { TrackResponse } from '../types/Track'
 import { CategoryDocument, CategoryResponse } from '../types/Category'
 import { SearchModel, SearchModelKey, SearchModelsSchema, SearchParams, SearchPayload, SearchResult } from '../types/ReqRes'
 import { Album } from '../models/album.model'
@@ -8,8 +9,9 @@ import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
 import { Collection } from '../models/collection.model'
 import { Playlist } from '../models/playlist.model'
-import { CloudLib } from '../lib/cloud.lib'
-import { CloudFile } from '../types/Cloud'
+import { Track } from '../models/track.model'
+import { Cloud } from '../'
+import utils from '../utils'
 
 const searchSchema: SearchModelsSchema = {
   albums: {
@@ -21,7 +23,8 @@ const searchSchema: SearchModelsSchema = {
       artist: true,
       genre: true,
       albumCover: true,
-      period: true
+      period: true,
+      folderName: true
     },
     populates: [
       { path: 'artist', select: ['title'] },
@@ -29,7 +32,6 @@ const searchSchema: SearchModelsSchema = {
       { path: 'period', select: ['title'] }
     ]
   },
-
   embedded: {
     instance: Embedded,
     title: 'Embedded',
@@ -46,35 +48,39 @@ const searchSchema: SearchModelsSchema = {
       { path: 'period', select: ['title'] }
     ]
   },
-
   artists: {
     instance: Artist,
     title: 'Artists',
     options: { _id: true, title: true, avatar: true }
   },
-
   genres: {
     instance: Genre,
     title: 'Genres',
     options: { _id: true, title: true, avatar: true }
   },
-
   periods: {
     instance: Period,
     title: 'Years',
     options: { _id: true, title: true, avatar: true }
   },
-
   collections: {
     instance: Collection,
     title: 'Collections',
     options: { _id: true, title: true, avatar: true }
   },
-
   playlists: {
     instance: Playlist,
     title: 'Playlists',
     options: { _id: true, title: true, avatar: true }
+  },
+  tracks: {
+    instance: Track,
+    title: 'Tracks',
+    options: { _id: true, title: true, path: true, duration: true },
+    populates: [
+      { path: 'inAlbum', select: ['title', 'folderName'], populate: { path: 'period', model: Period, select: ['title'] } },
+      { path: 'artist', select: ['title'] },
+    ]
   }
 }
 
@@ -115,12 +121,24 @@ class SearchServices {
     if (key === 'albums') {
       const albumRes = await this.searchEntry<AlbumResponse[]>(searchParams, searchSchema[key])
       const coveredAlbums = albumRes.map(async (album) => {
-        const albumCoverRes = await CloudLib.get<CloudFile>(album.albumCover)
-        album.albumCover = albumCoverRes.data.file
+        const cover = await Cloud.getFile(
+          `${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(album.folderName)}/cover.webp`
+        )
+        if (cover) album.albumCover = cover
         return album
       })
 
       return await Promise.all(coveredAlbums)
+    } else if (key === 'tracks') {
+      const trackRes = await this.searchEntry<TrackResponse[]>(searchParams, searchSchema[key])
+      const coveredTracks = trackRes.map(async (track) => {
+        const cover = await Cloud.getFile(
+          `${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(track.inAlbum.folderName)}/cover.webp`
+        )
+        if (cover) track.cover = cover
+        return track
+      })
+      return await Promise.all(coveredTracks)
     } else {
       return await this.searchEntry<CategoryResponse[]>(searchParams, searchSchema[key])
     }

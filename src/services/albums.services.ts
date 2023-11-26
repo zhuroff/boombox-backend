@@ -131,7 +131,9 @@ class AlbumsServices {
 
       const dbDocs = dbList.docs as unknown as AlbumResponse[]
       const docs = await Promise.all(dbDocs.map(async (album) => {
-        const cover = await Cloud.getFile(`${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(album.folderName)}/cover.webp`)
+        const cover = await Cloud.getFile(
+          `${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(album.folderName)}/cover.webp`
+        )
         return new AlbumItemDTO(album, cover || undefined)
       }))
 

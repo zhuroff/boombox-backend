@@ -39,7 +39,15 @@ export type SearchPayload = {
   key?: SearchModelKey
 }
 
-export type SearchModelKey = 'albums' | 'embedded' | 'artists' | 'genres' | 'periods' | 'collections' | 'playlists'
+export type SearchModelKey = |
+  'albums'
+  | 'embedded'
+  | 'artists'
+  | 'genres'
+  | 'periods'
+  | 'collections'
+  | 'playlists'
+  | 'tracks'
 
 export type SearchParams = { '$text': { '$search': string } }
 
@@ -55,7 +63,8 @@ export type SearchModel = {
   options: { [index: string]: boolean }
   populates?: {
     path: string
-    select: string[]
+    select: string[],
+    populate?: Populate
   }[] | null
 }
 

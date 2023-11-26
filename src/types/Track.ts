@@ -1,6 +1,7 @@
-import { Document, Types } from 'mongoose';
-import { CategoryBasic } from './Category';
-import { CloudFile } from './Cloud';
+import { Document, Types } from 'mongoose'
+import { CategoryBasic } from './Category'
+import { CloudFile } from './Cloud'
+import { AlbumModel } from './album.types'
 
 export type TrackModel = {
   title: string
@@ -33,8 +34,9 @@ export type TrackResponse = Omit<TrackModel, ExcludedTrackFields> & {
   _id: string
   file: string
   artist: CategoryBasic
-  inAlbum: CategoryBasic
+  inAlbum: AlbumModel
   inPlaylists?: CategoryBasic[]
+  cover?: string
 }
 
 export type TrackSearchPayload = {
