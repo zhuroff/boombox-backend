@@ -6,10 +6,12 @@ import { CategoryItemDTO, CategoryPageDTO } from '../dtos/category.dto'
 import { PaginationDTO } from '../dtos/pagination.dto'
 import { Embedded } from '../models/embedded.model'
 import { AlbumResponse } from '../types/album.types'
-import { CloudLib } from '../lib/cloud.lib'
-import { CloudFile } from '../types/Cloud'
+// import { CloudLib } from '../lib/cloud.lib'
+// import { CloudFile } from '../types/Cloud'
 import { EmbeddedResponse } from '../types/Embedded'
 import { AlbumItemDTO } from '../dtos/album.dto'
+import { Cloud } from '..'
+import utils from '../utils'
 
 class CategoriesServices {
   async getCategoriesList<T>(Model: PaginateModel<T>, req: Request) {
@@ -49,7 +51,7 @@ class CategoriesServices {
     const categorySingle: CategoryResponse = await Model.findById(req.params['id'])
       .populate<AlbumResponse[]>({
         path: 'albums',
-        select: ['title', 'albumCover'],
+        select: ['title', 'folderName'],
         populate: [
           { path: 'artist', select: ['title', '_id'] },
           { path: 'genre', select: ['title', '_id'] },
@@ -68,8 +70,10 @@ class CategoriesServices {
       .lean()
 
     const coveredAlbumsRes = categorySingle.albums.map(async (album) => {
-      const albumCover = await CloudLib.get<CloudFile>(album.albumCover)
-      return new AlbumItemDTO(album, albumCover.data.file)
+      const albumCover = await Cloud.getFile(
+        `${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(album.folderName)}/cover.webp`
+      )
+      return new AlbumItemDTO(album, albumCover || '')
     })
 
     const coveredAlbums = await Promise.all(coveredAlbumsRes)

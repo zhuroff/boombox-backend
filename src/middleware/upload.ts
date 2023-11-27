@@ -12,7 +12,7 @@ const filenameSlugify = (filename: string) => {
 
 const storage = multer.diskStorage({
   destination (req: Request, file: Express.Multer.File, callback: MulterCallback) {
-    callback(null, path.resolve(__dirname, '../', 'uploads'))
+    callback(null, path.resolve(__dirname, '../../', 'uploads'))
   },
 
   filename (req: Request, file: Express.Multer.File, callback: MulterCallback) {

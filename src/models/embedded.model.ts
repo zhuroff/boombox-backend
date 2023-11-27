@@ -47,4 +47,4 @@ const EmbeddedSchema = new Schema({
 
 EmbeddedSchema.index({ title: 'text' })
 EmbeddedSchema.plugin(paginate)
-export const Embedded = model<EmbeddedDocument, PaginateModel<EmbeddedDocument>>('frames', EmbeddedSchema)
+export const Embedded = model<EmbeddedDocument, PaginateModel<EmbeddedDocument>>('embedded', EmbeddedSchema)

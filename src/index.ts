@@ -1,4 +1,5 @@
 import dotenv from 'dotenv'
+import path from 'node:path'
 import express, { json } from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
@@ -25,6 +26,7 @@ dotenv.config()
 
 const app = express()
 const PORT = 3001
+const rootDir = path.resolve(__dirname, '../')
 
 export const Cloud = cloudApiGetter(process.env['CURRENT_API'] || '')
 
@@ -52,6 +54,6 @@ app.use('/api/radio', radioRoutes)
 app.use('/api/backup', backupRoutes)
 app.use('/api/sync', synchronizeRoutes)
 app.use('/api/cloud', cloudRoutes)
-app.use('/uploads', express.static(__dirname + '/uploads'))
+app.use('/uploads', express.static(rootDir + '/uploads'))
 
 app.listen(PORT, () => console.log(`App listening at http://localhost:${PORT}`))

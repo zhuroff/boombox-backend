@@ -6,17 +6,15 @@ import path from 'path'
 class FilesServices {
   async upload<T extends Model<any>>(Model: T, req: Request) {
     if (req.file) {
-      const $set: any = {}
-      const setKey = req.file.fieldname
+      const $set: Record<string, string> = {
+        [req.file.fieldname]: `/uploads/${req.file.filename}`
+      }
 
-      $set[setKey] = `/uploads/${req.file.filename}`
-
-      const response = await Model.findOneAndUpdate({
+      return await Model.findOneAndUpdate({
         _id: req.params['id']
       }, { $set }, { new: true })
-      
-      return response
     }
+    throw new Error('File not found')
   }
 
   remove(files: string[]) {
