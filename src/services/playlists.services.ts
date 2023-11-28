@@ -2,7 +2,7 @@ import { Types } from 'mongoose'
 import { PlaylistItemDTO } from '../dtos/playlist.dto'
 import { Playlist } from '../models/playlist.model'
 import { Track } from '../models/track.model'
-import { CollectionReorder } from '../types/Collection'
+// import { CollectionReorder } from '../types/collection.types'
 import { PlayListCreatePayload, PlayListUpdatePayload, PlaylistResponse } from '../types/Playlist'
 import { CloudLib } from '../lib/cloud.lib'
 import { CloudFile } from '../types/Cloud'
@@ -130,7 +130,7 @@ class PlaylistsServices {
     return { message: 'Playlist was successfully deleted' }
   }
 
-  async reorder({ oldOrder, newOrder }: CollectionReorder, _id: string) {
+  async reorder({ oldOrder, newOrder }: any /* CollectionReorder */, _id: string) {
     const targetPlaylist = await Playlist.findById(_id).exec()
 
     if (targetPlaylist) {

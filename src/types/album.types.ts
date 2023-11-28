@@ -1,9 +1,9 @@
 import { Document, Types } from 'mongoose'
-import { CategoryBasic } from './Category'
+import { BasicEntity } from './common.types'
 import { CloudEntityDTO } from '../dtos/cloud.dto'
 import { TrackResponse } from './Track'
 
-export type AlbumShape = {
+export interface AlbumShape {
   title: string
   folderName: string
   artist: string
@@ -12,7 +12,7 @@ export type AlbumShape = {
   tracks: Array<Required<CloudEntityDTO>>
 }
 
-export type AlbumModel = {
+export interface AlbumModel {
   title: string
   folderName: string
   artist: Types.ObjectId
@@ -31,14 +31,14 @@ export type ExcludedAlbumFields = 'artist' | 'genre' | 'period' | 'inCollections
 
 export type AlbumResponse = Omit<AlbumModel, ExcludedAlbumFields> & {
   _id: string
-  artist: CategoryBasic
-  genre: CategoryBasic
-  period: CategoryBasic
-  inCollections: CategoryBasic[]
+  artist: BasicEntity
+  genre: BasicEntity
+  period: BasicEntity
+  inCollections: BasicEntity[]
   tracks: TrackResponse[]
 }
 
-export type DiscogsPayload = {
+export interface DiscogsPayload {
   artist: string
   album: string
   page: number

@@ -1,5 +1,5 @@
 import { model, Schema, PaginateModel } from 'mongoose'
-import { CategoryDocument } from '../types/Category'
+import { CategoryDocument } from '../types/category.types'
 import paginate from 'mongoose-paginate-v2'
 
 const PeriodSchema = new Schema({

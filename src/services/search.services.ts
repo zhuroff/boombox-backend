@@ -1,7 +1,15 @@
-import { AlbumResponse } from '../types/album.types'
+
+import {
+  SearchModel,
+  SearchModelKey,
+  SearchModelsSchema,
+  SearchParams,
+  SearchPayload,
+  SearchResult
+} from '../types/ReqRes'
+import { AlbumDocument, AlbumResponse } from '../types/album.types'
+import { CategoryDocument, CategoryResponse } from '../types/category.types'
 import { TrackResponse } from '../types/Track'
-import { CategoryDocument, CategoryResponse } from '../types/Category'
-import { SearchModel, SearchModelKey, SearchModelsSchema, SearchParams, SearchPayload, SearchResult } from '../types/ReqRes'
 import { Album } from '../models/album.model'
 import { Embedded } from '../models/embedded.model'
 import { Artist } from '../models/artist.model'
@@ -86,7 +94,7 @@ const searchSchema: SearchModelsSchema = {
 
 class SearchServices {
   async search({ query, key }: SearchPayload) {
-    const mappedResult = new Map<SearchModelKey, Partial<AlbumResponse | CategoryDocument>[]>()
+    const mappedResult = new Map<SearchModelKey, Partial<AlbumDocument | CategoryDocument>[]>()
 
     if (key) {
       mappedResult.set(key, await this.searchSplitter({ query, key }))

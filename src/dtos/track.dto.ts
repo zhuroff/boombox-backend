@@ -1,5 +1,5 @@
 import { AlbumModel } from '../types/album.types'
-import { CategoryBasic } from '../types/Category'
+import { BasicEntity } from '../types/common.types'
 import { TrackResponse } from '../types/Track'
 
 export class TrackDTO {
@@ -8,9 +8,9 @@ export class TrackDTO {
   path: string
   duration?: number
   listened?: number
-  artist: CategoryBasic
+  artist: BasicEntity
   inAlbum: AlbumModel
-  inPlaylists?: CategoryBasic[]
+  inPlaylists?: BasicEntity[]
 
   constructor(track: TrackResponse) {
     this._id = track._id

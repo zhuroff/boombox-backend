@@ -1,6 +1,6 @@
 import { Model, PaginateModel } from 'mongoose'
 import { AlbumResponse } from './album.types'
-import { CategoryResponse } from './Category'
+import { CategoryResponse } from './category.types'
 
 export type Populate = {
   path: string

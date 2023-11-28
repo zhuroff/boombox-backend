@@ -1,24 +1,24 @@
 import { AlbumResponse } from '../types/album.types'
-import { CategoryBasic } from '../types/Category'
-import { CategoryBasicDTO } from './category.dto'
+import { BasicEntity } from '../types/common.types'
+import { EntityBasicDTO } from './basic.dto'
 import { TrackDTO } from './track.dto'
 
 export class AlbumItemDTO {
   _id: string
   title: string
-  inCollections: CategoryBasic[]
-  artist: CategoryBasicDTO
-  genre: CategoryBasicDTO
-  period: CategoryBasicDTO
+  inCollections: BasicEntity[]
+  artist: EntityBasicDTO
+  genre: EntityBasicDTO
+  period: EntityBasicDTO
   coverURL?: string
 
   constructor(album: AlbumResponse, albumCover?: string) {
     this._id = album._id
     this.title = album.title
     this.inCollections = album.inCollections
-    this.artist = new CategoryBasicDTO(album.artist._id, album.artist.title)
-    this.genre = new CategoryBasicDTO(album.genre._id, album.genre.title)
-    this.period = new CategoryBasicDTO(album.period._id, album.period.title)
+    this.artist = new EntityBasicDTO(album.artist._id, album.artist.title)
+    this.genre = new EntityBasicDTO(album.genre._id, album.genre.title)
+    this.period = new EntityBasicDTO(album.period._id, album.period.title)
     this.coverURL = albumCover
   }
 }

@@ -1,15 +1,21 @@
+import { Request } from 'express'
 import { Types } from 'mongoose'
 import { Collection } from '../models/collection.model'
 import { Album } from '../models/album.model'
-import { AlbumResponse } from '../types/album.types'
-import { CollectionItemDTO } from '../dtos/collection.dto'
 import {
-  CollectionListItem,
-  CollectionModelAlbum,
-  CollectionReorder,
-  CollectionUpdateProps,
-  DeletedCollectionAlbum
-} from '../types/Collection'
+  CollectionDocument,
+  // CollectionListItem,
+  // CollectionModelAlbum,
+  // CollectionReorder,
+  // CollectionUpdateProps,
+  // DeletedCollectionAlbum
+} from '../types/collection.types'
+import { PaginationOptions } from '../types/ReqRes'
+import { Period } from '../models/period.model'
+import { Artist } from '../models/artist.model'
+import { Genre } from '../models/genre.model'
+import { PaginationDTO } from '../dtos/pagination.dto'
+import { CollectionItemDTO } from '../dtos/collection.dto'
 
 class CollectionsServices {
   async create(title: string, album: string) {
@@ -27,29 +33,105 @@ class CollectionsServices {
   }
 
   async remove(_id: string) {
-    const response = await Collection.findByIdAndDelete(_id)
+    // const response = await Collection.findByIdAndDelete(_id)
 
-    if (response) {
-      await this.cleanAlbums(response.albums, _id)
-      return { message: 'Collection successfully removed' }
-    }
+    // if (response) {
+    //   await this.cleanAlbums(response.albums, _id)
+    //   return { message: 'Collection successfully removed' }
+    // }
 
-    throw new Error('Incorrect request options')
+    // throw new Error('Incorrect request options')
   }
 
-  async getCollectionsList() {
-    const config = { title: true, avatar: true, 'albums.order': true }
-    const response = await Collection.find({}, config).sort({ title: 1 })
-      .populate({
-        path: 'albums.album',
-        select: ['_id']
-      })
+  async getCollectionsList(req: Request) {
+    const populates = [
+      {
+        path: 'albums', select: ['title', 'order'],
+        populate: [
+          { path: 'period', model: Period, select: ['title'] },
+          { path: 'artist', model: Artist, select: ['title'] },
+          { path: 'genre', model: Genre, select: ['title'] }
+        ]
+      },
+    ]
 
-    if (response) {
-      return response.map((el) => new CollectionItemDTO(el))
+    const options: PaginationOptions = {
+      page: req.body.page,
+      limit: req.body.limit,
+      sort: req.body.sort,
+      populate: populates,
+      lean: true,
+      select: {
+        title: true,
+        avatar: true
+      }
+    }
+
+    const dbList = await Collection.paginate({}, options)
+
+    if (dbList) {
+      const { totalDocs, totalPages, page } = dbList
+      const pagination = new PaginationDTO({ totalDocs, totalPages, page })
+
+      const dbDocs = dbList.docs as unknown as CollectionDocument[]
+      const docs = dbDocs.map((collection) => new CollectionItemDTO(collection))
+
+      return { docs, pagination }
     }
 
     throw new Error('Incorrect request options')
+
+    // const populate: Populate[] = [
+    //   {
+    //     path: 'albums',
+    //     select: ['title', 'order'],
+    //     populate: [
+    //       { path: 'period', model: Period, select: ['title'] },
+    //       { path: 'artist', model: Artist, select: ['title'] },
+    //       { path: 'genre', model: Genre, select: ['title'] }
+    //     ]
+    //   }
+    // ]
+
+    // const options: PaginationOptions = {
+    //   page: 1, // req.body.page,
+    //   limit: 1000, //req.body.limit,
+    //   sort: { title: 1 }, // req.body.sort,
+    //   populate,
+    //   lean: true,
+    //   select: { title: true, avatar: true }
+    // }
+
+    // const dbList = await Collection.find({}, options)
+
+    // if (dbList) {
+    //   return dbList
+    // }
+    // const config = { title: true, avatar: true, 'albums.order': true }
+    // const response = await Collection.find({}, config).sort({ title: 1 })
+    //   .populate({
+    //     path: 'albums.album',
+    //     select: ['_id']
+    //   })
+
+    // if (response) {
+    //   console.log(response)
+    //   return response.map((el) => new CollectionItemDTO(el))
+    // }
+
+    // throw new Error('Incorrect request options')
+    // const config = { title: true, avatar: true, 'albums.order': true }
+    // const response = await Collection.find({}, config).sort({ title: 1 })
+    //   .populate({
+    //     path: 'albums.album',
+    //     select: ['_id']
+    //   })
+
+    // if (response) {
+    //   return response.map((el) => new CollectionItemDTO(el))
+    // }
+
+    // throw new Error('Incorrect request options')
   }
 
   async single(id: string) {
@@ -65,51 +147,51 @@ class CollectionsServices {
       })
       .lean()
 
-    let existingAlbums: CollectionListItem[] = []
-    let deletedAlbums: DeletedCollectionAlbum[] = []
+    // let existingAlbums: CollectionListItem[] = []
+    // let deletedAlbums: DeletedCollectionAlbum[] = []
 
-    response?.albums.forEach((el) => {
-      if (el.album) {
-        existingAlbums.push({ ...el, album: el.album as AlbumResponse })
-      } else {
-        deletedAlbums.push({
-          listID: id,
-          itemID: el._id
-        })
-      }
-    })
+    // response?.albums.forEach((el) => {
+    //   if (el.album) {
+    //     existingAlbums.push({ ...el, album: el.album as AlbumResponse })
+    //   } else {
+    //     deletedAlbums.push({
+    //       listID: id,
+    //       itemID: el._id
+    //     })
+    //   }
+    // })
 
-    existingAlbums.sort((a, b) => {
-      if (a.order < b.order) return -1
-      if (a.order > b.order) return 1
-      return 0
-    })
+    // existingAlbums.sort((a, b) => {
+    //   if (a.order < b.order) return -1
+    //   if (a.order > b.order) return 1
+    //   return 0
+    // })
 
-    if (deletedAlbums.length) {
-      console.log('Album was deleted!!!')
-      // deletedAlbums.map(async (album) => await removeItemFromCollection(album))
-    }
+    // if (deletedAlbums.length) {
+    //   console.log('Album was deleted!!!')
+    //   // deletedAlbums.map(async (album) => await removeItemFromCollection(album))
+    // }
 
-    const coveredAlbums = existingAlbums.length
-      ? existingAlbums.map(async (el) => {
-        return await el
-        // const coveredAlbum = await CloudLib.covers([el.album])
-        // return { ...el, album: coveredAlbum[0] }
-      })
-      : []
+    // const coveredAlbums = existingAlbums.length
+    //   ? existingAlbums.map(async (el) => {
+    //     return await el
+    //     // const coveredAlbum = await CloudLib.covers([el.album])
+    //     // return { ...el, album: coveredAlbum[0] }
+    //   })
+    //   : []
 
     const result = {
       _id: response?._id,
       title: response?.title,
       poster: response?.poster,
       avatar: response?.avatar,
-      albums: await Promise.all(coveredAlbums)
+      // albums: await Promise.all(coveredAlbums)
     }
 
     return result
   }
 
-  async update({ listID, inList, itemID, order }: CollectionUpdateProps) {
+  async update({ listID, inList, itemID, order }: any /* CollectionUpdateProps */) {
     const query = { _id: listID }
     const update = inList
       ? { $pull: { albums: { album: itemID } } }
@@ -133,7 +215,7 @@ class CollectionsServices {
     )
   }
 
-  async reorder({ oldOrder, newOrder }: CollectionReorder, _id: string) {
+  async reorder({ oldOrder, newOrder }: any /* CollectionReorder */, _id: string) {
     const targetCollection = await Collection.findById(_id).exec()
 
     if (targetCollection) {
@@ -142,9 +224,9 @@ class CollectionsServices {
         ...targetCollection.albums.splice(oldOrder, 1)
       )
 
-      targetCollection.albums.forEach((el, index) => {
-        el.order = index + 1
-      })
+      // targetCollection.albums.forEach((el, index) => {
+      //   el.order = index + 1
+      // })
 
       await Collection.updateOne({ _id }, { $set: { albums: targetCollection.albums } })
 
@@ -154,7 +236,7 @@ class CollectionsServices {
     throw new Error('Incorrect request options')
   }
 
-  async updateAlbum({ listID, itemID, inList }: Partial<CollectionUpdateProps>) {
+  async updateAlbum({ listID, itemID, inList }: Partial<any /* CollectionUpdateProps */>) {
     try {
       const query = { _id: itemID }
       const update = inList
@@ -168,7 +250,7 @@ class CollectionsServices {
     }
   }
 
-  async cleanAlbums(albums: CollectionModelAlbum[], listID: string) {
+  async cleanAlbums(albums: /* CollectionModelAlbum*/ any[], listID: string) {
     const cleanProcess = albums.map(async (album) => {
       const query = { _id: album.album }
       const update = { $pull: { inCollections: listID } }

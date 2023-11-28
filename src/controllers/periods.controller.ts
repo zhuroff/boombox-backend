@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { Period } from '../models/period.model'
 import { PaginateModel } from 'mongoose'
-import { CategoryDocument } from '../types/Category'
+import { CategoryDocument } from '../types/category.types'
 import categoriesServices from '../services/categories.services'
 import filesServices from '../services/files.services'
 

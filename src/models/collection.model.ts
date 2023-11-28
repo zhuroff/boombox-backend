@@ -1,27 +1,24 @@
-import { model, Schema } from 'mongoose'
-import { CollectionModel } from '../types/Collection'
+import { model, Schema, PaginateModel } from 'mongoose'
+import { CollectionDocument } from '../types/collection.types'
+import paginate from 'mongoose-paginate-v2'
 
-const CollectionSchema: Schema<CollectionModel> = new Schema({
+const CollectionSchema = new Schema({
   title: {
     type: String,
     required: true
   },
-
   dateCreated: {
     type: Date,
     default: Date.now
   },
-
-  avatar: {
-    type: String,
-    required: false
-  },
-
   poster: {
     type: String,
     required: false
   },
-
+  avatar: {
+    type: String,
+    required: false
+  },
   albums: [
     {
       album: {
@@ -29,7 +26,6 @@ const CollectionSchema: Schema<CollectionModel> = new Schema({
         type: Schema.Types.ObjectId,
         required: false
       },
-
       order: {
         type: Number,
         required: true
@@ -39,4 +35,5 @@ const CollectionSchema: Schema<CollectionModel> = new Schema({
 })
 
 CollectionSchema.index({ title: 'text' })
-export const Collection = model<CollectionModel>('collections', CollectionSchema)
+CollectionSchema.plugin(paginate)
+export const Collection = model<CollectionDocument, PaginateModel<CollectionDocument>>('collections', CollectionSchema)

@@ -1,18 +1,31 @@
-import { Types } from 'mongoose'
-import { CollectionModel, CollectionModelAlbum } from '../types/Collection'
+import { CollectionDocument } from '../types/collection.types'
+import { EntityBasicDTO } from './basic.dto'
 
-export class CollectionItemDTO {
-  _id: Types.ObjectId
-  title: string
+export class CollectionItemDTO extends EntityBasicDTO {
   poster?: string
   avatar?: string
-  albums: CollectionModelAlbum[]
+  albums: number
 
-  constructor(playlist: CollectionModel) {
-    this._id = playlist._id
-    this.title = playlist.title
-    this.albums = playlist.albums
-    this.avatar = playlist.avatar
-    this.poster = playlist.poster
+  constructor(collection: CollectionDocument) {
+    super(collection._id, collection.title)
+    this.poster = collection.poster
+    this.avatar = collection.avatar
+    this.albums = collection.albums?.length
   }
 }
+
+// export class CollectionItemDTO {
+//   _id: Types.ObjectId
+//   title: string
+//   poster?: string
+//   avatar?: string
+//   albums: AlbumItemDTO[]
+
+//   constructor(collection: CollectionResponse) {
+//     this._id = collection._id
+//     this.title = collection.title
+//     this.albums = collection.albums
+//     this.avatar = collection.avatar
+//     this.poster = collection.poster
+//   }
+// }

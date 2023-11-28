@@ -1,5 +1,5 @@
 import { Document, Types } from 'mongoose'
-import { CategoryBasic } from './Category'
+import { BasicEntity } from './common.types'
 
 export type EmbeddedModel = {
   title: string
@@ -14,10 +14,10 @@ type ExcludedEmbeddedFields = 'artist' | 'genre' | 'period' | 'inCollections'
 
 export type EmbeddedResponse = Omit<EmbeddedModel, ExcludedEmbeddedFields> & {
   _id: string
-  artist: CategoryBasic
-  genre: CategoryBasic
-  period: CategoryBasic
-  inCollections: CategoryBasic[]
+  artist: BasicEntity
+  genre: BasicEntity
+  period: BasicEntity
+  inCollections: BasicEntity[]
 }
 
 export interface EmbeddedDocument extends Document, EmbeddedModel { }

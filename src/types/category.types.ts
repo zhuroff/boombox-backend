@@ -2,12 +2,7 @@ import { Document, Types } from 'mongoose'
 import { AlbumResponse } from './album.types'
 import { EmbeddedResponse } from './Embedded'
 
-export type CategoryBasic = {
-  _id: Types.ObjectId
-  title: string
-}
-
-export type CategoryModel = {
+export interface CategoryModel {
   title: string
   dateCreated: Date
   poster: string
@@ -17,7 +12,7 @@ export type CategoryModel = {
 }
 
 export type CategoryResponse = Omit<CategoryModel, 'albums' | 'embeddedAlbums'> & {
-  _id: string
+  _id: Types.ObjectId
   albums: AlbumResponse[]
   embeddedAlbums: EmbeddedResponse[]
 }

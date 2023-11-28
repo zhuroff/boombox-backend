@@ -1,6 +1,6 @@
 import { Request } from 'express'
 import { PaginateModel, Types } from 'mongoose'
-import { CategoryResponse, CategoryDocument } from '../types/Category'
+import { CategoryResponse, CategoryDocument } from '../types/category.types'
 import { PaginationOptions } from '../types/ReqRes'
 import { CategoryItemDTO, CategoryPageDTO } from '../dtos/category.dto'
 import { PaginationDTO } from '../dtos/pagination.dto'

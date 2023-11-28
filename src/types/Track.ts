@@ -1,5 +1,5 @@
 import { Document, Types } from 'mongoose'
-import { CategoryBasic } from './Category'
+import { BasicEntity } from './common.types'
 import { CloudFile } from './Cloud'
 import { AlbumModel } from './album.types'
 
@@ -33,9 +33,9 @@ type ExcludedTrackFields = 'artist' | 'inAlbum' | 'inPlaylists'
 export type TrackResponse = Omit<TrackModel, ExcludedTrackFields> & {
   _id: string
   file: string
-  artist: CategoryBasic
+  artist: BasicEntity
   inAlbum: AlbumModel
-  inPlaylists?: CategoryBasic[]
+  inPlaylists?: BasicEntity[]
   cover?: string
 }
 

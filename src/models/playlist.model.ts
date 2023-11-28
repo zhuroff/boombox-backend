@@ -6,22 +6,18 @@ const PlaylistSchema: Schema<PlayListModel> = new Schema({
     type: String,
     required: true
   },
-
   dateCreated: {
     type: Date,
     default: Date.now
   },
-
   poster: {
     type: String,
     required: false
   },
-
   avatar: {
     type: String,
     required: false
   },
-
   tracks: [
     {
       track: {
@@ -29,7 +25,6 @@ const PlaylistSchema: Schema<PlayListModel> = new Schema({
         ref: 'tracks',
         required: true
       },
-
       order: {
         type: Number,
         required: true

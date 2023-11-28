@@ -5,7 +5,7 @@ import upload from '../middleware/upload'
 const router = Router()
 
 router.post('/create', CollectionsController.create)
-router.get('/', CollectionsController.getCollectionsList)
+router.post('/', CollectionsController.getCollectionsList)
 router.get('/:id', CollectionsController.single)
 router.patch('/:id', CollectionsController.update)
 router.patch('/:id/reorder', CollectionsController.reorder)

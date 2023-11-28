@@ -1,14 +1,14 @@
 import { Request, Response } from 'express'
-import { Model } from 'mongoose'
-import { CollectionModel } from '../types/Collection'
-import { Collection } from '../models/collection.model'
+// import { Model } from 'mongoose'
+// import { CollectionModel } from '../types/collection.types'
+// import { Collection } from '../models/collection.model'
 import collectionsServices from '../services/collections.services'
-import filesServices from '../services/files.services'
+// import filesServices from '../services/files.services'
 
 export class CollectionsController {
   static async getCollectionsList(req: Request, res: Response, next: (error: unknown) => void) {
     try {
-      const response = await collectionsServices.getCollectionsList()
+      const response = await collectionsServices.getCollectionsList(req)
       res.json(response)
     } catch (error) {
       return next(error)
@@ -65,11 +65,11 @@ export class CollectionsController {
   }
 
   static async upload(req: Request, res: Response, next: (error: unknown) => void) {
-    try {
-      const response = await filesServices.upload<Model<CollectionModel>>(Collection, req)
-      return res.json(response)
-    } catch (error) {
-      return next(error)
-    }
+    // try {
+    //   const response = await filesServices.upload<Model<CollectionModel>>(Collection, req)
+    //   return res.json(response)
+    // } catch (error) {
+    //   return next(error)
+    // }
   }
 }

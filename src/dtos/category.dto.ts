@@ -1,19 +1,9 @@
-import { Types } from 'mongoose'
-import { CategoryDocument, CategoryResponse } from '../types/Category'
+import { CategoryDocument, CategoryResponse } from '../types/category.types'
 import { EmbeddedResponse } from '../types/Embedded'
 import { AlbumItemDTO } from './album.dto'
+import { EntityBasicDTO } from './basic.dto'
 
-export class CategoryBasicDTO {
-  title: string
-  _id: Types.ObjectId
-
-  constructor(id: Types.ObjectId, title: string) {
-    this.title = title
-    this._id = id
-  }
-}
-
-export class CategoryItemDTO extends CategoryBasicDTO {
+export class CategoryItemDTO extends EntityBasicDTO {
   albums: number
   avatar: string
 
@@ -31,17 +21,14 @@ export class CategoryItemDTO extends CategoryBasicDTO {
   }
 }
 
-export class CategoryPageDTO {
-  _id: string
-  title: string
+export class CategoryPageDTO extends EntityBasicDTO {
   poster?: string
   avatar?: string
   albums: AlbumItemDTO[]
   embeddedAlbums: EmbeddedResponse[]
 
   constructor(category: CategoryResponse, albums: AlbumItemDTO[]) {
-    this._id = category._id
-    this.title = category.title
+    super(category._id, category.title)
     this.poster = category.poster
     this.avatar = category.avatar
     this.albums = albums
