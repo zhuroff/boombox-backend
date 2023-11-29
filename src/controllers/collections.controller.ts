@@ -25,22 +25,22 @@ export class CollectionsController {
   }
 
   static async update(req: Request, res: Response, next: (error: unknown) => void) {
-    const { listID, inList, itemID, order } = req.body
+    const { entityID, compilationID, isInList, order } = req.body
 
     try {
-      const response = await collectionsServices.update({ listID, inList, itemID, order })
+      const response = await collectionsServices.update({ entityID, compilationID, isInList, order })
       res.status(201).json(response)
     } catch (error) {
       return next(error)
     }
   }
 
-  static async create(req: Request, res: Response, next: (error: unknown) => void) {
+  static async create(req: Request, res: Response) {
     try {
-      const response = await collectionsServices.create(req.body.title, req.body.album)
+      const response = await collectionsServices.create(req.body)
       res.status(201).json(response)
     } catch (error) {
-      return next(error)
+      res.status(409).json({ message: (error as Error).message })
     }
   }
 

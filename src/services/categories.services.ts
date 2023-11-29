@@ -1,13 +1,10 @@
 import { Request } from 'express'
-import { PaginateModel, Types } from 'mongoose'
+import { PaginateModel, PaginateOptions, Types } from 'mongoose'
 import { CategoryResponse, CategoryDocument } from '../types/category.types'
-import { PaginationOptions } from '../types/ReqRes'
 import { CategoryItemDTO, CategoryPageDTO } from '../dtos/category.dto'
 import { PaginationDTO } from '../dtos/pagination.dto'
 import { Embedded } from '../models/embedded.model'
 import { AlbumResponse } from '../types/album.types'
-// import { CloudLib } from '../lib/cloud.lib'
-// import { CloudFile } from '../types/Cloud'
 import { EmbeddedResponse } from '../types/Embedded'
 import { AlbumItemDTO } from '../dtos/album.dto'
 import { Cloud } from '..'
@@ -20,7 +17,7 @@ class CategoriesServices {
       { path: 'embeddedAlbums', select: ['_id'], model: Embedded }
     ]
 
-    const options: PaginationOptions = {
+    const options: PaginateOptions = {
       page: req.body.page,
       limit: req.body.limit,
       sort: req.body.sort,

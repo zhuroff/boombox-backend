@@ -2,8 +2,8 @@ import { Embedded } from '../models/embedded.model'
 import { Artist } from '../models/artist.model'
 import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
-import { PaginateModel, Types } from 'mongoose'
-import { ListConfig, PaginationOptions, Populate } from '../types/ReqRes'
+import { PaginateModel, PaginateOptions, Types } from 'mongoose'
+import { ListConfig, Populate } from '../types/ReqRes'
 import { PaginationDTO } from '../dtos/pagination.dto'
 
 class EmbeddedServices {
@@ -31,7 +31,7 @@ class EmbeddedServices {
       { path: 'inCollections', select: ['title'] }
     ]
 
-    const options: PaginationOptions = {
+    const options: PaginateOptions = {
       page,
       limit,
       sort,

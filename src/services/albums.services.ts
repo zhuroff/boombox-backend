@@ -1,11 +1,11 @@
 import { Request } from 'express'
-import { Types, PipelineStage } from 'mongoose'
+import { Types, PipelineStage, PaginateOptions } from 'mongoose'
 import { Album } from '../models/album.model'
 import { Artist } from '../models/artist.model'
 import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
 import { AlbumResponse, AlbumShape } from '../types/album.types'
-import { PaginationOptions, Populate } from '../types/ReqRes'
+import { Populate } from '../types/ReqRes'
 import { AlbumItemDTO, AlbumSingleDTO } from '../dtos/album.dto'
 import { PaginationDTO } from '../dtos/pagination.dto'
 import { TrackDTO } from '../dtos/track.dto'
@@ -114,7 +114,7 @@ class AlbumsServices {
       { path: 'inCollections', select: ['title'] }
     ]
 
-    const options: PaginationOptions = {
+    const options: PaginateOptions = {
       page: req.body.page,
       limit: req.body.limit,
       sort: req.body.sort,
@@ -224,6 +224,7 @@ class AlbumsServices {
       .populate({ path: 'artist', select: ['title'] })
       .populate({ path: 'genre', select: ['title'] })
       .populate({ path: 'period', select: ['title'] })
+      .populate({ path: 'inCollections', select: ['title'] })
       .populate({
         path: 'tracks',
         populate: [

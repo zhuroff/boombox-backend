@@ -1,5 +1,5 @@
 import { Request } from 'express'
-import { Types } from 'mongoose'
+import { PaginateOptions, Types } from 'mongoose'
 import { Collection } from '../models/collection.model'
 import { Album } from '../models/album.model'
 import {
@@ -10,26 +10,43 @@ import {
   // CollectionUpdateProps,
   // DeletedCollectionAlbum
 } from '../types/collection.types'
-import { PaginationOptions } from '../types/ReqRes'
-import { Period } from '../models/period.model'
-import { Artist } from '../models/artist.model'
-import { Genre } from '../models/genre.model'
+// import { Period } from '../models/period.model'
+// import { Artist } from '../models/artist.model'
+// import { Genre } from '../models/genre.model'
 import { PaginationDTO } from '../dtos/pagination.dto'
 import { CollectionItemDTO } from '../dtos/collection.dto'
+import { CompilationCreatePayload, CompilationUpdatePayload } from '../types/common.types'
 
 class CollectionsServices {
-  async create(title: string, album: string) {
+  async create({ title, entityID }: CompilationCreatePayload) {
+    const collections = await Collection.find({}, { title: true })
+    if (collections.some((col) => col.title === title)) {
+      throw new Error('collections.exists')
+    }
+
     const payload = {
-      title: title,
-      albums: [{ album, order: 1 }]
+      title,
+      albums: [
+        {
+          album: new Types.ObjectId(entityID),
+          order: 1
+        }
+      ]
     }
 
     const newCollection = new Collection(payload)
-
     await newCollection.save()
-    await this.updateAlbum({ listID: newCollection._id.toString(), itemID: album, inList: false })
+    await this.updateAlbum({
+      listID: newCollection._id.toString(),
+      itemID: entityID,
+      inList: false
+    })
 
-    return { message: 'Collection successfully created' }
+    return {
+      id: newCollection._id.toString(),
+      title: title,
+      albums: [entityID]
+    }
   }
 
   async remove(_id: string) {
@@ -43,24 +60,15 @@ class CollectionsServices {
     // throw new Error('Incorrect request options')
   }
 
-  async getCollectionsList(req: Request) {
-    const populates = [
-      {
-        path: 'albums', select: ['title', 'order'],
-        populate: [
-          { path: 'period', model: Period, select: ['title'] },
-          { path: 'artist', model: Artist, select: ['title'] },
-          { path: 'genre', model: Genre, select: ['title'] }
-        ]
-      },
-    ]
-
-    const options: PaginationOptions = {
+  async getCollectionsList(req: Request, isOnlyTitles = false) {
+    const options: PaginateOptions = {
       page: req.body.page,
       limit: req.body.limit,
       sort: req.body.sort,
-      populate: populates,
       lean: true,
+      populate: [
+        { path: 'albums', select: ['_id'] }
+      ],
       select: {
         title: true,
         avatar: true
@@ -70,6 +78,7 @@ class CollectionsServices {
     const dbList = await Collection.paginate({}, options)
 
     if (dbList) {
+      if (isOnlyTitles) return dbList.docs.map(({ title }) => title)
       const { totalDocs, totalPages, page } = dbList
       const pagination = new PaginationDTO({ totalDocs, totalPages, page })
 
@@ -80,58 +89,6 @@ class CollectionsServices {
     }
 
     throw new Error('Incorrect request options')
-
-    // const populate: Populate[] = [
-    //   {
-    //     path: 'albums',
-    //     select: ['title', 'order'],
-    //     populate: [
-    //       { path: 'period', model: Period, select: ['title'] },
-    //       { path: 'artist', model: Artist, select: ['title'] },
-    //       { path: 'genre', model: Genre, select: ['title'] }
-    //     ]
-    //   }
-    // ]
-
-    // const options: PaginationOptions = {
-    //   page: 1, // req.body.page,
-    //   limit: 1000, //req.body.limit,
-    //   sort: { title: 1 }, // req.body.sort,
-    //   populate,
-    //   lean: true,
-    //   select: { title: true, avatar: true }
-    // }
-
-    // const dbList = await Collection.find({}, options)
-
-    // if (dbList) {
-    //   return dbList
-    // }
-    // const config = { title: true, avatar: true, 'albums.order': true }
-    // const response = await Collection.find({}, config).sort({ title: 1 })
-    //   .populate({
-    //     path: 'albums.album',
-    //     select: ['_id']
-    //   })
-
-    // if (response) {
-    //   console.log(response)
-    //   return response.map((el) => new CollectionItemDTO(el))
-    // }
-
-    // throw new Error('Incorrect request options')
-    // const config = { title: true, avatar: true, 'albums.order': true }
-    // const response = await Collection.find({}, config).sort({ title: 1 })
-    //   .populate({
-    //     path: 'albums.album',
-    //     select: ['_id']
-    //   })
-
-    // if (response) {
-    //   return response.map((el) => new CollectionItemDTO(el))
-    // }
-
-    // throw new Error('Incorrect request options')
   }
 
   async single(id: string) {
@@ -191,21 +148,17 @@ class CollectionsServices {
     return result
   }
 
-  async update({ listID, inList, itemID, order }: any /* CollectionUpdateProps */) {
-    const query = { _id: listID }
-    const update = inList
-      ? { $pull: { albums: { album: itemID } } }
-      : { $push: { albums: { album: itemID, order } } }
+  async update({ entityID, compilationID, isInList, order }: CompilationUpdatePayload) {
+    const query = { _id: compilationID }
+    const update = isInList
+      ? { $pull: { albums: { album: entityID } } }
+      : { $push: { albums: { album: entityID, order } } }
     const options = { new: true }
 
     await Collection.findOneAndUpdate(query, update, options)
-    await this.updateAlbum({ listID, itemID, inList })
+    await this.updateAlbum({ listID: compilationID, itemID: entityID, inList: isInList })
 
-    return {
-      message: inList
-        ? 'Album successfully removed from collection'
-        : 'Album successfully added to collection'
-    }
+    return { message: isInList ? 'collections.removed' : 'collections.added' }
   }
 
   async cleanCollection(collectionIds: Types.ObjectId[], albumId: Types.ObjectId | string) {
@@ -246,6 +199,7 @@ class CollectionsServices {
 
       await Album.findOneAndUpdate(query, update, options)
     } catch (error) {
+      console.log(error)
       throw error
     }
   }

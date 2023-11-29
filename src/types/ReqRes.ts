@@ -14,12 +14,6 @@ export type ListConfig = {
   sort: { [index: string]: number }
 }
 
-export type PaginationOptions = ListConfig & {
-  select: { [index: string]: boolean }
-  populate?: Populate | Populate[]
-  lean?: boolean
-}
-
 export type Pagination = {
   totalDocs: number
   totalPages: number

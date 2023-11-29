@@ -1,16 +1,18 @@
+import { Types } from 'mongoose'
 import { CollectionDocument } from '../types/collection.types'
 import { EntityBasicDTO } from './basic.dto'
 
 export class CollectionItemDTO extends EntityBasicDTO {
   poster?: string
   avatar?: string
-  albums: number
+  albums: Types.ObjectId[]
 
   constructor(collection: CollectionDocument) {
     super(collection._id, collection.title)
     this.poster = collection.poster
     this.avatar = collection.avatar
-    this.albums = collection.albums?.length
+    // @ts-ignore
+    this.albums = collection.albums.map(({ album }) => album)
   }
 }
 
