@@ -1,3 +1,4 @@
+import { LeanDocument } from 'mongoose'
 import { Album } from '../models/album.model'
 import { Artist } from '../models/artist.model'
 import { Collection } from '../models/collection.model'
@@ -8,7 +9,6 @@ import { Playlist } from '../models/playlist.model'
 import { Radio } from '../models/radio.model'
 import { Track } from '../models/track.model'
 import { BackupModel } from '../types/Backups'
-import { ModelResponse } from '../types/ReqRes'
 import fs from 'fs'
 import path from 'path'
 
@@ -34,7 +34,7 @@ class BackupServices {
       const Model = this.#backupModels[key]
 
       if (Model) {
-        const response: ModelResponse = await Model.find({}).lean()
+        const response = await Model.find({}).lean()
         return await this.writeBackupFile(`${key}.json`, timestamp, response)
       }
 
@@ -94,7 +94,7 @@ class BackupServices {
     })
   }
 
-  async writeBackupFile(fileName: string, folderName: string, data: ModelResponse) {
+  async writeBackupFile(fileName: string, folderName: string, data: LeanDocument<any>[]) {
     return new Promise((resolve, reject) => {
       fs.writeFile(
         path.join(__dirname, '../backups', folderName, fileName),

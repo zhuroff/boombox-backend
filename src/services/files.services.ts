@@ -4,7 +4,7 @@ import fs from 'fs'
 import path from 'path'
 
 class FilesServices {
-  async upload<T extends Model<any>>(Model: T, req: Request) {
+  async upload<T, U extends Model<T>>(Model: U, req: Request) {
     if (req.file) {
       const $set: Record<string, string> = {
         [req.file.fieldname]: `/uploads/${req.file.filename}`

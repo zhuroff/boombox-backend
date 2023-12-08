@@ -2,8 +2,7 @@ import { Embedded } from '../models/embedded.model'
 import { Artist } from '../models/artist.model'
 import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
-import { PaginateModel, PaginateOptions, Types } from 'mongoose'
-import { ListConfig, Populate } from '../types/ReqRes'
+import { PaginateModel, PaginateOptions, PopulateOptions, Types } from 'mongoose'
 import { PaginationDTO } from '../dtos/pagination.dto'
 
 class EmbeddedServices {
@@ -23,8 +22,8 @@ class EmbeddedServices {
     return createdDoc
   }
 
-  async getAllEmbedded({ page, limit, sort }: ListConfig) {
-    const populate: Populate[] = [
+  async getAllEmbedded({ page, limit, sort }: { page: number; limit: number; sort: { [index: string]: number } }) {
+    const populate: PopulateOptions[] = [
       { path: 'artist', select: ['title'] },
       { path: 'genre', select: ['title'] },
       { path: 'period', select: ['title'] },

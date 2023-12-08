@@ -35,7 +35,7 @@ export class ArtistsController {
 
   static async upload(req: Request, res: Response, next: (error: unknown) => void) {
     try {
-      const response = await filesServices.upload<PaginateModel<CategoryDocument>>(Artist, req)
+      const response = await filesServices.upload<CategoryDocument, PaginateModel<CategoryDocument>>(Artist, req)
       return res.json(response)
     } catch (error) {
       return next(error)

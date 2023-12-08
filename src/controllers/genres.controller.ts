@@ -35,7 +35,7 @@ export class GenresController {
 
   static async upload(req: Request, res: Response, next: (error: unknown) => void) {
     try {
-      const response = await filesServices.upload<PaginateModel<CategoryDocument>>(Genre, req)
+      const response = await filesServices.upload<CategoryDocument, PaginateModel<CategoryDocument>>(Genre, req)
       return res.json(response)
     } catch (error) {
       return next(error)

@@ -1,11 +1,10 @@
 import { Request } from 'express'
-import { Types, PipelineStage, PaginateOptions } from 'mongoose'
+import { Types, PipelineStage, PaginateOptions, PopulateOptions } from 'mongoose'
 import { Album } from '../models/album.model'
 import { Artist } from '../models/artist.model'
 import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
 import { AlbumResponse, AlbumShape } from '../types/album.types'
-import { Populate } from '../types/ReqRes'
 import { AlbumItemDTO, AlbumSingleDTO } from '../dtos/album.dto'
 import { PaginationDTO } from '../dtos/pagination.dto'
 import { TrackDTO } from '../dtos/track.dto'
@@ -19,7 +18,7 @@ import playlistsServices from './playlists.services'
 
 class AlbumsServices {
   async getAlbumDocs() {
-    return await Album.find({}, { folderName: true, tracks: true })
+    return await Album.find({}, { folderName: true })
   }
 
   async createShape(album: CloudEntityDTO): Promise<AlbumShape> {
@@ -107,7 +106,7 @@ class AlbumsServices {
       return await this.getRandomAlbums(req.body.limit, req.body.filter)
     }
 
-    const populate: Populate[] = [
+    const populate: PopulateOptions[] = [
       { path: 'artist', select: ['title'] },
       { path: 'genre', select: ['title'] },
       { path: 'period', select: ['title'] },
@@ -128,19 +127,22 @@ class AlbumsServices {
     if (dbList) {
       const { totalDocs, totalPages, page } = dbList
       const pagination = new PaginationDTO({ totalDocs, totalPages, page })
-
       const dbDocs = dbList.docs as unknown as AlbumResponse[]
-      const docs = await Promise.all(dbDocs.map(async (album) => {
-        const cover = await Cloud.getFile(
-          `${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(album.folderName)}/cover.webp`
-        )
-        return new AlbumItemDTO(album, cover || undefined)
-      }))
+      const docs = await this.getCoveredAlbums(dbDocs)
 
       return { docs, pagination }
     }
 
     throw new Error('Incorrect request options')
+  }
+
+  async getCoveredAlbums(docs: AlbumResponse[]) {
+    return await Promise.all(docs.map(async (album) => {
+      const cover = await Cloud.getFile(
+        `${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(album.folderName)}/cover.webp`
+      )
+      return new AlbumItemDTO(album, cover || undefined)
+    }))
   }
 
   async getRandomAlbums(size: number, filter?: Record<string, Record<string, any>>) {

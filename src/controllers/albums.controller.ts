@@ -2,8 +2,8 @@ import { Request, Response } from 'express'
 import { CloudEntityDTO } from '../dtos/cloud.dto'
 import albumsServices from '../services/albums.services'
 
-export class AlbumsController {
-  static async create(albums: CloudEntityDTO[]) {
+export default {
+  async create(albums: CloudEntityDTO[]) {
     try {
       const albumShapes = await Promise.all(albums.map(async (album) => (
         await albumsServices.createShape(album)
@@ -14,9 +14,9 @@ export class AlbumsController {
     } catch (error) {
       throw error
     }
-  }
+  },
 
-  static async remove(albums: string[]) {
+  async remove(albums: string[]) {
     try {
       return await Promise.all(albums.map(async (_id) => (
         await albumsServices.removeAlbum(_id)
@@ -24,18 +24,18 @@ export class AlbumsController {
     } catch (error) {
       throw error
     }
-  }
+  },
 
-  static async getAlbumsList(req: Request, res: Response, next: (error: unknown) => void) {
+  async getAlbumsList(req: Request, res: Response, next: (error: unknown) => void) {
     try {
       const result = await albumsServices.getAlbumsList(req)
       return res.json(result)
     } catch (error) {
       return next(error)
     }
-  }
+  },
 
-  static async getRandomAlbums(req: Request, res: Response, next: (error: unknown) => void) {
+  async getRandomAlbums(req: Request, res: Response, next: (error: unknown) => void) {
     if (Array.isArray(req.query)) {
       throw new Error('Query should be a string in this request')
     }
@@ -45,9 +45,9 @@ export class AlbumsController {
     } catch (error) {
       return next(error)
     }
-  }
+  },
 
-  static async getSingleAlbum(req: Request<{ id: string }>, res: Response, next: (error: unknown) => void) {
+  async getSingleAlbum(req: Request<{ id: string }>, res: Response, next: (error: unknown) => void) {
     try {
       const result = await albumsServices.getSingleAlbum(req.params['id'])
       return res.json(result)

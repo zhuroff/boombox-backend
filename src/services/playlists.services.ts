@@ -4,9 +4,9 @@ import { Playlist } from '../models/playlist.model'
 import { Track } from '../models/track.model'
 // import { CollectionReorder } from '../types/collection.types'
 import { PlayListCreatePayload, PlayListUpdatePayload, PlaylistResponse } from '../types/Playlist'
-import { CloudLib } from '../lib/cloud.lib'
-import { CloudFile } from '../types/Cloud'
-import { TrackDTO } from '../dtos/track.dto'
+// import { CloudLib } from '../lib/cloud.lib'
+// import { CloudFile } from '../types/Cloud'
+// import { TrackDTO } from '../dtos/track.dto'
 import filesServices from '../services/files.services'
 
 class PlaylistsServices {
@@ -85,22 +85,22 @@ class PlaylistsServices {
       .lean()
 
     if (dbPlaylist) {
-      const promisedTracks = dbPlaylist.tracks.map(async ({ track, order }) => {
-        const trackRes = await CloudLib.get<CloudFile>(track.path)
-        const albumCoverRes = await CloudLib.get<CloudFile>(track.inAlbum.albumCover)
-        return {
-          order,
-          ...{
-            ...new TrackDTO({ ...track, ...trackRes.data }),
-            inAlbum: {
-              ...track.inAlbum,
-              albumCover: albumCoverRes.data.file
-            }
-          }
-        }
-      })
+      // const promisedTracks = dbPlaylist.tracks.map(async ({ track, order }) => {
+      //   const trackRes = await CloudLib.get<CloudFile>(track.path)
+      //   const albumCoverRes = await CloudLib.get<CloudFile>(track.inAlbum.albumCover)
+      //   return {
+      //     order,
+      //     ...{
+      //       ...new TrackDTO({ ...track, ...trackRes.data }),
+      //       inAlbum: {
+      //         ...track.inAlbum,
+      //         albumCover: albumCoverRes.data.file
+      //       }
+      //     }
+      //   }
+      // })
 
-      return { ...dbPlaylist, tracks: await Promise.all(promisedTracks) }
+      // return { ...dbPlaylist, tracks: await Promise.all(promisedTracks) }
     }
 
     throw new Error('Incorrect request options')

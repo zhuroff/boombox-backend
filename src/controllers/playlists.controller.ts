@@ -83,7 +83,7 @@ export class PlaylistsController {
 
   static async upload(req: Request, res: Response, next: (error: unknown) => void) {
     try {
-      const response = await filesServices.upload<Model<PlayListModel>>(Playlist, req)
+      const response = await filesServices.upload<PlayListModel, Model<PlayListModel>>(Playlist, req)
       return res.json(response)
     } catch (error) {
       return next(error)

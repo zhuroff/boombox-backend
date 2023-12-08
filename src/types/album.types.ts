@@ -3,6 +3,8 @@ import { BasicEntity } from './common.types'
 import { CloudEntityDTO } from '../dtos/cloud.dto'
 import { TrackResponse } from './Track'
 
+export type ExcludedAlbumFields = 'artist' | 'genre' | 'period' | 'inCollections' | 'tracks'
+
 export interface AlbumShape {
   title: string
   folderName: string
@@ -19,18 +21,15 @@ export interface AlbumModel {
   genre: Types.ObjectId
   period: Types.ObjectId
   dateCreated: Date
-  albumCover: string
-  albumCoverArt?: string
   modified: Date
   created: Date
   tracks: Types.ObjectId[]
   inCollections: Types.ObjectId[]
 }
 
-export type ExcludedAlbumFields = 'artist' | 'genre' | 'period' | 'inCollections' | 'tracks'
-
-export type AlbumResponse = Omit<AlbumModel, ExcludedAlbumFields> & {
+export interface AlbumResponse extends Omit<AlbumModel, ExcludedAlbumFields> {
   _id: string
+  albumCover: string
   artist: BasicEntity
   genre: BasicEntity
   period: BasicEntity

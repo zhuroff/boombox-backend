@@ -3,7 +3,7 @@ import { Types } from 'mongoose'
 import { CloudEntityDTO } from '../dtos/cloud.dto'
 import { Track } from '../models/track.model'
 import { Cloud } from '../'
-import { TrackSearchPayload } from '../types/Track'
+import { TrackResponse, TrackSearchPayload } from '../types/Track'
 import utils from '../utils'
 
 const GClient = new Client(process.env['GENIUS_SECRET'])
@@ -64,6 +64,16 @@ class TracksServices {
 
   async getTrack(path: string) {
     return await Cloud.getFile(`${process.env['COLLECTION_ROOT']}/Collection/${path}`)
+  }
+
+  async getCoveredTracks(docs: TrackResponse[]) {
+    return await Promise.all(docs.map(async (track) => {
+      const cover = await Cloud.getFile(
+        `${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(track.inAlbum.folderName)}/cover.webp`
+      )
+      if (cover) track.cover = cover
+      return track
+    }))
   }
 }
 

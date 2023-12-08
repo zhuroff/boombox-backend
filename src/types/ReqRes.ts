@@ -1,40 +1,26 @@
-import { Model, PaginateModel } from 'mongoose'
-import { AlbumResponse } from './album.types'
+import { Model, PaginateModel, PopulateOptions, ProjectionType } from 'mongoose'
 import { CategoryResponse } from './category.types'
+import { AlbumResponse } from './album.types'
 
-export type Populate = {
-  path: string
-  select: string[]
-  [key: string]: unknown
-}
-
-export type ListConfig = {
-  page: number
-  limit: number
-  sort: { [index: string]: number }
-}
-
-export type Pagination = {
+export interface Pagination{
   totalDocs: number
   totalPages: number
   page?: number
 }
 
-export type DiscogsPagination = {
+export interface DiscogsPagination {
   items: number
   page: number
   pages: number
 }
 
-export type ModelResponse = PaginateModel<any> | Model<any, {}, {}>
-
-export type SearchPayload = {
+export interface SearchPayload {
   query: string
   key?: SearchModelKey
 }
 
-export type SearchModelKey = |
-  'albums'
+export type SearchModelKey =
+  | 'albums'
   | 'embedded'
   | 'artists'
   | 'genres'
@@ -43,23 +29,16 @@ export type SearchModelKey = |
   | 'playlists'
   | 'tracks'
 
-export type SearchParams = { '$text': { '$search': string } }
+export type SearchParams = Record<'$text', { '$search': string }>
 
-export type SearchResult = {
-  title: string
+export interface SearchResult {
   key: SearchModelKey
   data: Partial<AlbumResponse | CategoryResponse>[]
 }
 
-export type SearchModel = {
-  instance: ModelResponse | null
+export interface SearchConfig {
   title: string
-  options: { [index: string]: boolean }
-  populates?: {
-    path: string
-    select: string[],
-    populate?: Populate
-  }[] | null
+  instance: PaginateModel<any> | Model<any>
+  options: ProjectionType<Record<string, boolean>>
+  populates?: PopulateOptions[]
 }
-
-export type SearchModelsSchema = Record<SearchModelKey, SearchModel>
