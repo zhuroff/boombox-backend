@@ -3,8 +3,8 @@ import controller from '../controllers/albums.controller'
 
 const router = Router()
 
-router.post('/', controller.getAlbumsList)
-router.get('/', controller.getRandomAlbums)
-router.get('/:id', controller.getSingleAlbum)
+router.post('/', controller.getList)
+router.get('/', controller.getListRandom)
+router.get('/:id', controller.getSingle)
 
 export default router

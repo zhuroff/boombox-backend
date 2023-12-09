@@ -19,6 +19,13 @@ export interface SearchPayload {
   key?: SearchModelKey
 }
 
+export interface RequestFilter {
+  from: string
+  key: string
+  value: string
+  excluded?: Record<string, string>
+}
+
 export type SearchModelKey =
   | 'albums'
   | 'embedded'

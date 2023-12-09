@@ -18,38 +18,38 @@ export default {
 
   async remove(albums: string[]) {
     try {
-      return await Promise.all(albums.map(async (_id) => (
-        await albumsServices.removeAlbum(_id)
+      return await Promise.all(albums.map(async (id) => (
+        await albumsServices.removeAlbum(id)
       )))
     } catch (error) {
       throw error
     }
   },
 
-  async getAlbumsList(req: Request, res: Response, next: (error: unknown) => void) {
+  async getList(req: Request, res: Response, next: (error: unknown) => void) {
     try {
-      const result = await albumsServices.getAlbumsList(req)
+      const result = await albumsServices.getList(req)
       return res.json(result)
     } catch (error) {
       return next(error)
     }
   },
 
-  async getRandomAlbums(req: Request, res: Response, next: (error: unknown) => void) {
+  async getSingle(req: Request<{ id: string }>, res: Response, next: (error: unknown) => void) {
+    try {
+      const result = await albumsServices.getSingle(req.params['id'])
+      return res.json(result)
+    } catch (error) {
+      return next(error)
+    }
+  },
+
+  async getListRandom(req: Request, res: Response, next: (error: unknown) => void) {
     if (Array.isArray(req.query)) {
       throw new Error('Query should be a string in this request')
     }
     try {
-      const result = await albumsServices.getRandomAlbums(parseInt(String(req.query?.['quantity'] || 8)))
-      return res.json(result)
-    } catch (error) {
-      return next(error)
-    }
-  },
-
-  async getSingleAlbum(req: Request<{ id: string }>, res: Response, next: (error: unknown) => void) {
-    try {
-      const result = await albumsServices.getSingleAlbum(req.params['id'])
+      const result = await albumsServices.getListRandom(parseInt(String(req.query?.['quantity'] || 8)))
       return res.json(result)
     } catch (error) {
       return next(error)

@@ -4,6 +4,7 @@ import { Album } from '../models/album.model'
 import { Artist } from '../models/artist.model'
 import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
+import { RequestFilter } from '../types/ReqRes'
 import { AlbumResponse, AlbumShape } from '../types/album.types'
 import { AlbumItemDTO, AlbumSingleDTO } from '../dtos/album.dto'
 import { PaginationDTO } from '../dtos/pagination.dto'
@@ -16,10 +17,10 @@ import tracksServices from './tracks.services'
 import collectionsServices from './collections.services'
 import playlistsServices from './playlists.services'
 
-class AlbumsServices {
+export default {
   async getAlbumDocs() {
     return await Album.find({}, { folderName: true })
-  }
+  },
 
   async createShape(album: CloudEntityDTO): Promise<AlbumShape> {
     const albumContent = await Cloud.getFolderContent(
@@ -34,7 +35,7 @@ class AlbumsServices {
       period: utils.getAlbumReleaseYear(album.title),
       tracks: utils.fileFilter(albumContent.items, utils.audioMimeTypes)
     }
-  }
+  },
 
   async createAlbum(shape: AlbumShape) {
     const newAlbum = new Album(shape)
@@ -58,10 +59,10 @@ class AlbumsServices {
       return await newAlbum.save()
     }
     return false
-  }
+  },
 
   async removeAlbum(_id: Types.ObjectId | string) {
-    const album = await this.getSingleAlbum(_id)
+    const album = await this.getSingle(_id)
     const collections = album.inCollections?.map(({ _id }) => _id)
     const playlists = album.tracks.reduce<Map<string, string[]>>((acc, next) => {
       const playlistsIds = next.inPlaylists?.map(({ _id }) => _id)
@@ -89,21 +90,20 @@ class AlbumsServices {
     }
 
     return await Album.findByIdAndDelete(_id)
-  }
+  },
 
-  async getAlbumsList(req: Request) {
-    // const query = req.body.filters
-    //   ? req.body.filters.reduce((acc: any, next: any) => {
-    //     acc[next.entityType] = new Types.ObjectId(next.entityValue)
-    //     if (next.exclude) {
-    //       acc._id = { $ne: new Types.ObjectId(next.entityValue) }
-    //     }
-    //     return acc
-    //   }, {})
-    //   : {}
+  async getCoveredAlbums(docs: AlbumResponse[]) {
+    return await Promise.all(docs.map(async (album) => {
+      const cover = await Cloud.getFile(
+        `${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(album.folderName)}/cover.webp`
+      )
+      return new AlbumItemDTO(album, cover || undefined)
+    }))
+  },
 
+  async getList(req: Request) {
     if (req.body.isRandom) {
-      return await this.getRandomAlbums(req.body.limit, req.body.filter)
+      return await this.getListRandom(req.body.limit, req.body.filter)
     }
 
     const populate: PopulateOptions[] = [
@@ -134,19 +134,10 @@ class AlbumsServices {
     }
 
     throw new Error('Incorrect request options')
-  }
+  },
 
-  async getCoveredAlbums(docs: AlbumResponse[]) {
-    return await Promise.all(docs.map(async (album) => {
-      const cover = await Cloud.getFile(
-        `${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(album.folderName)}/cover.webp`
-      )
-      return new AlbumItemDTO(album, cover || undefined)
-    }))
-  }
-
-  async getRandomAlbums(size: number, filter?: Record<string, Record<string, any>>) {
-    const basicConfig = [
+  async getListRandom(size: number, filter?: RequestFilter) {
+    const basicConfig: PipelineStage[] = [
       {
         $lookup: {
           from: 'artists',
@@ -174,51 +165,50 @@ class AlbumsServices {
       { $sample: { size } }
     ]
 
-    const config = basicConfig.reduce<PipelineStage[]>((acc, next) => {
-      acc.push(next)
-      if (filter && filter['from'] === next.$lookup?.from) {
-        acc.push({
+    const aggregateConfig: PipelineStage[] = []
+
+    for (const stage of basicConfig) {
+      aggregateConfig.push(stage)
+      if (!filter) continue
+      if (filter.from === (stage as PipelineStage.Lookup).$lookup?.from) {
+        aggregateConfig.push({
           $match: {
             [String(filter['key'])]: new Types.ObjectId(String(filter['value']))
           }
         })
 
         if (filter['excluded']) {
-          const lastProp = acc.at(-1)
+          const lastProp = aggregateConfig.at(-1) as PipelineStage.Match | undefined
           if (lastProp) {
             Object.entries(filter['excluded']).forEach(([key, value]) => {
-              // @ts-ignore
               lastProp.$match[key] = { $ne: new Types.ObjectId(String(value)) }
             })
           }
         }
       }
-      return acc
-    }, [])
+    }
 
-    const response = await Album.aggregate(config)
+    const response = await Album.aggregate<AlbumResponse>(aggregateConfig)
 
     if (response) {
-      const coveredAlbums = response.map(async (album) => {
-        const cover = await Cloud.getFile(`${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(album.folderName)}/cover.webp`)
-        return new AlbumItemDTO({
+      const coveredAlbums = await this.getCoveredAlbums(
+        response.map((album) => ({
           ...album,
           artist: Array.isArray(album.artist) ? album.artist[0] : album.artist,
           genre: Array.isArray(album.genre) ? album.genre[0] : album.genre,
           period: Array.isArray(album.period) ? album.period[0] : album.period
-        }, cover || undefined)
-      })
-
+        }))
+      )
       const albums = await Promise.all(coveredAlbums)
       return { docs: albums }
     }
 
     throw new Error('Incorrect request options')
-  }
+  },
 
-  async getSingleAlbum(id: string | Types.ObjectId) {
+  async getSingle(id: string | Types.ObjectId) {
     if (id === 'random') {
-      const randomAlbum = await this.getRandomAlbum()
+      const randomAlbum = await this.getSingleRandom()
       return randomAlbum
     }
 
@@ -248,9 +238,9 @@ class AlbumsServices {
     }
 
     throw new Error('Incorrect request options')
-  }
+  },
 
-  async getRandomAlbum() {
+  async getSingleRandom() {
     const count = await Album.countDocuments()
     const randomIndex = Math.floor(Math.random() * count)
     const randomAlbum: AlbumResponse = await Album.findOne().skip(randomIndex)
@@ -280,5 +270,3 @@ class AlbumsServices {
     throw new Error('Incorrect request options')
   }
 }
-
-export default new AlbumsServices()
