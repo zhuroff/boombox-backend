@@ -10,8 +10,8 @@ import { AlbumItemDTO } from '../dtos/album.dto'
 import { Cloud } from '..'
 import utils from '../utils'
 
-class CategoriesServices {
-  async getCategoriesList<T>(Model: PaginateModel<T>, req: Request) {
+export default {
+  async getList<T>(Model: PaginateModel<T>, req: Request) {
     const populates = [
       { path: 'albums', select: ['_id'] },
       { path: 'embeddedAlbums', select: ['_id'], model: Embedded }
@@ -42,7 +42,7 @@ class CategoriesServices {
     }
 
     throw new Error()
-  }
+  },
 
   async single<T>(Model: PaginateModel<T>, req: Request) {
     const categorySingle: CategoryResponse = await Model.findById(req.params['id'])
@@ -76,7 +76,7 @@ class CategoriesServices {
     const coveredAlbums = await Promise.all(coveredAlbumsRes)
 
     return new CategoryPageDTO(categorySingle, coveredAlbums)
-  }
+  },
 
   async create(Model: PaginateModel<CategoryDocument>, title: string, _id?: Types.ObjectId) {
     const query = { title }
@@ -84,12 +84,12 @@ class CategoriesServices {
     const options = { upsert: true, new: true, setDefaultsOnInsert: true }
 
     return await Model.findOneAndUpdate(query, update, options)
-  }
+  },
 
   async remove<T>(Model: PaginateModel<T>, _id: string) {
     await Model.deleteOne({ _id })
     return { message: 'Category successfully deleted' }
-  }
+  },
 
   async cleanAlbums(Model: PaginateModel<CategoryDocument>, categoryId: Types.ObjectId, albumId: Types.ObjectId | string) {
     const query = { _id: categoryId }
@@ -97,5 +97,3 @@ class CategoriesServices {
     await Model.findOneAndUpdate(query, update)
   }
 }
-
-export default new CategoriesServices()

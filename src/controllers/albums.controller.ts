@@ -26,25 +26,25 @@ export default {
     }
   },
 
-  async getList(req: Request, res: Response, next: (error: unknown) => void) {
+  async getList(req: Request, res: Response) {
     try {
       const result = await albumsServices.getList(req)
       return res.json(result)
     } catch (error) {
-      return next(error)
+      throw error
     }
   },
 
-  async getSingle(req: Request<{ id: string }>, res: Response, next: (error: unknown) => void) {
+  async getSingle(req: Request<{ id: string }>, res: Response) {
     try {
       const result = await albumsServices.getSingle(req.params['id'])
       return res.json(result)
     } catch (error) {
-      return next(error)
+      throw error
     }
   },
 
-  async getListRandom(req: Request, res: Response, next: (error: unknown) => void) {
+  async getListRandom(req: Request, res: Response) {
     if (Array.isArray(req.query)) {
       throw new Error('Query should be a string in this request')
     }
@@ -52,7 +52,7 @@ export default {
       const result = await albumsServices.getListRandom(parseInt(String(req.query?.['quantity'] || 8)))
       return res.json(result)
     } catch (error) {
-      return next(error)
+      throw error
     }
   }
 }
