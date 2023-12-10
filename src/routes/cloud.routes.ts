@@ -1,8 +1,8 @@
 import { Router } from 'express'
-import { CloudController } from '../controllers/cloud.controller'
+import controller from '../controllers/cloud.controller'
 
 const router = Router()
 
-router.post('/images', CloudController.getImages)
+router.post('/images', controller.getImages)
 
 export default router

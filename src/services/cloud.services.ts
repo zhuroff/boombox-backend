@@ -2,7 +2,7 @@ import { Cloud } from '..'
 import { CloudEntityDTO } from '../dtos/cloud.dto'
 import utils from '../utils'
 
-class CloudServices {
+export default {
   async getImages(body: Record<string, string>) {
     if (!body['path']) {
       throw new Error('Incorrect request options: "path" property is required')
@@ -23,22 +23,19 @@ class CloudServices {
         items: await Promise.allSettled(
           utils.fileFilter(content.items, utils.imagesMimeTypes)
             .map(async (item) => await this.getImageWithURL(item))
-        )
+        ) as PromiseFulfilledResult<Required<CloudEntityDTO>>[]
       }
 
       return {
         ...finalContent,
-        // @ts-ignore
         items: finalContent.items.map(({ value }) => value)}
     }
 
     throw new Error('Files not found')
-  }
+  },
 
   async getImageWithURL(item: Required<CloudEntityDTO>) {
     const fetchedFile = await Cloud.getFile(`${process.env['COLLECTION_ROOT']}/Collection/${item.path}`)
     return { ...item, url: fetchedFile }
   }
 }
-
-export default new CloudServices()
