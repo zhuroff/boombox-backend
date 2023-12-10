@@ -26,7 +26,7 @@ dotenv.config()
 
 const app = express()
 const PORT = 3001
-const rootDir = path.resolve(__dirname, '../')
+export const rootDir = path.resolve(__dirname, '../')
 
 export const Cloud = cloudApiGetter(process.env['CURRENT_API'] || '')
 
@@ -54,6 +54,7 @@ app.use('/api/radio', radioRoutes)
 app.use('/api/backup', backupRoutes)
 app.use('/api/sync', synchronizeRoutes)
 app.use('/api/cloud', cloudRoutes)
+app.use('/backups', express.static(rootDir + '/backups'))
 app.use('/uploads', express.static(rootDir + '/uploads'))
 
 app.listen(PORT, () => console.log(`App listening at http://localhost:${PORT}`))

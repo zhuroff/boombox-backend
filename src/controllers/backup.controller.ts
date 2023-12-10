@@ -1,40 +1,40 @@
 import { Request, Response } from 'express'
 import backupServices from '../services/backup.services'
 
-export class BackupController {
-  static async saveBackup(req: Request, res: Response, next: (error: unknown) => void) {
+export default {
+  async save(req: Request, res: Response) {
     try {
-      const response = await backupServices.saveBackup()
+      const response = await backupServices.save()
       res.status(201).json(response)
     } catch (error) {
-      return next(error)
+      throw error
     }
-  }
+  },
 
-  static getBackup(req: Request, res: Response, next: (error: unknown) => void) {
+  get(req: Request, res: Response) {
     try {
-      const response = backupServices.getBackup()
+      const response = backupServices.get()
       res.json(response)
     } catch (error) {
-      return next(error)
+      throw error
     }
-  }
+  },
 
-  static async restoreBackup(req: Request, res: Response, next: (error: unknown) => void) {
+  async recover(req: Request, res: Response) {
     try {
-      const response = await backupServices.restoreBackup(String(req.params['date']))
+      const response = await backupServices.recover(String(req.params['date']))
       res.status(201).json(response)
     } catch (error) {
-      return next(error)
+      throw error
     }
-  }
+  },
 
-  static async removeBackup(req: Request, res: Response, next: (error: unknown) => void) {
+  async remove(req: Request, res: Response) {
     try {
-      const response = await backupServices.removeBackup(String(req.params['date']))
+      const response = await backupServices.remove(String(req.params['date']))
       res.status(201).json(response)
     } catch (error) {
-      return next(error)
+      throw error
     }
   }
 }

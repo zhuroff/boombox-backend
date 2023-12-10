@@ -119,17 +119,12 @@ class SearchServices {
         await this.searchSplitter(payload, searchMap.get(payload.key))
       )
     } else {
-      for (const [key, config] of searchMap) {
-        mappedResult.set(
-          key,
-          await this.searchSplitter({ query: payload.query, key }, config)
-        )
-      }
+      await Promise.all([...searchMap].map(async ([key, config]) => (
+        mappedResult.set(key, await this.searchSplitter({ query: payload.query, key }, config))
+      )))
     }
 
-    const results = await Promise.all(mappedResult)
-
-    return [...results].reduce<SearchResult[]>((acc, [key, data]) => {
+    return [...mappedResult].reduce<SearchResult[]>((acc, [key, data]) => {
       if (data?.length) acc.push({ key, data })
       return acc
     }, [])

@@ -1,6 +1,7 @@
 import { Model, PaginateModel, PopulateOptions, ProjectionType } from 'mongoose'
 import { CategoryResponse } from './category.types'
 import { AlbumResponse } from './album.types'
+import { ModelKeys } from './common.types'
 
 export interface Pagination{
   totalDocs: number
@@ -26,15 +27,7 @@ export interface RequestFilter {
   excluded?: Record<string, string>
 }
 
-export type SearchModelKey =
-  | 'albums'
-  | 'embedded'
-  | 'artists'
-  | 'genres'
-  | 'periods'
-  | 'collections'
-  | 'playlists'
-  | 'tracks'
+export type SearchModelKey = Omit<ModelKeys, 'radio' | 'users' | 'tokens' | 'toys'>
 
 export type SearchParams = Record<'$text', { '$search': string }>
 
