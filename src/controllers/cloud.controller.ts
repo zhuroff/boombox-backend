@@ -12,5 +12,17 @@ export default {
         res.status(404).json({ message: error.message })
       }
     }
+  },
+
+  async getTrackDuration(req: Request, res: Response) {
+    try {
+      const result = await cloudServices.getTrackDuration(req.body)
+      res.json(result)
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(error.message)
+        res.status(404).json({ message: error.message })
+      }
+    }
   }
 }

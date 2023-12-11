@@ -10,5 +10,5 @@ apiMap.set('PCLOUD', PCloudApi)
 
 export const cloudApiGetter = (key: string) => {
   const TargetApi = apiMap.get(key) || YandexCloudApi
-  return new TargetApi()
+  return new TargetApi(`${process.env['COLLECTION_ROOT']}/Collection`)
 }

@@ -32,10 +32,7 @@ export class SyncController {
 
   static async sync(_: Request, res: Response) {
     try {
-      const cloudFolders = await Cloud.getFolders(
-        `${process.env['COLLECTION_ROOT'] || ''}/Collection`,
-        { params: { limit: 5000 } }
-      ) || []
+      const cloudFolders = await Cloud.getFolders('', { params: { limit: 5000 } }) || []
       const dbFolders = await albumsServices.getAlbumDocs()
       await SyncController.dbUpdateSplitter(cloudFolders, dbFolders)
         && res.status(200).json({ message: 'Successfully synchronized' })

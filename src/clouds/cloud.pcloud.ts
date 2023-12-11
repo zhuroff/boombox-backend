@@ -1,23 +1,35 @@
 import utils from '../utils'
-import { CloudExternalApi } from './cloud.external';
-import { CloudEntityDTO } from '../dtos/cloud.dto';
-import { CloudAPI, PCloudEntity, PCloudResponse } from '../types/Cloud'
+import { CloudExternalApi } from './cloud.external'
+import { CloudEntityDTO } from '../dtos/cloud.dto'
+import { CloudAPI, PCloudEntity, PCloudResponseError, PCloudFileResponse, PCloudResponse, CloudFileTypes } from '../types/Cloud'
 
 export class PCloudApi extends CloudExternalApi implements CloudAPI {
   #domain = process.env['PCLOUD_DOMAIN']
   #login = process.env['PCLOUD_LOGIN']
   #password = process.env['PCLOUD_PASSWORD']
+  #fileTypesMap = new Map<CloudFileTypes, string>([
+    ['audio', 'getaudiolink'],
+    ['video', 'getvideolink'],
+    ['image', 'getfilelink'],
+    ['file', 'getfilelink'],
+  ])
   #digest = ''
+  #cloudRootPath: string
 
-  constructor() {
+  constructor(cloudRootPath: string) {
     super()
+    this.#cloudRootPath = cloudRootPath
   }
 
   async #getDigest() {
     return this.client
       .get(`${this.#domain}/getdigest`)
       .then(({ data }) => data.digest)
-      .catch((error) => console.info(error))
+      .catch((error) => console.log(error))
+  }
+
+  #getFileLink(entity: PCloudFileResponse) {
+    return `https://${entity.hosts[0]}${entity.path}`.replace('.mp3', '')
   }
 
   #qBuilder(path: string) {
@@ -33,26 +45,50 @@ export class PCloudApi extends CloudExternalApi implements CloudAPI {
   async getFolders(path: string) {
     this.#digest = await this.#getDigest()
     return await this.client
-      .get<PCloudResponse<PCloudEntity>>(this.#qBuilder(`listfolder?path=/${path}`))
-      .then(({ data }) => data.metadata.contents.map((item) => new CloudEntityDTO(item)))
-      .catch((error) => console.info(error))
-  }
-  async getFolderContent(path: string) {
-    return await this.client
-      .get<PCloudResponse<PCloudEntity>>(this.#qBuilder(`listfolder?path=/${path}`))
-      .then(({ data }) => ({
-        limit: -1,
-        offset: 0,
-        total: data.metadata.contents.length,
-        items: data.metadata.contents.map((item) => new CloudEntityDTO(item))
-      }))
-      .catch((error) => console.info(error))
+      .get<PCloudResponse<PCloudEntity> | PCloudResponseError>(this.#qBuilder(
+        `listfolder?path=/${this.#cloudRootPath}/${path}`
+      ))
+      .then(({ data }) => {
+        if ('error' in data) {
+          throw new Error(`${data.result}: ${data.error}`)
+        }
+        return data.metadata.contents.map((item) => new CloudEntityDTO(item))
+      })
+      .catch((error) => console.log('getFolders', error))
   }
 
-  async getFile(path: string) {
+  async getFolderContent(path: string) {
+    this.#digest = await this.#getDigest()
     return await this.client
-      .get<PCloudResponse<PCloudEntity>>(`${this.#domain}${path}`)
-      .then(({ data }) => data.file)
-      .catch((error) => console.info('getFile', error.message))
+      .get<PCloudResponse<PCloudEntity> | PCloudResponseError>(this.#qBuilder(
+        `listfolder?path=/${this.#cloudRootPath}/${path}`
+      ))
+      .then(({ data }) => {
+        if ('error' in data) {
+          throw new Error(`${data.result}: ${data.error}`)
+        }
+        return {
+          limit: -1,
+          offset: 0,
+          total: data.metadata.contents.length,
+          items: data.metadata.contents.map((item) => new CloudEntityDTO(item))
+        }
+      })
+      .catch((error) => console.log('getFolderContent', error))
+  }
+
+  async getFile(path: string, fileType: CloudFileTypes) {
+    this.#digest = await this.#getDigest()
+    return await this.client
+      .get<PCloudFileResponse | PCloudResponseError>(this.#qBuilder(
+        `${this.#fileTypesMap.get(fileType)}?path=/${this.#cloudRootPath}/${path}`
+      ))
+      .then(async ({ data }) => {
+        if ('error' in data) {
+          throw new Error(`${data.result}: ${data.error}`)
+        }
+        return this.#getFileLink(data)
+      })
+      .catch((error) => console.log('getFile', error.message))
   }
 }

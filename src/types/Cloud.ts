@@ -1,6 +1,8 @@
 import { AxiosRequestConfig } from "axios"
 import { CloudEntityDTO } from "../dtos/cloud.dto"
 
+export type CloudFileTypes = 'audio' | 'video' | 'image' | 'file'
+
 export type CloudCommon = {
   name: string
   created: string
@@ -36,6 +38,19 @@ export type PCloudEntity = CloudCommonEntity & {
   id: string
   isfolder: boolean
   contenttype?: string
+}
+
+export interface PCloudResponseError {
+  result: number
+  error: string
+}
+
+export interface PCloudFileResponse extends Omit<PCloudResponseError, 'error'> {
+  dwltag: string
+  hash: number
+  size: number
+  path: string
+  hosts: string[]
 }
 
 export type YandexCloudEntity = CloudCommonEntity & {
@@ -77,5 +92,5 @@ export type CloudFolderContent = {
 export interface CloudAPI {
   getFolders: (path: string, params?: AxiosRequestConfig) => Promise<void | CloudEntityDTO[]>
   getFolderContent: (path: string) => Promise<void | CloudFolderContent>
-  getFile: (path: string) => Promise<void | any>
+  getFile: (path: string, fileType: CloudFileTypes) => Promise<void | any>
 }

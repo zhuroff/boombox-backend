@@ -67,10 +67,11 @@ export default {
       .lean()
 
     const coveredAlbumsRes = categorySingle.albums.map(async (album) => {
-      const albumCover = await Cloud.getFile(
-        `${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(album.folderName)}/cover.webp`
+      const cover = await Cloud.getFile(
+        `${utils.sanitizeURL(album.folderName)}/cover.webp`,
+        'image'
       )
-      return new AlbumItemDTO(album, albumCover || '')
+      return new AlbumItemDTO(album, cover || '')
     })
 
     const coveredAlbums = await Promise.all(coveredAlbumsRes)

@@ -24,7 +24,7 @@ export default {
 
   async createShape(album: CloudEntityDTO): Promise<AlbumShape> {
     const albumContent = await Cloud.getFolderContent(
-      `${process.env['COLLECTION_ROOT']}/Collection/${album.path}&limit=100`
+      `${album.path}&limit=100`
     ) || { items: [] }
     
     return {
@@ -62,7 +62,7 @@ export default {
   },
 
   async removeAlbum(_id: Types.ObjectId | string) {
-    const album = await this.getSingle(_id)
+    const album = await this.getSingle(_id, false)
     const collections = album.inCollections?.map(({ _id }) => _id)
     const playlists = album.tracks.reduce<Map<string, string[]>>((acc, next) => {
       const playlistsIds = next.inPlaylists?.map(({ _id }) => _id)
@@ -95,7 +95,8 @@ export default {
   async getCoveredAlbums(docs: AlbumResponse[]) {
     return await Promise.all(docs.map(async (album) => {
       const cover = await Cloud.getFile(
-        `${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(album.folderName)}/cover.webp`
+        `${utils.sanitizeURL(album.folderName)}/cover.webp`,
+        'image'
       )
       return new AlbumItemDTO(album, cover || undefined)
     }))
@@ -206,7 +207,7 @@ export default {
     throw new Error('Incorrect request options')
   },
 
-  async getSingle(id: string | Types.ObjectId) {
+  async getSingle(id: string | Types.ObjectId, withCover = true) {
     if (id === 'random') {
       const randomAlbum = await this.getSingleRandom()
       return randomAlbum
@@ -221,23 +222,25 @@ export default {
         path: 'tracks',
         populate: [
           { path: 'artist', select: ['title'] },
-          { path: 'inAlbum', select: ['title'] }
+          { path: 'inAlbum', select: ['title', 'folderName'] }
         ]
       })
       .lean()
 
-    if (singleAlbum) {
-      const cover = await Cloud.getFile(
-        `${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(singleAlbum.folderName)}/cover.webp`
-      )
+    try {
+      const cover = withCover ? await Cloud.getFile(
+        `${utils.sanitizeURL(singleAlbum.folderName)}/cover.webp`,
+        'image'
+      ) : undefined
+      
       return new AlbumSingleDTO(
         singleAlbum,
         singleAlbum.tracks.map((track) => new TrackDTO(track)),
         cover || undefined
       )
+    } catch (error) {
+      throw new Error('Incorrect request options or album not found')
     }
-
-    throw new Error('Incorrect request options')
   },
 
   async getSingleRandom() {
@@ -258,7 +261,8 @@ export default {
   
     if (randomAlbum) {
       const cover = await Cloud.getFile(
-        `${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(randomAlbum.folderName)}/cover.webp`
+        `${utils.sanitizeURL(randomAlbum.folderName)}/cover.webp`,
+        'image'
       )
       return new AlbumSingleDTO(
         randomAlbum,

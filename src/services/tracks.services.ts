@@ -1,14 +1,14 @@
 import { Client } from 'genius-lyrics'
 import { Types } from 'mongoose'
+import { Cloud } from '../'
 import { CloudEntityDTO } from '../dtos/cloud.dto'
 import { Track } from '../models/track.model'
-import { Cloud } from '../'
 import { TrackResponse, TrackSearchPayload } from '../types/Track'
 import utils from '../utils'
 
 const GClient = new Client(process.env['GENIUS_SECRET'])
 
-class TracksServices {
+export default {
   async create(track: Required<CloudEntityDTO>, albumId: Types.ObjectId, artistId: Types.ObjectId) {
     const newTrack = new Track({
       ...track,
@@ -18,21 +18,21 @@ class TracksServices {
       artist: artistId
     })
     return await newTrack.save()
-  }
+  },
 
   async remove(tracks: (string | Types.ObjectId)[]) {
     return await Track.deleteMany({ _id: { $in: tracks } })
-  }
+  },
 
-  async incrementListening(id: string) {
+  async incrementListeningCounter(id: string) {
     return await Track.findByIdAndUpdate(id, { $inc: { listened: 1 } })
-  }
+  },
 
-  async duration(id: string, duration: number) {
+  async saveTrackDuration(id: string, duration: number) {
     return await Track.findByIdAndUpdate(id, { $set: { duration } })
-  }
+  },
 
-  async lyricsDB(id: string) {
+  async getLyrics(id: string) {
     const response = await Track.findById(id)
 
     if (response) {
@@ -40,9 +40,9 @@ class TracksServices {
     }
 
     throw new Error('Incorrect request options')
-  }
+  },
 
-  async lyricsExternal(query: string) {
+  async getLyricsExternal(query: string) {
     const searches = await GClient.songs.search(query)
     const resultArray = searches.map(async (el) => {
       const item: TrackSearchPayload = {
@@ -56,25 +56,24 @@ class TracksServices {
     })
 
     return await Promise.all(resultArray)
-  }
+  },
 
-  async save(id: string, lyrics: string) {
+  async saveLyrics(id: string, lyrics: string) {
     return await Track.findByIdAndUpdate(id, { $set: { lyrics } })
-  }
+  },
 
-  async getTrack(path: string) {
-    return await Cloud.getFile(`${process.env['COLLECTION_ROOT']}/Collection/${path}`)
-  }
+  async getAudio(path: string) {
+    return await Cloud.getFile(path, 'audio')
+  },
 
   async getCoveredTracks(docs: TrackResponse[]) {
     return await Promise.all(docs.map(async (track) => {
       const cover = await Cloud.getFile(
-        `${process.env['COLLECTION_ROOT']}/Collection/${utils.sanitizeURL(track.inAlbum.folderName)}/cover.webp`
+        `${utils.sanitizeURL(track.inAlbum.folderName)}/cover.webp`,
+        'image'
       )
       if (cover) track.cover = cover
       return track
     }))
   }
 }
-
-export default new TracksServices()

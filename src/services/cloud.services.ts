@@ -14,7 +14,7 @@ export default {
       .slice(0, -1)
 
     const content = await Cloud.getFolderContent(
-      `${process.env['COLLECTION_ROOT']}/Collection/${satitizedPath}&limit=${body['limit']}&offset=${body['offset']}`
+      `${satitizedPath}&limit=${body['limit']}&offset=${body['offset']}`
     )
     
     if (content) {
@@ -34,8 +34,16 @@ export default {
     throw new Error('Files not found')
   },
 
+  async getTrackDuration(body: Record<string, string>) {
+    if (!body['path']) {
+      throw new Error('Incorrect request options: "path" property is required')
+    }
+
+    return await Cloud.getFile(body['path'], 'file')
+  },
+
   async getImageWithURL(item: Required<CloudEntityDTO>) {
-    const fetchedFile = await Cloud.getFile(`${process.env['COLLECTION_ROOT']}/Collection/${item.path}`)
+    const fetchedFile = await Cloud.getFile(item.path, 'image')
     return { ...item, url: fetchedFile }
   }
 }
