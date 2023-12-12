@@ -1,5 +1,6 @@
 import { Request } from 'express'
 import { Types, PipelineStage, PaginateOptions, PopulateOptions } from 'mongoose'
+import { getCloudApi } from '..'
 import { Album } from '../models/album.model'
 import { Artist } from '../models/artist.model'
 import { Genre } from '../models/genre.model'
@@ -10,7 +11,6 @@ import { AlbumItemDTO, AlbumSingleDTO } from '../dtos/album.dto'
 import { PaginationDTO } from '../dtos/pagination.dto'
 import { TrackDTO } from '../dtos/track.dto'
 import { CloudEntityDTO } from '../dtos/cloud.dto'
-import { Cloud } from '../'
 import utils from '../utils'
 import categoriesServices from './categories.services'
 import tracksServices from './tracks.services'
@@ -19,16 +19,18 @@ import playlistsServices from './playlists.services'
 
 export default {
   async getAlbumDocs() {
-    return await Album.find({}, { folderName: true })
+    return await Album.find({}, { folderName: true, cloudURL: true })
   },
 
   async createShape(album: CloudEntityDTO): Promise<AlbumShape> {
-    const albumContent = await Cloud.getFolderContent(
+    const cloudAPI = getCloudApi(album.cloudURL)
+    const albumContent = await cloudAPI.getFolderContent(
       `${album.path}&limit=100`
     ) || { items: [] }
     
     return {
       folderName: album.title,
+      cloudURL: album.cloudURL,
       title: utils.parseAlbumTitle(album.title),
       artist: utils.parseArtistName(album.title),
       genre: utils.parseAlbumGenre(album.title),
@@ -45,7 +47,7 @@ export default {
 
     if (newArtist && newGenre && newPeriod) {
       const albumTracks = await Promise.all(shape.tracks.map(async (track) => (
-        await tracksServices.create(track, newAlbum._id, newArtist._id)
+        await tracksServices.create(track, newAlbum._id, newArtist._id, shape.cloudURL)
       )))
       const dateOfCreation = new Date()
 
@@ -94,7 +96,8 @@ export default {
 
   async getCoveredAlbums(docs: AlbumResponse[]) {
     return await Promise.all(docs.map(async (album) => {
-      const cover = await Cloud.getFile(
+      const cloudAPI = getCloudApi(album.cloudURL)
+      const cover = await cloudAPI.getFile(
         `${utils.sanitizeURL(album.folderName)}/cover.webp`,
         'image'
       )
@@ -120,7 +123,7 @@ export default {
       sort: req.body.sort,
       populate,
       lean: true,
-      select: { title: true, folderName: true }
+      select: { title: true, folderName: true, cloudURL: true }
     }
 
     const dbList = await Album.paginate({}, options)
@@ -222,13 +225,14 @@ export default {
         path: 'tracks',
         populate: [
           { path: 'artist', select: ['title'] },
-          { path: 'inAlbum', select: ['title', 'folderName'] }
+          { path: 'inAlbum', select: ['title', 'folderName', 'cloudURL'] }
         ]
       })
       .lean()
 
     try {
-      const cover = withCover ? await Cloud.getFile(
+      const cloudAPI = getCloudApi(singleAlbum.cloudURL)
+      const cover = withCover ? await cloudAPI.getFile(
         `${utils.sanitizeURL(singleAlbum.folderName)}/cover.webp`,
         'image'
       ) : undefined
@@ -260,7 +264,8 @@ export default {
       .lean()
   
     if (randomAlbum) {
-      const cover = await Cloud.getFile(
+      const cloudAPI = getCloudApi(randomAlbum.cloudURL)
+      const cover = await cloudAPI.getFile(
         `${utils.sanitizeURL(randomAlbum.folderName)}/cover.webp`,
         'image'
       )

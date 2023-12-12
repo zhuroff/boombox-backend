@@ -13,6 +13,11 @@ const TrackSchema = new Schema({
     required: true
   },
 
+  cloudURL: {
+    type: String,
+    required: true
+  },
+
   dateCreated: {
     type: Date,
     default: Date.now

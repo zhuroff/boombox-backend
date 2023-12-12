@@ -1,20 +1,32 @@
-import { Cloud } from '..'
+import { CloudKeys, CloudApi } from '../types/Cloud'
 import { CloudEntityDTO } from '../dtos/cloud.dto'
+import { getCloudApi } from '..'
 import utils from '../utils'
 
 export default {
-  async getImages(body: Record<string, string>) {
-    if (!body['path']) {
-      throw new Error('Incorrect request options: "path" property is required')
+  async getImages({
+    path,
+    cloudURL,
+    limit,
+    offset
+  }: {
+    path: string,
+    cloudURL: CloudKeys,
+    limit: number,
+    offset: number
+  }) {
+    if (!path || !cloudURL) {
+      throw new Error('Incorrect request options: both "path" and "cloudURL" properties are required')
     }
 
-    const satitizedPath = body['path']
+    const cloudApi = getCloudApi(cloudURL)
+    const satitizedPath = path
       .split('/')
       .reduce((acc, next) => acc + utils.sanitizeURL(next) + '/', '')
       .slice(0, -1)
 
-    const content = await Cloud.getFolderContent(
-      `${satitizedPath}&limit=${body['limit']}&offset=${body['offset']}`
+    const content = await cloudApi.getFolderContent(
+      `${satitizedPath}&limit=${limit}&offset=${offset}`
     )
     
     if (content) {
@@ -22,7 +34,7 @@ export default {
         ...content,
         items: await Promise.allSettled(
           utils.fileFilter(content.items, utils.imagesMimeTypes)
-            .map(async (item) => await this.getImageWithURL(item))
+            .map(async (item) => await this.getImageWithURL(item, cloudApi))
         ) as PromiseFulfilledResult<Required<CloudEntityDTO>>[]
       }
 
@@ -34,16 +46,17 @@ export default {
     throw new Error('Files not found')
   },
 
-  async getTrackDuration(body: Record<string, string>) {
-    if (!body['path']) {
-      throw new Error('Incorrect request options: "path" property is required')
+  async getTrackDuration({ path, cloudURL }: { path: string, cloudURL: CloudKeys }) {
+    if (!path || !cloudURL) {
+      throw new Error('Incorrect request options: both "path" and "cloudURL" properties are required')
     }
 
-    return await Cloud.getFile(body['path'], 'file')
+    const cloudApi = getCloudApi(cloudURL)
+    return cloudApi.getFile(path, 'file')
   },
 
-  async getImageWithURL(item: Required<CloudEntityDTO>) {
-    const fetchedFile = await Cloud.getFile(item.path, 'image')
+  async getImageWithURL(item: Required<CloudEntityDTO>, cloudApi: CloudApi) {
+    const fetchedFile = await cloudApi.getFile(item.path, 'image')
     return { ...item, url: fetchedFile }
   }
 }

@@ -1,10 +1,11 @@
 import utils from '../utils'
-import { UnionCloudsEntity } from '../types/Cloud'
+import { CloudKeys, UnionCloudsEntity } from '../types/Cloud'
 
 export class CloudEntityDTO {
-  id: string = ''
-  path: string = ''
-  title: string = ''
+  id: string
+  path: string
+  title: string
+  cloudURL: CloudKeys
   created: Date = new Date()
   modified: Date = new Date()
   mimeType?: string
@@ -26,10 +27,11 @@ export class CloudEntityDTO {
     return
   }
 
-  constructor(item: UnionCloudsEntity) {
+  constructor(item: UnionCloudsEntity, cloudURL: string) {
     this.id = this.#idSetter(item)
     this.path = utils.sanitizeURL(item.path, `${process.env['COLLECTION_ROOT']}/Collection/`)
     this.title = item.name
+    this.cloudURL = new URL(cloudURL).origin as CloudKeys
     this.created = new Date(item.created)
     this.modified = new Date(item.modified)
 

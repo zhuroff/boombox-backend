@@ -1,9 +1,8 @@
 import { Router } from 'express'
-import { DiscogsController } from '../controllers/discogs.controller'
+import controller from '../controllers/discogs.controller'
 
 const router = Router()
 
-router.post('/', DiscogsController.getList)
-router.get('/:id', DiscogsController.single)
+router.post('/', controller.getList)
 
 export default router

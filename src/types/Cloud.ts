@@ -1,7 +1,7 @@
-import { AxiosRequestConfig } from "axios"
-import { CloudEntityDTO } from "../dtos/cloud.dto"
-
-export type CloudFileTypes = 'audio' | 'video' | 'image' | 'file'
+import { AxiosRequestConfig } from 'axios'
+import { CloudEntityDTO } from '../dtos/cloud.dto'
+import { PCloudApi } from '../clouds/cloud.pcloud'
+import { YandexCloudApi } from '../clouds/cloud.yandex'
 
 export type CloudCommon = {
   name: string
@@ -27,6 +27,10 @@ export type CloudFile = CloudCommon & {
 export type CloudFolderItem = CloudFolder | CloudFile
 
 // NEW
+export type CloudApi = PCloudApi | YandexCloudApi
+export type CloudKeys = 'https://eapi.pcloud.com' | 'https://cloud-api.yandex.net'
+export type CloudFileTypes = 'audio' | 'video' | 'image' | 'file'
+
 export type CloudCommonEntity = {
   name: string
   path: string
@@ -89,8 +93,8 @@ export type CloudFolderContent = {
   sort?: string
 }
 
-export interface CloudAPI {
-  getFolders: (path: string, params?: AxiosRequestConfig) => Promise<void | CloudEntityDTO[]>
+export interface Cloud {
+  getFolders: (path: string, params?: AxiosRequestConfig) => Promise<null | CloudEntityDTO[]>
   getFolderContent: (path: string) => Promise<void | CloudFolderContent>
   getFile: (path: string, fileType: CloudFileTypes) => Promise<void | any>
 }

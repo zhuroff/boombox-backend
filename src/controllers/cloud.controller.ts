@@ -16,7 +16,7 @@ export default {
 
   async getTrackDuration(req: Request, res: Response) {
     try {
-      const result = await cloudServices.getTrackDuration(req.body)
+      const result = await cloudServices.getTrackDuration(req['body'])
       res.json(result)
     } catch (error) {
       if (error instanceof Error) {

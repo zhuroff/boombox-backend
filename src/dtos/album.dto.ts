@@ -1,3 +1,4 @@
+import { CloudKeys } from '../types/Cloud'
 import { AlbumResponse } from '../types/album.types'
 import { BasicEntity } from '../types/common.types'
 import { EntityBasicDTO } from './basic.dto'
@@ -6,6 +7,7 @@ import { TrackDTO } from './track.dto'
 export class AlbumItemDTO {
   _id: string
   title: string
+  cloudURL: CloudKeys
   inCollections: BasicEntity[]
   artist: EntityBasicDTO
   genre: EntityBasicDTO
@@ -20,6 +22,7 @@ export class AlbumItemDTO {
     this.genre = new EntityBasicDTO(album.genre._id, album.genre.title)
     this.period = new EntityBasicDTO(album.period._id, album.period.title)
     this.coverURL = albumCover
+    this.cloudURL = album.cloudURL
   }
 }
 

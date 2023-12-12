@@ -20,15 +20,23 @@ import radioRoutes from './routes/radio.routes'
 import backupRoutes from './routes/backup.routes'
 import synchronizeRoutes from './routes/sync.routes'
 import cloudRoutes from './routes/cloud.routes'
-import { cloudApiGetter } from './clouds'
+import { CloudApi, CloudKeys } from './types/Cloud'
+import { PCloudApi } from './clouds/cloud.pcloud'
+import { YandexCloudApi } from './clouds/cloud.yandex'
 
 dotenv.config()
 
 const app = express()
 const PORT = 3001
 export const rootDir = path.resolve(__dirname, '../')
+export const cloudRootPath = `${process.env['COLLECTION_ROOT']}/Collection`
 
-export const Cloud = cloudApiGetter(process.env['CURRENT_API'] || '')
+export const cloudsMap = new Map<CloudKeys, CloudApi>([
+  ['https://eapi.pcloud.com', new PCloudApi(cloudRootPath)],
+  ['https://cloud-api.yandex.net', new YandexCloudApi(cloudRootPath)]
+])
+
+export const getCloudApi = (url: CloudKeys) => cloudsMap.get(url) as CloudApi
 
 mongoose.connect(process.env['MONGO_URI'] as string)
   .then(() => console.log('MongoDB connected'))

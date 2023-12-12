@@ -1,11 +1,12 @@
 import { Document, Types } from 'mongoose'
 import { BasicEntity } from './common.types'
-import { CloudFile } from './Cloud'
+import { CloudFile, CloudKeys } from './Cloud'
 import { AlbumModel } from './album.types'
 
 export type TrackModel = {
   title: string
   fileName: string
+  cloudURL: CloudKeys
   dateCreated: Date
   created: Date
   modified: Date

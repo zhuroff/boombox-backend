@@ -13,6 +13,11 @@ const AlbumSchema = new Schema({
     required: true
   },
 
+  cloudURL: {
+    type: String,
+    required: true
+  },
+
   artist: {
     type: Schema.Types.ObjectId,
     ref: 'artists',

@@ -1,10 +1,30 @@
-import { CloudLib } from '../lib/cloud.lib'
-import { Cloud } from '../'
+import axios, { AxiosError } from 'axios'
 import { DiscogsPayload } from '../types/album.types'
 import { DiscogsDTO } from '../dtos/discogs.dto'
-// import { PaginationDTO } from '../dtos/pagination.dto'
+import { DiscogsResponse } from '../types/discogs.types'
 
-class DiscogsServices {
+export default {
+  buildDiscogsLink(param: string) {
+    return encodeURI(
+      process.env['DISCOGS_DOMAIN'] +
+      '/database/search?' + param +
+      '&key=' + process.env['DISCOGS_KEY'] +
+      '&secret=' + process.env['DISCOGS_SECRET']
+    )
+  },
+
+  async getDiscogsList(query: string) {
+    try {
+      const response = await axios.get<DiscogsResponse>(this.buildDiscogsLink(query))
+      return response.data
+    } catch (error: unknown | AxiosError) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.message)
+      }
+      throw new Error('Unknown error')
+    }
+  },
+
   async getList({ artist, album, page }: DiscogsPayload, results: DiscogsDTO[] = []): Promise<DiscogsDTO[]> {
     const discogsUrl = String(
       'type=release' +
@@ -13,7 +33,7 @@ class DiscogsServices {
       '&sort=year&sort_order=asc&per_page=500' +
       '&page=' + page
     )
-    const response = await Cloud.getDiscogsList(discogsUrl)
+    const response = await this.getDiscogsList(discogsUrl)
 
     results.push(...response.results.reduce<DiscogsDTO[]>((acc, next) => {
       const releaseAlbum = next.title.slice(next.title.indexOf(' - ') + 3)?.trim()
@@ -30,11 +50,4 @@ class DiscogsServices {
       return results
     }
   }
-
-  async single(id: number) {
-    const response = await CloudLib.get(encodeURI(CloudLib.discogsReleaseLink(id)))
-    return response.data
-  }
 }
-
-export default new DiscogsServices()
