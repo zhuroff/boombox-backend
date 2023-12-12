@@ -1,6 +1,6 @@
 import axios, {AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios';
 import { CloudEntityDTO } from '../dtos/cloud.dto';
-import { Cloud, YandexCloudEntity, YandexCloudResponse } from '../types/Cloud';
+import { Cloud, YandexCloudEntity, YandexCloudResponse } from '../types/cloud.types';
 
 export class YandexCloudApi implements Cloud {
   #client: AxiosInstance

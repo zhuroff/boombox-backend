@@ -28,7 +28,7 @@ export type CloudFolderItem = CloudFolder | CloudFile
 
 // NEW
 export type CloudApi = PCloudApi | YandexCloudApi
-export type CloudKeys = 'https://eapi.pcloud.com' | 'https://cloud-api.yandex.net'
+export type CloudKeys = 'https://eapi.pcloud.com' | 'https://cloud-api.yandex.net' | 'https://www.googleapis.com'
 export type CloudFileTypes = 'audio' | 'video' | 'image' | 'file'
 
 export type CloudCommonEntity = {

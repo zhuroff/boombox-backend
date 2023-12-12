@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { CloudEntityDTO } from 'src/dtos/cloud.dto'
 
-const utils = {
+export default {
   sanitizeURL: (path: string, subPath = '') => (
     encodeURIComponent(
       path
@@ -19,6 +19,11 @@ const utils = {
       acc += index === 0 ? next : `${next.charAt(0).toUpperCase()}${next.slice(1)}`
     ), '')
   ),
+
+  isAlbumFolderNameValid: (name: string) => {
+    const pattern = /^[^\[]+ \[(\d{4})\] [^\#]+ #\S.*$/
+    return pattern.test(name)
+  },
 
   fileFilter: (data: CloudEntityDTO[], types: Set<string>): Required<CloudEntityDTO>[] => (
     data.reduce<Required<CloudEntityDTO>[]>((acc, next) => {
@@ -94,5 +99,3 @@ const utils = {
     'application/octet-stream'
   ])
 }
-
-export default utils

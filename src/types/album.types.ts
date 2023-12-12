@@ -2,7 +2,7 @@ import { Document, Types } from 'mongoose'
 import { BasicEntity } from './common.types'
 import { CloudEntityDTO } from '../dtos/cloud.dto'
 import { TrackResponse } from './Track'
-import { CloudKeys } from './Cloud'
+import { CloudKeys } from './cloud.types'
 
 export type ExcludedAlbumFields = 'artist' | 'genre' | 'period' | 'inCollections' | 'tracks'
 

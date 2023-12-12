@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios'
 import utils from '../utils'
+import { Cloud, PCloudEntity, PCloudResponseError, PCloudFileResponse, PCloudResponse, CloudFileTypes } from '../types/cloud.types'
 import { CloudEntityDTO } from '../dtos/cloud.dto'
-import { Cloud, PCloudEntity, PCloudResponseError, PCloudFileResponse, PCloudResponse, CloudFileTypes } from '../types/Cloud'
 
 export class PCloudApi implements Cloud {
   #client: AxiosInstance

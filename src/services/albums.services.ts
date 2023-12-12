@@ -6,7 +6,7 @@ import { Artist } from '../models/artist.model'
 import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
 import { RequestFilter } from '../types/ReqRes'
-import { AlbumResponse, AlbumShape } from '../types/album.types'
+import { AlbumResponse, AlbumShape, AlbumDocument } from '../types/album.types'
 import { AlbumItemDTO, AlbumSingleDTO } from '../dtos/album.dto'
 import { PaginationDTO } from '../dtos/pagination.dto'
 import { TrackDTO } from '../dtos/track.dto'
@@ -92,6 +92,16 @@ export default {
     }
 
     return await Album.findByIdAndDelete(_id)
+  },
+
+  async updateAlbums(albums: AlbumDocument[]) {
+    return await Promise.all(albums.map(async (album) => (
+      await Album.findOneAndUpdate(
+        { _id: album._id },
+        { $set: { modified: new Date(), cloudURL: album.cloudURL } },
+        { new: true }
+      )
+    )))
   },
 
   async getCoveredAlbums(docs: AlbumResponse[]) {

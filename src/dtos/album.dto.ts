@@ -1,4 +1,4 @@
-import { CloudKeys } from '../types/Cloud'
+import { CloudKeys } from '../types/cloud.types'
 import { AlbumResponse } from '../types/album.types'
 import { BasicEntity } from '../types/common.types'
 import { EntityBasicDTO } from './basic.dto'

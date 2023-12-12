@@ -1,5 +1,5 @@
 import utils from '../utils'
-import { CloudKeys, UnionCloudsEntity } from '../types/Cloud'
+import { CloudKeys, UnionCloudsEntity } from '../types/cloud.types'
 
 export class CloudEntityDTO {
   id: string

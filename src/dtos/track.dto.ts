@@ -1,4 +1,4 @@
-import { CloudKeys } from '../types/Cloud'
+import { CloudKeys } from '../types/cloud.types'
 import { AlbumModel } from '../types/album.types'
 import { BasicEntity } from '../types/common.types'
 import { TrackResponse } from '../types/Track'

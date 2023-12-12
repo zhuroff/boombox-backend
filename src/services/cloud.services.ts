@@ -1,4 +1,4 @@
-import { CloudKeys, CloudApi } from '../types/Cloud'
+import { CloudKeys, CloudApi } from '../types/cloud.types'
 import { CloudEntityDTO } from '../dtos/cloud.dto'
 import { getCloudApi } from '..'
 import utils from '../utils'

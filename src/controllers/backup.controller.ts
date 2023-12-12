@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import backupServices from '../services/backup.services'
 
 export default {
-  async save(req: Request, res: Response) {
+  async save(_: Request, res: Response) {
     try {
       const response = await backupServices.save()
       res.status(201).json(response)
@@ -11,7 +11,7 @@ export default {
     }
   },
 
-  get(req: Request, res: Response) {
+  get(_: Request, res: Response) {
     try {
       const response = backupServices.get()
       res.json(response)

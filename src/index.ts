@@ -20,7 +20,7 @@ import radioRoutes from './routes/radio.routes'
 import backupRoutes from './routes/backup.routes'
 import synchronizeRoutes from './routes/sync.routes'
 import cloudRoutes from './routes/cloud.routes'
-import { CloudApi, CloudKeys } from './types/Cloud'
+import { CloudApi, CloudKeys } from './types/cloud.types'
 import { PCloudApi } from './clouds/cloud.pcloud'
 import { YandexCloudApi } from './clouds/cloud.yandex'
 
