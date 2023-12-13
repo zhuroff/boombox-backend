@@ -25,6 +25,11 @@ export default {
     return pattern.test(name)
   },
 
+  isTrackFilenameValid: (name: string) => {
+    const pattern = /^\d+\.\s.*\.(mp3|flac|ogg|aac|aiff|ape|mqa|wav|wma|alac)$/
+    return pattern.test(name)
+  },
+
   fileFilter: (data: CloudEntityDTO[], types: Set<string>): Required<CloudEntityDTO>[] => (
     data.reduce<Required<CloudEntityDTO>[]>((acc, next) => {
       if (next.mimeType && types.has(next.mimeType)) {

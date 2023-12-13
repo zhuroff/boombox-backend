@@ -12,14 +12,38 @@ export default {
     try {
       const albumShapes = await Promise.all(albums.map(async (album) => {
         if (!utils.isAlbumFolderNameValid(album.title)) {
-          invalidFolders.push({ album: album.title, cloud: album.cloudURL })
+          invalidFolders.push({
+            album: album.title,
+            cloud: album.cloudURL,
+            reason: 'invalid_folder_name'
+          })
           return Promise.resolve(null)
         } else {
           return await albumsServices.createShape(album)
         }
       }))
 
-      const validShapes = albumShapes.filter((el): el is AlbumShape => el !== null)
+      const validShapes = albumShapes.reduce<AlbumShape[]>((acc, next) => {
+        if (next)  {
+          if (!next.tracks?.length) {
+            invalidFolders.push({
+              album: next.title,
+              cloud: next.cloudURL,
+              reason: 'no_tracks'
+            })
+          } else if (!next.tracks.every(({ title }) => utils.isTrackFilenameValid(title))) {
+            invalidFolders.push({
+              album: next.title,
+              cloud: next.cloudURL,
+              reason: 'invalid_tracks_names'
+            })
+          } else {
+            acc.push(next)
+          }
+        }
+
+        return acc
+      }, [])
 
       const savedAlbums = await Promise.all(validShapes.map(async (shape) => (
         await albumsServices.createAlbum(shape)
@@ -27,7 +51,7 @@ export default {
 
       return {
         added: savedAlbums.length,
-        invalid: invalidFolders,
+        invalid: invalidFolders.length > 0 ? invalidFolders : 0,
         updated: 0,
         deleted: 0
       }

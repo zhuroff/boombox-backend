@@ -7,8 +7,8 @@ import { Embedded } from '../models/embedded.model'
 import { AlbumResponse } from '../types/album.types'
 import { EmbeddedResponse } from '../types/Embedded'
 import { AlbumItemDTO } from '../dtos/album.dto'
-// import { Cloud } from '..'
-// import utils from '../utils'
+import { getCloudApi } from '..'
+import utils from '../utils'
 
 export default {
   async getList<T>(Model: PaginateModel<T>, req: Request) {
@@ -48,7 +48,7 @@ export default {
     const categorySingle: CategoryResponse = await Model.findById(req.params['id'])
       .populate<AlbumResponse[]>({
         path: 'albums',
-        select: ['title', 'folderName'],
+        select: ['title', 'folderName', 'cloudURL'],
         populate: [
           { path: 'artist', select: ['title', '_id'] },
           { path: 'genre', select: ['title', '_id'] },
@@ -67,11 +67,10 @@ export default {
       .lean()
 
     const coveredAlbumsRes = categorySingle.albums.map(async (album) => {
-      // const cover = await Cloud.getFile(
-      //   `${utils.sanitizeURL(album.folderName)}/cover.webp`,
-      //   'image'
-      // )
-      let cover
+      const cover = await getCloudApi(album.cloudURL).getFile(
+        `${utils.sanitizeURL(album.folderName)}/cover.webp`,
+        'image'
+      )
       return new AlbumItemDTO(album, cover || '')
     })
 

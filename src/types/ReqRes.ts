@@ -37,7 +37,6 @@ export interface SearchResult {
 }
 
 export interface SearchConfig {
-  title: string
   instance: PaginateModel<any> | Model<any>
   options: ProjectionType<Record<string, boolean>>
   populates?: PopulateOptions[]

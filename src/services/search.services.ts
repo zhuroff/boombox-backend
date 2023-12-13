@@ -19,7 +19,6 @@ const searchMap = new Map<SearchModelKey, SearchConfig>([
     'albums',
     {
       instance: Album,
-      title: 'Albums',
       options: {
         _id: true,
         title: true,
@@ -27,7 +26,8 @@ const searchMap = new Map<SearchModelKey, SearchConfig>([
         genre: true,
         albumCover: true,
         period: true,
-        folderName: true
+        folderName: true,
+        cloudURL: true
       },
       populates: [
         { path: 'artist', select: ['title'] },
@@ -40,7 +40,6 @@ const searchMap = new Map<SearchModelKey, SearchConfig>([
     'embedded',
     {
       instance: Embedded,
-      title: 'Embedded',
       options: {
         _id: true,
         title: true,
@@ -59,7 +58,6 @@ const searchMap = new Map<SearchModelKey, SearchConfig>([
     'artists',
     {
       instance: Artist,
-      title: 'Artists',
       options: { _id: true, title: true, avatar: true }
     }
   ],
@@ -67,7 +65,6 @@ const searchMap = new Map<SearchModelKey, SearchConfig>([
     'genres',
     {
       instance: Genre,
-      title: 'Genres',
       options: { _id: true, title: true, avatar: true }
     }
   ],
@@ -75,7 +72,6 @@ const searchMap = new Map<SearchModelKey, SearchConfig>([
     'periods',
     {
       instance: Period,
-      title: 'Years',
       options: { _id: true, title: true, avatar: true }
     }
   ],
@@ -83,7 +79,6 @@ const searchMap = new Map<SearchModelKey, SearchConfig>([
     'collections',
     {
       instance: Collection,
-      title: 'Collections',
       options: { _id: true, title: true, avatar: true }
     }
   ],
@@ -91,7 +86,6 @@ const searchMap = new Map<SearchModelKey, SearchConfig>([
     'playlists',
     {
       instance: Playlist,
-      title: 'Playlists',
       options: { _id: true, title: true, avatar: true }
     }
   ],
@@ -99,10 +93,9 @@ const searchMap = new Map<SearchModelKey, SearchConfig>([
     'tracks',
     {
       instance: Track,
-      title: 'Tracks',
-      options: { _id: true, title: true, path: true, duration: true },
+      options: { _id: true, title: true, path: true, duration: true, cloudURL: true },
       populates: [
-        { path: 'inAlbum', select: ['title', 'folderName'], populate: { path: 'period', model: Period, select: ['title'] } },
+        { path: 'inAlbum', select: ['title', 'folderName', 'cloudURL'], populate: { path: 'period', model: Period, select: ['title'] } },
         { path: 'artist', select: ['title'] },
       ]
     }

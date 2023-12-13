@@ -6,18 +6,18 @@ import { CloudEntityDTO } from '../dtos/cloud.dto'
 import albumController from './albums.controller'
 import albumsServices from '../services/albums.services'
 
-export default {
+export const syncController = {
   async dbUpdateSplitter(
     cloudFolders: CloudEntityDTO[],
     dbFolders: Array<AlbumDocument & { _id: Types.ObjectId }>
   ) {
     if (!dbFolders.length && !cloudFolders.length) {
-      return Promise.resolve({ added: 0, updated: 0, deleted: 0, invalid: null })
+      return Promise.resolve({ added: 0, updated: 0, deleted: 0, invalid: 0 })
     }
 
     if (!cloudFolders.length && dbFolders.length) {
       const deleted = await albumController.remove(dbFolders.map(({ _id }) => _id))
-      return { added: 0, updated: 0, deleted: deleted.length, invalid: null }
+      return { added: 0, updated: 0, deleted: deleted.length, invalid: 0 }
     }
 
     if (!dbFolders.length && cloudFolders.length) {
@@ -42,7 +42,7 @@ export default {
       }
     })
 
-    const addedAlbums = albumsToAdd.length ? await albumController.create(albumsToAdd) : []
+    const addedAlbums = albumsToAdd.length ? await albumController.create(albumsToAdd) : { added: 0, invalid: 0 }
     const fixedAlbums = albumsToFix.length ? await albumController.update(albumsToFix) : []
     const deletedAlbums = dbFoldersMap.size ? await albumController.remove(
       [...dbFoldersMap].reduce<Types.ObjectId[]>((acc, [_, next]) => {
@@ -65,7 +65,7 @@ export default {
       }))
       const cloudFolders = cloudFoldersArr.flatMap((el) => el ?? [])
       const dbFolders = await albumsServices.getAlbumDocs()
-      const result = await this.dbUpdateSplitter(cloudFolders, dbFolders)
+      const result = await syncController.dbUpdateSplitter(cloudFolders, dbFolders)
       res.status(200).json(result)
     } catch (error) {
       if (error instanceof Error) {

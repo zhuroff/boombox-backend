@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import controller from '../controllers/sync.controller'
+import { syncController as controller } from '../controllers/sync.controller'
 
 const router = Router()
 
