@@ -8,6 +8,7 @@ export class AlbumItemDTO {
   _id: string
   title: string
   cloudURL: CloudKeys
+  folderName: string
   inCollections: BasicEntity[]
   artist: EntityBasicDTO
   genre: EntityBasicDTO
@@ -23,16 +24,15 @@ export class AlbumItemDTO {
     this.period = new EntityBasicDTO(album.period._id, album.period.title)
     this.coverURL = albumCover
     this.cloudURL = album.cloudURL
+    this.folderName = album.folderName
   }
 }
 
 export class AlbumSingleDTO extends AlbumItemDTO {
   tracks: TrackDTO[]
-  folderName: string
 
   constructor(album: AlbumResponse, tracks: TrackDTO[], albumCover?: string) {
     super(album, albumCover)
     this.tracks = tracks
-    this.folderName = album.folderName
   }
 }

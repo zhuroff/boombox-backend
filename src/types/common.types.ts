@@ -26,7 +26,7 @@ export interface CompilationCreatePayload {
 
 export interface CompilationUpdatePayload {
   entityID: string
-  compilationID: string
+  gatheringID: string
   isInList: boolean
   order: number
 }

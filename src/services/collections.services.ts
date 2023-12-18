@@ -148,15 +148,15 @@ class CollectionsServices {
     return result
   }
 
-  async update({ entityID, compilationID, isInList, order }: CompilationUpdatePayload) {
-    const query = { _id: compilationID }
+  async update({ entityID, gatheringID, isInList, order }: CompilationUpdatePayload) {
+    const query = { _id: gatheringID }
     const update = isInList
       ? { $pull: { albums: { album: entityID } } }
       : { $push: { albums: { album: entityID, order } } }
     const options = { new: true }
 
     await Collection.findOneAndUpdate(query, update, options)
-    await this.updateAlbum({ listID: compilationID, itemID: entityID, inList: isInList })
+    await this.updateAlbum({ listID: gatheringID, itemID: entityID, inList: isInList })
 
     return { message: isInList ? 'collections.removed' : 'collections.added' }
   }

@@ -47,11 +47,17 @@ export default {
   async getLyricsExternal(query: string) {
     const searches = await GClient.songs.search(query)
     const resultArray = searches.map(async (el) => {
+      let lyrics = ''
+      try {
+        lyrics = await el.lyrics()
+      } catch (error) {
+        console.error(error)
+      }
       const item: TrackSearchPayload = {
         title: el.title,
         thumbnail: el.thumbnail,
         artist: el.artist.name,
-        lyrics: await el.lyrics()
+        lyrics
       }
 
       return item

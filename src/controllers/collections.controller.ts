@@ -25,10 +25,10 @@ export class CollectionsController {
   }
 
   static async update(req: Request, res: Response, next: (error: unknown) => void) {
-    const { entityID, compilationID, isInList, order } = req.body
+    const { entityID, gatheringID, isInList, order } = req.body
 
     try {
-      const response = await collectionsServices.update({ entityID, compilationID, isInList, order })
+      const response = await collectionsServices.update({ entityID, gatheringID, isInList, order })
       res.status(201).json(response)
     } catch (error) {
       return next(error)
