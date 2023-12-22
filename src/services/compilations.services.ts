@@ -1,13 +1,9 @@
 import { Types } from 'mongoose'
-import { PlaylistItemDTO } from '../dtos/playlist.dto'
-import { Playlist } from '../models/playlist.model'
+import { CompilationDTO } from '../dto/compilation.dto'
+import { Compilation, CompilationDocument } from '../models/compilation.model'
 import { Track } from '../models/track.model'
-// import { CollectionReorder } from '../types/collection.types'
-import { PlayListCreatePayload, PlayListUpdatePayload, PlaylistResponse } from '../types/Playlist'
-// import { CloudLib } from '../lib/cloud.lib'
-// import { CloudFile } from '../types/Cloud'
-// import { TrackDTO } from '../dtos/track.dto'
-import filesServices from '../services/files.services'
+import { PlayListCreatePayload, PlayListUpdatePayload } from '../types/compilation.types'
+import filesServices from './files.services'
 
 class PlaylistsServices {
   async create({ title, track }: PlayListCreatePayload) {
@@ -16,7 +12,7 @@ class PlaylistsServices {
       tracks: [{ track, order: 1 }]
     }
 
-    const newPlaylist = new Playlist(payload)
+    const newPlaylist = new Compilation(payload)
 
     await newPlaylist.save()
     await this.updateTrack(newPlaylist._id, track, false)
@@ -31,7 +27,7 @@ class PlaylistsServices {
       : { $push: { tracks: { track, order } } }
     const options = { new: true }
 
-    await Playlist.findOneAndUpdate(query, update, options)
+    await Compilation.findOneAndUpdate(query, update, options)
     await this.updateTrack(_id, track, inList)
 
     return {
@@ -43,7 +39,7 @@ class PlaylistsServices {
 
   async cleanPlaylist(playlists: Map<string, string[]>) {
     return await Promise.all(Array.from(playlists).map(async ([playlistId, trackIds]) => (
-      await Playlist.updateMany(
+      await Compilation.updateMany(
         { _id: playlistId },
         { $pull: { tracks: { track: { $in: trackIds } } } }
       )
@@ -52,17 +48,17 @@ class PlaylistsServices {
 
   async getAllPlaylists() {
     const config = { title: true, tracks: true, avatar: true }
-    const response = await Playlist.find({}, config).sort({ title: 1 }).exec()
+    const response = await Compilation.find({}, config).sort({ title: 1 }).exec()
 
     if (response) {
-      return response.map((el) => new PlaylistItemDTO(el))
+      return response.map((el) => new CompilationDTO(el))
     }
 
     throw new Error('Incorrect request options')
   }
 
   async single(id: string) {
-    const dbPlaylist: PlaylistResponse = await Playlist.findById(id)
+    const dbPlaylist: CompilationDocument = await Compilation.findById(id)
       .populate({
         path: 'tracks.track',
         select: ['title', 'listened', 'duration', 'path'],
@@ -107,7 +103,7 @@ class PlaylistsServices {
   }
 
   async remove(_id: string) {
-    const response = await Playlist.findByIdAndDelete({ _id })
+    const response = await Compilation.findByIdAndDelete({ _id })
     const tracks = response?.tracks
     const images = [response?.poster, response?.avatar]
       .reduce<string[]>((acc, next) => {
@@ -127,11 +123,11 @@ class PlaylistsServices {
       filesServices.remove(images)
     }
 
-    return { message: 'Playlist was successfully deleted' }
+    return { message: 'Compilation was successfully deleted' }
   }
 
   async reorder({ oldOrder, newOrder }: any /* CollectionReorder */, _id: string) {
-    const targetPlaylist = await Playlist.findById(_id).exec()
+    const targetPlaylist = await Compilation.findById(_id).exec()
 
     if (targetPlaylist) {
       targetPlaylist.tracks.splice(
@@ -143,7 +139,7 @@ class PlaylistsServices {
         el.order = index + 1
       })
 
-      await Playlist.updateOne({ _id }, { $set: { tracks: targetPlaylist.tracks } })
+      await Compilation.updateOne({ _id }, { $set: { tracks: targetPlaylist.tracks } })
 
       return { message: 'Order successfully updated' }
     }
@@ -155,7 +151,7 @@ class PlaylistsServices {
     const query = { _id }
     const update = { title }
 
-    await Playlist.findOneAndUpdate(query, update)
+    await Compilation.findOneAndUpdate(query, update)
 
     return { message: 'Playlist title was successfully updated' }
   }
@@ -163,8 +159,8 @@ class PlaylistsServices {
   async updateTrack(listID: Types.ObjectId | string, trackID: Types.ObjectId | string, inList: boolean) {
     const query = { _id: trackID }
     const update = inList
-      ? { $pull: { inPlaylists: listID } }
-      : { $push: { inPlaylists: listID } }
+      ? { $pull: { inCompilations: listID } }
+      : { $push: { inCompilations: listID } }
     const options = { new: true }
 
     await Track.findOneAndUpdate(query, update, options)

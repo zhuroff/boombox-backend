@@ -1,10 +1,10 @@
 import { Radio } from '../models/radio.model'
-import { RadioBrowserStationResponse, RadioRequestConfig, RadioSavePayload } from '../types/Radio'
-import { RadioStationDTO } from '../dtos/radio.dto'
+import { RadioBrowserStationResponse, RadioRequestConfig, RadioSavePayload } from '../types/radio.types'
+import { RadioStationDTO } from '../dto/radio.dto'
 // @ts-ignore
 import RadioBrowser from 'radio-browser'
 
-class RadioServices {
+export default {
   async savedStations() {
     const response = await Radio.find({}).sort({ name: -1 }).exec()
     const fetchingStations = response.map(async (el) => {
@@ -24,8 +24,7 @@ class RadioServices {
     }
 
     throw new Error('Incorrect request options')
-  }
-
+  },
   async allStations({ genre, offset }: RadioRequestConfig) {
     const filter = {
       by: 'tag',
@@ -43,16 +42,14 @@ class RadioServices {
     }
 
     throw new Error('Incorrect request options')
-  }
-
+  },
   async saveStation({ stationuuid, name }: RadioSavePayload) {
     const newStation = new Radio({ stationuuid, name })
 
     await newStation.save()
 
     return { message: 'Station was successfully saved' }
-  }
-
+  },
   async deleteStation(stationuuid: string) {
     const response = await Radio.findOneAndDelete({ stationuuid })
 
@@ -63,5 +60,3 @@ class RadioServices {
     throw new Error('Incorrect request options')
   }
 }
-
-export default new RadioServices()

@@ -1,12 +1,12 @@
-import { RadioBrowserStation, RadioBrowserStationResponse } from '../types/Radio'
+import { RadioBrowserStation, RadioBrowserStationResponse } from '../types/radio.types'
 
 export class RadioStationDTO implements RadioBrowserStation {
-  stationuuid
-  name
-  url
-  url_resolved
-  country
-  tags
+  stationuuid: string
+  name: string
+  url: string
+  url_resolved: string
+  country: string
+  tags: string
 
   constructor(station: RadioBrowserStationResponse) {
     this.stationuuid = station.stationuuid

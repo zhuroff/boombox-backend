@@ -1,11 +1,11 @@
-import { CategoryDocument, CategoryResponse } from '../types/category.types'
-import { EmbeddedResponse } from '../types/Embedded'
+import { EmbeddedDocument } from '../models/embedded.model'
+import { CategoryDocument } from '../types/common.types'
 import { AlbumItemDTO } from './album.dto'
 import { EntityBasicDTO } from './basic.dto'
 
 export class CategoryItemDTO extends EntityBasicDTO {
   albums: number
-  avatar: string
+  avatar?: string
 
   #calcAlbumsLength(category: CategoryDocument) {
     return (
@@ -25,13 +25,13 @@ export class CategoryPageDTO extends EntityBasicDTO {
   poster?: string
   avatar?: string
   albums: AlbumItemDTO[]
-  embeddedAlbums: EmbeddedResponse[]
+  embeddedAlbums?: EmbeddedDocument[]
 
-  constructor(category: CategoryResponse, albums: AlbumItemDTO[]) {
+  constructor(category: CategoryDocument) {
     super(category._id, category.title)
     this.poster = category.poster
     this.avatar = category.avatar
-    this.albums = albums
+    this.albums = category.albums.map((album) => new AlbumItemDTO(album))
     this.embeddedAlbums = category.embeddedAlbums
   }
 }

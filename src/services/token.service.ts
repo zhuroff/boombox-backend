@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 import { Types } from 'mongoose'
 import { Token } from '../models/token.model'
-import { UserDTO } from '../dtos/user.dto'
+import { UserDTO } from '../dto/user.dto'
 
 class TokenService {
   generateTokens(payload: UserDTO) {

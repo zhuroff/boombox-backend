@@ -1,9 +1,9 @@
 import { Model, PaginateModel, PopulateOptions, ProjectionType } from 'mongoose'
-import { CategoryResponse } from './category.types'
-import { AlbumResponse } from './album.types'
-import { ModelKeys } from './common.types'
+import { AlbumDocument } from '../models/album.model'
+import { CategoryDocument, ModelKeys } from './common.types'
+import { UserDTO } from '../dto/user.dto'
 
-export interface Pagination{
+export interface Pagination {
   totalDocs: number
   totalPages: number
   page?: number
@@ -33,11 +33,17 @@ export type SearchParams = Record<'$text', { '$search': string }>
 
 export interface SearchResult {
   key: SearchModelKey
-  data: Partial<AlbumResponse | CategoryResponse>[]
+  data: Partial<AlbumDocument | CategoryDocument>[]
 }
 
 export interface SearchConfig {
   instance: PaginateModel<any> | Model<any>
   options: ProjectionType<Record<string, boolean>>
   populates?: PopulateOptions[]
+}
+
+export interface UserResponse {
+  user: UserDTO
+  accessToken: string
+  refreshToken: string
 }

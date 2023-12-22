@@ -1,17 +1,15 @@
 import { Request } from 'express'
 import { PaginateModel, PaginateOptions, Types } from 'mongoose'
-import { CategoryResponse, CategoryDocument } from '../types/category.types'
-import { CategoryItemDTO, CategoryPageDTO } from '../dtos/category.dto'
-import { PaginationDTO } from '../dtos/pagination.dto'
+import { AlbumDocument } from '../models/album.model'
 import { Embedded } from '../models/embedded.model'
-import { AlbumResponse } from '../types/album.types'
-import { EmbeddedResponse } from '../types/Embedded'
-import { AlbumItemDTO } from '../dtos/album.dto'
+import { CategoryDocument } from '../types/common.types'
+import { CategoryItemDTO, CategoryPageDTO } from '../dto/category.dto'
+import { PaginationDTO } from '../dto/pagination.dto'
 import { getCloudApi } from '..'
 import utils from '../utils'
 
 export default {
-  async getList<T>(Model: PaginateModel<T>, req: Request) {
+  async getList(Model: PaginateModel<CategoryDocument>, req: Request) {
     const populates = [
       { path: 'albums', select: ['_id'] },
       { path: 'embeddedAlbums', select: ['_id'], model: Embedded }
@@ -35,18 +33,16 @@ export default {
       const { totalDocs, totalPages, page } = dbList
       const pagination = new PaginationDTO({ totalDocs, totalPages, page })
 
-      const dbDocs = dbList.docs as unknown as CategoryDocument[]
-      const docs = dbDocs.map((category) => new CategoryItemDTO(category))
+      const docs = dbList.docs.map((category) => new CategoryItemDTO(category))
 
       return { docs, pagination }
     }
 
     throw new Error()
   },
-
-  async single<T>(Model: PaginateModel<T>, req: Request) {
-    const categorySingle: CategoryResponse = await Model.findById(req.params['id'])
-      .populate<AlbumResponse[]>({
+  async single(Model: PaginateModel<CategoryDocument>, req: Request) {
+    const categorySingle = await Model.findById(req.params['id'])
+      .populate({
         path: 'albums',
         select: ['title', 'folderName', 'cloudURL'],
         populate: [
@@ -55,7 +51,7 @@ export default {
           { path: 'period', select: ['title', '_id'] }
         ]
       })
-      .populate<EmbeddedResponse[]>({
+      .populate({
         path: 'embeddedAlbums',
         select: ['title', 'frame'],
         populate: [
@@ -66,19 +62,22 @@ export default {
       })
       .lean()
 
-    const coveredAlbumsRes = categorySingle.albums.map(async (album) => {
+    if (!categorySingle) {
+      throw new Error('Category not found')
+    }
+
+    const coveredAlbumsRes = categorySingle.albums.map(async (album): Promise<AlbumDocument> => {
       const cover = await getCloudApi(album.cloudURL).getFile(
         `${utils.sanitizeURL(album.folderName)}/cover.webp`,
         'image'
       )
-      return new AlbumItemDTO(album, cover || '')
+      return { ...album, cover }
     })
 
     const coveredAlbums = await Promise.all(coveredAlbumsRes)
 
-    return new CategoryPageDTO(categorySingle, coveredAlbums)
+    return new CategoryPageDTO({ ...categorySingle, albums: coveredAlbums })
   },
-
   async create(Model: PaginateModel<CategoryDocument>, title: string, _id?: Types.ObjectId) {
     const query = { title }
     const update = { $push: { albums: _id } }
@@ -86,12 +85,10 @@ export default {
 
     return await Model.findOneAndUpdate(query, update, options)
   },
-
   async remove<T>(Model: PaginateModel<T>, _id: string) {
     await Model.deleteOne({ _id })
     return { message: 'Category successfully deleted' }
   },
-
   async cleanAlbums(Model: PaginateModel<CategoryDocument>, categoryId: Types.ObjectId, albumId: Types.ObjectId | string) {
     const query = { _id: categoryId }
     const update = { $pull: { albums: albumId } }

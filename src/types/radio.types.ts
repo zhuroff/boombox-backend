@@ -1,12 +1,3 @@
-import { Types } from 'mongoose'
-
-export type RadioModel = {
-  _id: Types.ObjectId
-  name: string
-  stationuuid: string
-  dateCreated: Date
-}
-
 export type RadioRequestConfig = {
   genre: string
   offset: number

@@ -1,13 +1,12 @@
 import { Request } from 'express'
 import { validationResult } from 'express-validator'
-import { User } from '../models/user.model'
-import { UserDTO } from '../dtos/user.dto'
-import { UserDocument, UserResponse } from '../types/User'
+import { User, UserDocument } from '../models/user.model'
+import { UserDTO } from '../dto/user.dto'
 import bcrypt from 'bcrypt'
 import tokenService from './token.service'
 
-class UserService {
-  async registration(req: Request): Promise<UserResponse> {
+export default {
+  async registration(req: Request) {
     const errors = validationResult(req)
 
     if (!errors.isEmpty()) {
@@ -29,9 +28,8 @@ class UserService {
     await tokenService.saveToken(userDTO.id, tokens.refreshToken)
 
     return { ...tokens, user: userDTO }
-  }
-
-  async login(req: Request): Promise<UserResponse> {
+  },
+  async login(req: Request) {
     const { email, password }: Pick<UserDocument, 'email' | 'password'> = req.body
     const dbUser = await User.findOne({ email })
 
@@ -51,9 +49,8 @@ class UserService {
     await tokenService.saveToken(userDTO.id, tokens.refreshToken)
 
     return { ...tokens, user: userDTO }
-  }
-
-  async refresh(req: Request): Promise<UserResponse> {
+  },
+  async refresh(req: Request) {
     const { refreshToken } = req.cookies
 
     if (!refreshToken) {
@@ -81,5 +78,3 @@ class UserService {
     return { ...tokens, user: userDTO }
   }
 }
-
-export default new UserService()

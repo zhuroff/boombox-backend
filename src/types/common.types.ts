@@ -1,4 +1,7 @@
 import { Types } from 'mongoose'
+import { ArtistDocument } from '../models/artist.model'
+import { GenreDocument } from '../models/genre.model'
+import { PeriodDocument } from '../models/period.model'
 
 export type ModelKeys =
   | 'albums'
@@ -30,3 +33,5 @@ export interface CompilationUpdatePayload {
   isInList: boolean
   order: number
 }
+
+export type CategoryDocument = ArtistDocument | GenreDocument | PeriodDocument

@@ -1,3 +1,9 @@
+export interface DiscogsPayload {
+  artist: string
+  album: string
+  page: number
+}
+
 export type DiscorsResponseItem = {
   barcode: string[]
   catno: string

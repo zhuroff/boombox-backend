@@ -1,5 +1,4 @@
-import { CloudKeys } from '../types/cloud.types'
-import { AlbumResponse } from '../types/album.types'
+import { AlbumDocument } from '../models/album.model'
 import { BasicEntity } from '../types/common.types'
 import { EntityBasicDTO } from './basic.dto'
 import { TrackDTO } from './track.dto'
@@ -7,7 +6,7 @@ import { TrackDTO } from './track.dto'
 export class AlbumItemDTO {
   _id: string
   title: string
-  cloudURL: CloudKeys
+  cloudURL: string
   folderName: string
   inCollections: BasicEntity[]
   artist: EntityBasicDTO
@@ -15,24 +14,26 @@ export class AlbumItemDTO {
   period: EntityBasicDTO
   coverURL?: string
 
-  constructor(album: AlbumResponse, albumCover?: string) {
-    this._id = album._id
+  constructor(album: AlbumDocument, albumCover?: string) {
+    this._id = album._id.toString()
     this.title = album.title
-    this.inCollections = album.inCollections
     this.artist = new EntityBasicDTO(album.artist._id, album.artist.title)
     this.genre = new EntityBasicDTO(album.genre._id, album.genre.title)
     this.period = new EntityBasicDTO(album.period._id, album.period.title)
+    this.inCollections = album.inCollections.map((collection) => (
+      new EntityBasicDTO(collection._id, collection.title)
+    ))
     this.coverURL = albumCover
     this.cloudURL = album.cloudURL
     this.folderName = album.folderName
   }
 }
 
-export class AlbumSingleDTO extends AlbumItemDTO {
+export class AlbumPageDTO extends AlbumItemDTO {
   tracks: TrackDTO[]
 
-  constructor(album: AlbumResponse, tracks: TrackDTO[], albumCover?: string) {
+  constructor(album: AlbumDocument, albumCover?: string) {
     super(album, albumCover)
-    this.tracks = tracks
+    this.tracks = album.tracks.map((track) => new TrackDTO(track))
   }
 }

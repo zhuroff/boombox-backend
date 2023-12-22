@@ -1,56 +1,53 @@
-import { model, Schema, PaginateModel } from 'mongoose'
-import { AlbumDocument } from '../types/album.types'
+import { model, Schema, PaginateModel, InferSchemaType, Types } from 'mongoose'
+import { TrackDocument } from './track.model'
+import { ArtistDocument } from './artist.model'
+import { GenreDocument } from './genre.model'
+import { PeriodDocument } from './period.model'
+import { CollectionDocument } from './collection.model'
 import paginate from 'mongoose-paginate-v2'
 
-const AlbumSchema = new Schema({
+type AlbumObjectIdKeys = 'artist' | 'genre' | 'period' | 'tracks' | 'inCollections'
+
+const schema = new Schema({
   title: {
     type: String,
     required: true
   },
-
   folderName: {
     type: String,
     required: true
   },
-
   cloudURL: {
     type: String,
     required: true
   },
-
   artist: {
     type: Schema.Types.ObjectId,
     ref: 'artists',
     required: false
   },
-
   genre: {
     type: Schema.Types.ObjectId,
     ref: 'genres',
     required: false
   },
-
   period: {
     type: Schema.Types.ObjectId,
     ref: 'periods',
     required: false
   },
-
   dateCreated: {
     type: Date,
     default: Date.now
   },
-
   created: {
     type: Date,
     required: true
   },
-
   modified: {
     type: Date,
     required: true
   },
-
   tracks: [
     {
       type: Schema.Types.ObjectId,
@@ -58,7 +55,6 @@ const AlbumSchema = new Schema({
       required: false
     }
   ],
-
   inCollections: [
     {
       type: Schema.Types.ObjectId,
@@ -68,6 +64,19 @@ const AlbumSchema = new Schema({
   ]
 })
 
-AlbumSchema.index({ title: 'text' })
-AlbumSchema.plugin(paginate)
-export const Album = model<AlbumDocument, PaginateModel<AlbumDocument>>('albums', AlbumSchema)
+schema.index({ title: 'text' })
+schema.plugin(paginate)
+
+export interface AlbumDocument extends Omit<
+  InferSchemaType<typeof schema> & { _id: Types.ObjectId },
+  AlbumObjectIdKeys
+> {
+  cover?: string
+  artist: ArtistDocument
+  genre: GenreDocument
+  period: PeriodDocument
+  tracks: TrackDocument[]
+  inCollections: CollectionDocument[]
+}
+
+export const Album = model<AlbumDocument, PaginateModel<AlbumDocument>>('albums', schema)

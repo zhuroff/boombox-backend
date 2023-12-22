@@ -1,5 +1,4 @@
 // import { CloudFolder } from '../types/Cloud'
-import { TOYPage } from '../models/toy.model'
 // import utils from '../utils'
 
 class ToyServices {
@@ -27,8 +26,8 @@ class ToyServices {
   }
 
   async year(folderId: string) {
-    const response = await TOYPage.findOne({ folderId })
-    return response || { notExist: true }
+    // const response = await TOYPage.findOne({ folderId })
+    // return response || { notExist: true }
   }
 }
 

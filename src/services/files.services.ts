@@ -3,7 +3,7 @@ import { Model } from 'mongoose'
 import fs from 'fs'
 import path from 'path'
 
-class FilesServices {
+export default {
   async upload<T, U extends Model<T>>(Model: U, req: Request) {
     if (req.file) {
       const $set: Record<string, string> = {
@@ -15,7 +15,7 @@ class FilesServices {
       }, { $set }, { new: true })
     }
     throw new Error('File not found')
-  }
+  },
 
   remove(files: string[]) {
     files.map((link) => (
@@ -23,5 +23,3 @@ class FilesServices {
     ))
   }
 }
-
-export default new FilesServices()

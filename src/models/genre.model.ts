@@ -1,28 +1,25 @@
-import { model, Schema, PaginateModel } from 'mongoose'
-import { CategoryDocument } from '../types/category.types'
+import { model, Schema, PaginateModel, InferSchemaType, Types } from 'mongoose'
+import { AlbumDocument } from './album.model'
+import { EmbeddedDocument } from './embedded.model'
 import paginate from 'mongoose-paginate-v2'
 
-const GenreSchema = new Schema({
+const schema = new Schema({
   title: {
     type: String,
     required: true
   },
-
   dateCreated: {
     type: Date,
     default: Date.now
   },
-
   poster: {
     type: String,
     required: false
   },
-
   avatar: {
     type: String,
     required: false
   },
-
   albums: [
     {
       ref: 'albums',
@@ -30,7 +27,6 @@ const GenreSchema = new Schema({
       required: false
     }
   ],
-
   embeddedAlbums: [
     {
       ref: 'embedded',
@@ -40,6 +36,15 @@ const GenreSchema = new Schema({
   ]
 })
 
-GenreSchema.index({ title: 'text' })
-GenreSchema.plugin(paginate)
-export const Genre = model<CategoryDocument, PaginateModel<CategoryDocument>>('genres', GenreSchema)
+schema.index({ title: 'text' })
+schema.plugin(paginate)
+
+export interface GenreDocument extends Omit<
+  InferSchemaType<typeof schema> & { _id: Types.ObjectId },
+  'albums' | 'embeddedAlbums'
+> {
+  albums: AlbumDocument[]
+  embeddedAlbums: EmbeddedDocument[]
+}
+
+export const Genre = model<GenreDocument, PaginateModel<GenreDocument>>('genres', schema)

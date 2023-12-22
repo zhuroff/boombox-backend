@@ -1,21 +1,20 @@
-import { CloudKeys } from '../types/cloud.types'
-import { AlbumModel } from '../types/album.types'
 import { BasicEntity } from '../types/common.types'
-import { TrackResponse } from '../types/Track'
+import { TrackDocument } from '../models/track.model'
+import { AlbumDocument } from 'src/models/album.model'
 
 export class TrackDTO {
   _id: string
   title: string
   path: string
-  cloudURL: CloudKeys
+  cloudURL: string
   duration?: number
   listened?: number
   artist: BasicEntity
-  inAlbum: AlbumModel
-  inPlaylists?: BasicEntity[]
+  inAlbum: AlbumDocument
+  inCompilations?: BasicEntity[]
 
-  constructor(track: TrackResponse) {
-    this._id = track._id
+  constructor(track: TrackDocument) {
+    this._id = track._id.toString()
     this.title = track.title
     this.path = track.path
     this.cloudURL = track.cloudURL
@@ -23,6 +22,6 @@ export class TrackDTO {
     this.listened = track.listened
     this.artist = track.artist
     this.inAlbum = track.inAlbum
-    this.inPlaylists = track.inPlaylists
+    this.inCompilations = track.inCompilations
   }
 }

@@ -1,5 +1,5 @@
-import { model, Schema, PaginateModel, InferSchemaType, Types } from 'mongoose'
-import { AlbumDocument } from './album.model'
+import { InferSchemaType, model, PaginateModel, Schema, Types } from 'mongoose'
+import { TrackDocument } from './track.model'
 import paginate from 'mongoose-paginate-v2'
 
 const schema = new Schema({
@@ -19,12 +19,12 @@ const schema = new Schema({
     type: String,
     required: false
   },
-  albums: [
+  tracks: [
     {
-      album: {
-        ref: 'albums',
+      track: {
         type: Schema.Types.ObjectId,
-        required: false
+        ref: 'tracks',
+        required: true
       },
       order: {
         type: Number,
@@ -37,16 +37,16 @@ const schema = new Schema({
 schema.index({ title: 'text' })
 schema.plugin(paginate)
 
-export interface CollectionDocumentAlbum {
-  album: AlbumDocument | Types.ObjectId
+export interface CompilationDocumentAlbum {
+  album: TrackDocument | Types.ObjectId
   order: number
 }
 
-export interface CollectionDocument extends Omit<
+export interface CompilationDocument extends Omit<
   InferSchemaType<typeof schema> & { _id: Types.ObjectId },
-  'albums'
+  'tracks'
 > {
-  albums: CollectionDocumentAlbum[]
+  tracks: CompilationDocumentAlbum[]
 }
 
-export const Collection = model<CollectionDocument, PaginateModel<CollectionDocument>>('collections', schema)
+export const Compilation = model<CompilationDocument, PaginateModel<CompilationDocument>>('compilations', schema)

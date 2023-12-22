@@ -13,7 +13,6 @@ export default {
       }
     }
   },
-
   async getTrackDuration(req: Request, res: Response) {
     try {
       const result = await cloudServices.getTrackDuration(req['body'])

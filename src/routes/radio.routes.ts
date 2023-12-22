@@ -1,11 +1,11 @@
 import { Router } from 'express'
-import { RadioController } from '../controllers/radio.controller'
+import controller from '../controllers/radio.controller'
 
 const router = Router()
 
-router.get('/', RadioController.savedStations)
-router.post('/', RadioController.allStations)
-router.post('/:id', RadioController.saveStation)
-router.delete('/:id', RadioController.deleteStation)
+router.get('/', controller.savedStations)
+router.post('/', controller.allStations)
+router.post('/:id', controller.saveStation)
+router.delete('/:id', controller.deleteStation)
 
 export default router

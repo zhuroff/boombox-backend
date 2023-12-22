@@ -1,5 +1,5 @@
-import { CloudKeys, CloudApi } from '../types/cloud.types'
-import { CloudEntityDTO } from '../dtos/cloud.dto'
+import { CloudApi } from '../types/cloud.types'
+import { CloudEntityDTO } from '../dto/cloud.dto'
 import { getCloudApi } from '..'
 import utils from '../utils'
 
@@ -11,7 +11,7 @@ export default {
     offset
   }: {
     path: string,
-    cloudURL: CloudKeys,
+    cloudURL: string,
     limit: number,
     offset: number
   }) {
@@ -46,7 +46,7 @@ export default {
     throw new Error('Files not found')
   },
 
-  async getTrackDuration({ path, cloudURL }: { path: string, cloudURL: CloudKeys }) {
+  async getTrackDuration({ path, cloudURL }: { path: string, cloudURL: string }) {
     if (!path || !cloudURL) {
       throw new Error('Incorrect request options: both "path" and "cloudURL" properties are required')
     }

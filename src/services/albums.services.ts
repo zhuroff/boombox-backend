@@ -1,21 +1,20 @@
 import { Request } from 'express'
 import { Types, PipelineStage, PaginateOptions, PopulateOptions } from 'mongoose'
 import { getCloudApi } from '..'
-import { Album } from '../models/album.model'
+import { Album, AlbumDocument } from '../models/album.model'
 import { Artist } from '../models/artist.model'
 import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
-import { RequestFilter } from '../types/ReqRes'
-import { AlbumResponse, AlbumShape, AlbumDocument } from '../types/album.types'
-import { AlbumItemDTO, AlbumSingleDTO } from '../dtos/album.dto'
-import { PaginationDTO } from '../dtos/pagination.dto'
-import { TrackDTO } from '../dtos/track.dto'
-import { CloudEntityDTO } from '../dtos/cloud.dto'
+import { RequestFilter } from '../types/reqres.types'
+import { AlbumShape } from '../types/album.types'
+import { AlbumItemDTO, AlbumPageDTO } from '../dto/album.dto'
+import { PaginationDTO } from '../dto/pagination.dto'
+import { CloudEntityDTO } from '../dto/cloud.dto'
 import utils from '../utils'
 import categoriesServices from './categories.services'
 import tracksServices from './tracks.services'
 import collectionsServices from './collections.services'
-import playlistsServices from './playlists.services'
+import playlistsServices from './compilations.services'
 
 export default {
   async getAlbumDocs() {
@@ -67,7 +66,7 @@ export default {
     const album = await this.getSingle(_id, false)
     const collections = album.inCollections?.map(({ _id }) => _id)
     const playlists = album.tracks.reduce<Map<string, string[]>>((acc, next) => {
-      const playlistsIds = next.inPlaylists?.map(({ _id }) => _id)
+      const playlistsIds = next.inCompilations?.map(({ _id }) => _id)
       if (playlistsIds?.length) {
         playlistsIds.forEach((key) => {
           acc.has(key.toString())
@@ -104,7 +103,7 @@ export default {
     )))
   },
 
-  async getCoveredAlbums(docs: AlbumResponse[]) {
+  async getCoveredAlbums(docs: AlbumDocument[]) {
     return await Promise.all(docs.map(async (album) => {
       const cloudAPI = getCloudApi(album.cloudURL)
       const cover = await cloudAPI.getFile(
@@ -141,8 +140,7 @@ export default {
     if (dbList) {
       const { totalDocs, totalPages, page } = dbList
       const pagination = new PaginationDTO({ totalDocs, totalPages, page })
-      const dbDocs = dbList.docs as unknown as AlbumResponse[]
-      const docs = await this.getCoveredAlbums(dbDocs)
+      const docs = await this.getCoveredAlbums(dbList.docs)
 
       return { docs, pagination }
     }
@@ -202,7 +200,7 @@ export default {
       }
     }
 
-    const response = await Album.aggregate<AlbumResponse>(aggregateConfig)
+    const response = await Album.aggregate<AlbumDocument>(aggregateConfig)
 
     if (response) {
       const coveredAlbums = await this.getCoveredAlbums(
@@ -226,7 +224,7 @@ export default {
       return randomAlbum
     }
 
-    const singleAlbum: AlbumResponse = await Album.findById(id)
+    const singleAlbum: AlbumDocument = await Album.findById(id)
       .populate({ path: 'artist', select: ['title'] })
       .populate({ path: 'genre', select: ['title'] })
       .populate({ path: 'period', select: ['title'] })
@@ -247,11 +245,7 @@ export default {
         'image'
       ) : undefined
       
-      return new AlbumSingleDTO(
-        singleAlbum,
-        singleAlbum.tracks.map((track) => new TrackDTO(track)),
-        cover || undefined
-      )
+      return new AlbumPageDTO(singleAlbum, cover)
     } catch (error) {
       throw new Error('Incorrect request options or album not found')
     }
@@ -260,7 +254,7 @@ export default {
   async getSingleRandom() {
     const count = await Album.countDocuments()
     const randomIndex = Math.floor(Math.random() * count)
-    const randomAlbum: AlbumResponse = await Album.findOne().skip(randomIndex)
+    const randomAlbum = await Album.findOne<AlbumDocument>().skip(randomIndex)
       .populate({ path: 'artist', select: ['title'] })
       .populate({ path: 'genre', select: ['title'] })
       .populate({ path: 'period', select: ['title'] })
@@ -279,11 +273,7 @@ export default {
         `${utils.sanitizeURL(randomAlbum.folderName)}/cover.webp`,
         'image'
       )
-      return new AlbumSingleDTO(
-        randomAlbum,
-        randomAlbum.tracks.map((track) => new TrackDTO(track)),
-        cover || undefined
-      )
+      return new AlbumPageDTO(randomAlbum, cover)
     }
   
     throw new Error('Incorrect request options')

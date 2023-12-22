@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { PaginateModel } from 'mongoose'
-import { CategoryDocument } from '../types/category.types'
+import { CategoryDocument } from '../types/common.types'
 import categoriesServices from '../services/categories.services'
 import filesServices from '../services/files.services'
 
@@ -13,7 +13,6 @@ export default {
       throw error
     }
   },
-
   getList: (model: PaginateModel<CategoryDocument>) => async (req: Request, res: Response) => {
     try {
       const result = await categoriesServices.getList(model, req)
@@ -22,7 +21,6 @@ export default {
       throw error
     }
   },
-
   create: (model: PaginateModel<CategoryDocument>) => async (req: Request, res: Response) => {
     try {
       const response = await categoriesServices.create(model, req.body.value)
@@ -31,7 +29,6 @@ export default {
       throw error
     }
   },
-
   upload: (model: PaginateModel<CategoryDocument>) => async (req: Request, res: Response) => {
     try {
       const response = await filesServices.upload<CategoryDocument, PaginateModel<CategoryDocument>>(model, req)
@@ -40,7 +37,6 @@ export default {
       throw error
     }
   },
-
   remove: (model: PaginateModel<CategoryDocument>) => async (req: Request, res: Response) => {
     try {
       const response = await categoriesServices.remove(model, String(req.params['id']))

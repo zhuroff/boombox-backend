@@ -1,15 +1,15 @@
 import { Request, Response } from 'express'
 import { Types } from 'mongoose'
+import { AlbumDocument } from '../models/album.model'
 import { cloudsMap } from '..'
-import { AlbumDocument } from '../types/album.types'
-import { CloudEntityDTO } from '../dtos/cloud.dto'
+import { CloudEntityDTO } from '../dto/cloud.dto'
 import albumController from './albums.controller'
 import albumsServices from '../services/albums.services'
 
 export const syncController = {
   async dbUpdateSplitter(
     cloudFolders: CloudEntityDTO[],
-    dbFolders: Array<AlbumDocument & { _id: Types.ObjectId }>
+    dbFolders: AlbumDocument[]
   ) {
     if (!dbFolders.length && !cloudFolders.length) {
       return Promise.resolve({ added: 0, updated: 0, deleted: 0, invalid: 0 })
@@ -57,7 +57,6 @@ export const syncController = {
       deleted: deletedAlbums.length
     }
   },
-
   async sync(_: Request, res: Response) {
     try {
       const cloudFoldersArr = await Promise.all([...cloudsMap].map(async ([_, CloudAPI]) => {

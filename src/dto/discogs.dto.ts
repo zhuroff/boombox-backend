@@ -1,4 +1,4 @@
-import { DiscorsResponseItem } from "src/types/discogs.types"
+import { DiscorsResponseItem } from '../types/discogs.types'
 
 export class DiscogsDTO {
   id: number

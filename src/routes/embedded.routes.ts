@@ -1,11 +1,11 @@
 import { Router } from 'express'
-import { EmbeddedController } from '../controllers/embedded.controller'
+import controller from '../controllers/embedded.controller'
 
 const router = Router()
 
-router.get('/:id', EmbeddedController.single)
-router.post('/create', EmbeddedController.create)
-router.post('/', EmbeddedController.getAllEmbedded)
-router.post('/:id/delete', EmbeddedController.remove)
+router.get('/:id', controller.single)
+router.post('/create', controller.create)
+router.post('/', controller.getAllEmbedded)
+router.post('/:id/delete', controller.remove)
 
 export default router

@@ -1,16 +1,19 @@
 import { Types } from 'mongoose'
 import { Client } from 'genius-lyrics'
 import { getCloudApi } from '..'
-import { Track } from '../models/track.model'
-import { CloudKeys } from '../types/cloud.types'
-import { TrackResponse, TrackSearchPayload } from '../types/Track'
-import { CloudEntityDTO } from '../dtos/cloud.dto'
+import { Track, TrackDocument } from '../models/track.model'
+import { CloudEntityDTO } from '../dto/cloud.dto'
 import utils from '../utils'
 
 const GClient = new Client(process.env['GENIUS_SECRET'])
 
 export default {
-  async create(track: Required<CloudEntityDTO>, albumId: Types.ObjectId, artistId: Types.ObjectId, cloudURL: string) {
+  async create(
+    track: Required<CloudEntityDTO>,
+    albumId: Types.ObjectId,
+    artistId: Types.ObjectId,
+    cloudURL: string
+  ) {
     const newTrack = new Track({
       ...track,
       title: utils.parseTrackTitle(track.title),
@@ -53,14 +56,13 @@ export default {
       } catch (error) {
         console.error(error)
       }
-      const item: TrackSearchPayload = {
+
+      return {
         title: el.title,
         thumbnail: el.thumbnail,
         artist: el.artist.name,
         lyrics
       }
-
-      return item
     })
 
     return await Promise.all(resultArray)
@@ -70,12 +72,12 @@ export default {
     return await Track.findByIdAndUpdate(id, { $set: { lyrics } })
   },
 
-  async getAudio(path: string, cloudURL: CloudKeys) {
+  async getAudio(path: string, cloudURL: string) {
     const cloudAPI = getCloudApi(cloudURL)
     return await cloudAPI.getFile(path, 'audio')
   },
 
-  async getCoveredTracks(docs: TrackResponse[]) {
+  async getCoveredTracks(docs: TrackDocument[]) {
     return await Promise.all(docs.map(async (track) => {
       const cloudAPI = getCloudApi(track.cloudURL)
       const cover = await cloudAPI.getFile(

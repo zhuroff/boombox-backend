@@ -13,14 +13,14 @@ import artistsRoutes from './routes/artists.routes'
 import genresRoutes from './routes/genres.routes'
 import periodsRoutes from './routes/periods.routes'
 import embeddedRoutes from './routes/embedded.routes'
-import playlistsRoutes from './routes/playlists.routes'
+import compilationsRoutes from './routes/compilations.routes'
 import searchRoutes from './routes/search.routes'
 import collectionsRoutes from './routes/collections.routes'
 import radioRoutes from './routes/radio.routes'
 import backupRoutes from './routes/backup.routes'
 import synchronizeRoutes from './routes/sync.routes'
 import cloudRoutes from './routes/cloud.routes'
-import { CloudApi, CloudKeys } from './types/cloud.types'
+import { CloudApi } from './types/cloud.types'
 import { PCloudApi } from './clouds/cloud.pcloud'
 import { YandexCloudApi } from './clouds/cloud.yandex'
 
@@ -31,12 +31,12 @@ const PORT = 3001
 export const rootDir = path.resolve(__dirname, '../')
 export const cloudRootPath = `${process.env['COLLECTION_ROOT']}/Collection`
 
-export const cloudsMap = new Map<CloudKeys, CloudApi>([
+export const cloudsMap = new Map<string, CloudApi>([
   ['https://eapi.pcloud.com', new PCloudApi(cloudRootPath)],
   ['https://cloud-api.yandex.net', new YandexCloudApi(cloudRootPath)]
 ])
 
-export const getCloudApi = (url: CloudKeys) => cloudsMap.get(url) as CloudApi
+export const getCloudApi = (url: string) => cloudsMap.get(url) as CloudApi
 
 mongoose.connect(process.env['MONGO_URI'] as string)
   .then(() => console.log('MongoDB connected'))
@@ -55,7 +55,7 @@ app.use('/api/artists', artistsRoutes)
 app.use('/api/genres', genresRoutes)
 app.use('/api/periods', periodsRoutes)
 app.use('/api/embedded', embeddedRoutes)
-app.use('/api/playlists', playlistsRoutes)
+app.use('/api/compilations', compilationsRoutes)
 app.use('/api/search', searchRoutes)
 app.use('/api/collections', collectionsRoutes)
 app.use('/api/radio', radioRoutes)

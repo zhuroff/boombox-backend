@@ -10,7 +10,6 @@ export default {
       throw error
     }
   },
-
   get(_: Request, res: Response) {
     try {
       const response = backupServices.get()
@@ -19,7 +18,6 @@ export default {
       throw error
     }
   },
-
   async recover(req: Request, res: Response) {
     try {
       const response = await backupServices.recover(String(req.params['date']))
@@ -28,7 +26,6 @@ export default {
       throw error
     }
   },
-
   async remove(req: Request, res: Response) {
     try {
       const response = await backupServices.remove(String(req.params['date']))

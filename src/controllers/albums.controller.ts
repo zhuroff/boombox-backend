@@ -1,7 +1,8 @@
 import { Request, Response } from 'express'
 import { Types } from 'mongoose'
-import { CloudEntityDTO } from '../dtos/cloud.dto'
-import { AlbumShape, AlbumDocument } from '../types/album.types'
+import { AlbumDocument } from '../models/album.model'
+import { AlbumShape } from '../types/album.types'
+import { CloudEntityDTO } from '../dto/cloud.dto'
 import albumsServices from '../services/albums.services'
 import utils from '../utils'
 
@@ -59,7 +60,6 @@ export default {
       throw error
     }
   },
-
   async remove(albums: Types.ObjectId[]) {
     try {
       return await Promise.all(albums.map(async (id) => (
@@ -69,7 +69,6 @@ export default {
       throw error
     }
   },
-
   async update(albums: AlbumDocument[]) {
     try {
       return await albumsServices.updateAlbums(albums)
@@ -77,7 +76,6 @@ export default {
       throw error
     }
   },
-
   async getList(req: Request, res: Response) {
     try {
       const result = await albumsServices.getList(req)
@@ -86,7 +84,6 @@ export default {
       throw error
     }
   },
-
   async getSingle(req: Request<{ id: string }>, res: Response) {
     try {
       const result = await albumsServices.getSingle(req.params['id'])
@@ -95,7 +92,6 @@ export default {
       throw error
     }
   },
-
   async getListRandom(req: Request, res: Response) {
     if (Array.isArray(req.query)) {
       throw new Error('Query should be a string in this request')

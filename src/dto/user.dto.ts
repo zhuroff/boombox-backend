@@ -1,5 +1,5 @@
 import { Types } from 'mongoose'
-import { UserDocument } from '../types/User'
+import { UserDocument } from '../models/user.model'
 
 export class UserDTO {
   id: Types.ObjectId

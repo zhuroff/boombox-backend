@@ -1,7 +1,6 @@
 import axios, { AxiosError } from 'axios'
-import { DiscogsPayload } from '../types/album.types'
-import { DiscogsDTO } from '../dtos/discogs.dto'
-import { DiscogsResponse } from '../types/discogs.types'
+import { DiscogsDTO } from '../dto/discogs.dto'
+import { DiscogsResponse, DiscogsPayload } from '../types/discogs.types'
 
 export default {
   buildDiscogsLink(param: string) {

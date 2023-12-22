@@ -1,28 +1,25 @@
-import { model, Schema, PaginateModel } from 'mongoose'
-import { CategoryDocument } from '../types/category.types'
+import { model, Schema, PaginateModel, InferSchemaType, Types } from 'mongoose'
+import { AlbumDocument } from './album.model'
+import { EmbeddedDocument } from './embedded.model'
 import paginate from 'mongoose-paginate-v2'
 
-const PeriodSchema = new Schema({
+const schema = new Schema({
   title: {
     type: String,
     required: true
   },
-
   dateCreated: {
     type: Date,
     default: Date.now
   },
-
   poster: {
     type: String,
     required: false
   },
-
   avatar: {
     type: String,
     required: false
   },
-
   albums: [
     {
       ref: 'albums',
@@ -30,7 +27,6 @@ const PeriodSchema = new Schema({
       required: false
     }
   ],
-
   embeddedAlbums: [
     {
       ref: 'embedded',
@@ -40,6 +36,15 @@ const PeriodSchema = new Schema({
   ]
 })
 
-PeriodSchema.index({ title: 'text' })
-PeriodSchema.plugin(paginate)
-export const Period = model<CategoryDocument, PaginateModel<CategoryDocument>>('periods', PeriodSchema)
+schema.index({ title: 'text' })
+schema.plugin(paginate)
+
+export interface PeriodDocument extends Omit<
+  InferSchemaType<typeof schema> & { _id: Types.ObjectId },
+  'albums' | 'embeddedAlbums'
+> {
+  albums: AlbumDocument[]
+  embeddedAlbums: EmbeddedDocument[]
+}
+
+export const Period = model<PeriodDocument, PaginateModel<PeriodDocument>>('periods', schema)

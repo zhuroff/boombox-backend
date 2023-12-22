@@ -1,4 +1,4 @@
-import { DiscogsPagination, Pagination } from '../types/ReqRes'
+import { DiscogsPagination, Pagination } from '../types/reqres.types'
 
 export class PaginationDTO {
   totalDocs: number

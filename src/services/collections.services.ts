@@ -2,19 +2,11 @@ import { Request } from 'express'
 import { PaginateOptions, Types } from 'mongoose'
 import { Collection } from '../models/collection.model'
 import { Album } from '../models/album.model'
-import {
-  CollectionDocument,
-  // CollectionListItem,
-  // CollectionModelAlbum,
-  // CollectionReorder,
-  // CollectionUpdateProps,
-  // DeletedCollectionAlbum
-} from '../types/collection.types'
 // import { Period } from '../models/period.model'
 // import { Artist } from '../models/artist.model'
 // import { Genre } from '../models/genre.model'
-import { PaginationDTO } from '../dtos/pagination.dto'
-import { CollectionItemDTO } from '../dtos/collection.dto'
+import { PaginationDTO } from '../dto/pagination.dto'
+import { CollectionDTO } from '../dto/collection.dto'
 import { CompilationCreatePayload, CompilationUpdatePayload } from '../types/common.types'
 
 class CollectionsServices {
@@ -81,9 +73,7 @@ class CollectionsServices {
       if (isOnlyTitles) return dbList.docs.map(({ title }) => title)
       const { totalDocs, totalPages, page } = dbList
       const pagination = new PaginationDTO({ totalDocs, totalPages, page })
-
-      const dbDocs = dbList.docs as unknown as CollectionDocument[]
-      const docs = dbDocs.map((collection) => new CollectionItemDTO(collection))
+      const docs = dbList.docs.map((collection) => new CollectionDTO(collection))
 
       return { docs, pagination }
     }

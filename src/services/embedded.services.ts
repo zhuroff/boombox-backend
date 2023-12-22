@@ -1,11 +1,11 @@
+import { PaginateModel, PaginateOptions, PopulateOptions, Types } from 'mongoose'
 import { Embedded } from '../models/embedded.model'
 import { Artist } from '../models/artist.model'
 import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
-import { PaginateModel, PaginateOptions, PopulateOptions, Types } from 'mongoose'
-import { PaginationDTO } from '../dtos/pagination.dto'
+import { PaginationDTO } from '../dto/pagination.dto'
 
-class EmbeddedServices {
+export default {
   async create(frame: any) {
     const newBCAlbum = new Embedded(frame)
     const dbAlbum = await newBCAlbum.save()
@@ -20,8 +20,7 @@ class EmbeddedServices {
       .populate({ path: 'period', select: ['title'] })
 
     return createdDoc
-  }
-
+  },
   async getAllEmbedded({ page, limit, sort }: { page: number; limit: number; sort: { [index: string]: number } }) {
     const populate: PopulateOptions[] = [
       { path: 'artist', select: ['title'] },
@@ -53,8 +52,7 @@ class EmbeddedServices {
     }
 
     throw new Error('Incorrect request options')
-  }
-
+  },
   async single(id: string) {
     const response = await Embedded.findById(id)
       .populate({ path: 'artist', select: ['title'] })
@@ -66,8 +64,7 @@ class EmbeddedServices {
     }
 
     throw new Error('Incorrect request options')
-  }
-
+  },
   async remove(_id: string, { artist, genre, period }: any) {
     await Embedded.deleteOne({ _id })
 
@@ -76,8 +73,7 @@ class EmbeddedServices {
     await this.removeAlbumFromCategory(Period, period, _id)
 
     return { message: 'Album successfully deleted' }
-  }
-
+  },
   async saveAlbumToCategory(...args: [PaginateModel<any>, Types.ObjectId, Types.ObjectId]) {
     const [Model, id, albumID] = args
     const query = { _id: id }
@@ -85,8 +81,7 @@ class EmbeddedServices {
     const options = { upsert: true, new: true, setDefaultsOnInsert: true }
 
     return await Model.findOneAndUpdate(query, update, options)
-  }
-
+  },
   async removeAlbumFromCategory(...args: [PaginateModel<any>, Types.ObjectId, string]) {
     const [Model, id, albumID] = args
     const query = { _id: id }
@@ -96,5 +91,3 @@ class EmbeddedServices {
     return await Model.findOneAndUpdate(query, update, options)
   }
 }
-
-export default new EmbeddedServices()

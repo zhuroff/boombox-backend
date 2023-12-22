@@ -1,8 +1,8 @@
 import { Router } from 'express'
-import { SearchController } from '../controllers/search.controller'
+import controller from '../controllers/search.controller'
 
 const router = Router()
 
-router.post('/', SearchController.search)
+router.post('/', controller.search)
 
 export default router

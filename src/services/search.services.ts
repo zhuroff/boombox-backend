@@ -1,6 +1,7 @@
 
-import { SearchConfig, SearchModelKey, SearchParams, SearchPayload, SearchResult } from '../types/ReqRes'
+import { SearchConfig, SearchModelKey, SearchParams, SearchPayload, SearchResult } from '../types/reqres.types'
 import { CategoryDocument, CategoryResponse } from '../types/category.types'
+// @ts-ignore
 import { AlbumDocument, AlbumResponse } from '../types/album.types'
 import { TrackResponse } from '../types/Track'
 import { Album } from '../models/album.model'
@@ -9,7 +10,7 @@ import { Artist } from '../models/artist.model'
 import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
 import { Collection } from '../models/collection.model'
-import { Playlist } from '../models/playlist.model'
+import { Playlist } from '../models/compilation.model'
 import { Track } from '../models/track.model'
 import albumsServices from './albums.services'
 import tracksServices from './tracks.services'

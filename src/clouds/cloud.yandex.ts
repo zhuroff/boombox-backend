@@ -1,5 +1,5 @@
 import axios, {AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios';
-import { CloudEntityDTO } from '../dtos/cloud.dto';
+import { CloudEntityDTO } from '../dto/cloud.dto';
 import { Cloud, YandexCloudEntity, YandexCloudResponse } from '../types/cloud.types';
 
 export class YandexCloudApi implements Cloud {
@@ -51,6 +51,9 @@ export class YandexCloudApi implements Cloud {
     return await this.#client
       .get<YandexCloudResponse<YandexCloudEntity>>(this.#qBuilder(path))
       .then(({ data }) => data.file)
-      .catch((error: AxiosError) => console.error('getFile', error.message))
+      .catch((error: AxiosError) => {
+        console.error('getFile', error.message)
+        return undefined
+      })
   }
 }

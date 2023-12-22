@@ -1,34 +1,9 @@
 import { AxiosRequestConfig } from 'axios'
-import { CloudEntityDTO } from '../dtos/cloud.dto'
+import { CloudEntityDTO } from '../dto/cloud.dto'
 import { PCloudApi } from '../clouds/cloud.pcloud'
 import { YandexCloudApi } from '../clouds/cloud.yandex'
 
-export type CloudCommon = {
-  name: string
-  created: string
-  modified: string
-  path: string
-  type: string
-}
-
-export type CloudFolder = CloudCommon & {
-  mime_type?: string
-  _embedded: {
-    items: CloudFolderItem[]
-  }
-}
-
-export type CloudFile = CloudCommon & {
-  file: string
-  mime_type: string
-  media_type: string
-}
-
-export type CloudFolderItem = CloudFolder | CloudFile
-
-// NEW
 export type CloudApi = PCloudApi | YandexCloudApi
-export type CloudKeys = 'https://eapi.pcloud.com' | 'https://cloud-api.yandex.net' | 'https://www.googleapis.com'
 export type CloudFileTypes = 'audio' | 'video' | 'image' | 'file'
 
 export type CloudCommonEntity = {

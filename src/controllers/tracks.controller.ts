@@ -10,7 +10,6 @@ export default {
       throw error
     }
   },
-
   async saveTrackDuration(req: Request, res: Response) {
     try {
       await tracksServices.saveTrackDuration(String(req.params['id']), req.body.duration)
@@ -19,7 +18,6 @@ export default {
       throw error
     }
   },
-
   async getLyrics(req: Request, res: Response) {
     try {
       const response = await tracksServices.getLyrics(String(req.params['id']))
@@ -28,7 +26,6 @@ export default {
       throw error
     }
   },
-
   async getLyricsExternal(req: Request, res: Response): Promise<void | ReturnType<typeof setTimeout>> {
     try {
       const response = await tracksServices.getLyricsExternal(req.body.query)
@@ -37,7 +34,6 @@ export default {
       throw error
     }
   },
-
   async saveLyrics(req: Request, res: Response) {
     try {
       await tracksServices.saveLyrics(String(req.params['id']), req.body.lyrics)
@@ -46,7 +42,6 @@ export default {
       throw error
     }
   },
-
   async getAudio(req: Request, res: Response) {
     try {
       const response = await tracksServices.getAudio(req.body['path'], req.body['cloudURL'])

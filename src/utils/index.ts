@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { CloudEntityDTO } from 'src/dtos/cloud.dto'
+import { CloudEntityDTO } from 'src/dto/cloud.dto'
 
 export default {
   sanitizeURL: (path: string, subPath = '') => (

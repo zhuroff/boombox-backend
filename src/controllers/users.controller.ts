@@ -1,9 +1,9 @@
 import { Request, Response } from 'express'
-import { UserResponse } from '../types/User'
+import { UserResponse } from '../types/reqres.types'
 import userServices from '../services/users.services'
 
-export class UsersController {
-  static cookieSetter(res: Response, payload: UserResponse) {
+export default {
+  cookieSetter(res: Response, payload: UserResponse) {
     res.cookie(
       'refreshToken',
       payload?.refreshToken,
@@ -13,32 +13,29 @@ export class UsersController {
         secure: process.env['NODE_ENV'] === 'production'
       }
     )
-  }
-
-  static async registration(req: Request, res: Response) {
+  },
+  async registration(req: Request, res: Response) {
     try {
       const response = await userServices.registration(req)
-      UsersController.cookieSetter(res, response)
+      this.cookieSetter(res, response)
       res.status(201).json(response)
     } catch (error) {
       res.status(400).json(error)
     }
-  }
-
-  static async login(req: Request, res: Response) {
+  },
+  async login(req: Request, res: Response) {
     try {
       const response = await userServices.login(req)
-      UsersController.cookieSetter(res, response)
+      this.cookieSetter(res, response)
       res.status(200).json(response)
     } catch (error) {
       res.status(400).json(error)
     }
-  }
-
-  static async refresh(req: Request, res: Response) {
+  },
+  async refresh(req: Request, res: Response) {
     try {
       const response = await userServices.refresh(req)
-      UsersController.cookieSetter(res, response)
+      this.cookieSetter(res, response)
       res.status(200).json(response)
     } catch (error) {
       res.status(400).json(error)
