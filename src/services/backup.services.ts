@@ -6,10 +6,9 @@ import { Collection } from '../models/collection.model'
 import { Embedded } from '../models/embedded.model'
 import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
-import { Playlist } from '../models/compilation.model'
+import { Compilation } from '../models/compilation.model'
 import { Radio } from '../models/radio.model'
 import { Track } from '../models/track.model'
-import { TOYPage } from '../models/toy.model'
 import { ModelKeys } from '../types/common.types'
 import fs from 'fs'
 import path from 'path'
@@ -21,11 +20,10 @@ const modelsDictMap = new Map<ModelKeys, PaginateModel<any, {}, {}> | Model<any,
   ['embedded', Embedded],
   ['genres', Genre],
   ['periods', Period],
-  ['playlists', Playlist],
+  ['compilations', Compilation],
   ['radio', Radio],
   ['tracks', Track],
-  ['radio', Radio],
-  ['toys', TOYPage]
+  ['radio', Radio]
 ])
 
 export default {
@@ -41,11 +39,9 @@ export default {
     await Promise.all(backuping)
     return { message: 'Data backup completed successfully' }
   },
-
   get() {
     return fs.readdirSync(path.join(rootDir, '.', 'backups'))
   },
-
   async recover(date: string) {
     await Promise.all([...modelsDictMap].map(async ([key, model]) => {
       const folderName = date
@@ -56,7 +52,6 @@ export default {
     }))
     return { message: 'Data restore completed successfully' }
   },
-
   async remove(folderName: string) {
     return new Promise((resolve, reject) => {
       fs.rm(
@@ -68,7 +63,6 @@ export default {
       )
     })
   },
-
   async createFolder(folderName: string) {
     return new Promise((resolve, reject) => {
       fs.mkdir(
@@ -79,7 +73,6 @@ export default {
       )
     })
   },
-
   async writeFile(fileName: string, folderName: string, data: LeanDocument<any>[]) {
     return new Promise((resolve, reject) => {
       fs.writeFile(
@@ -91,7 +84,6 @@ export default {
       )
     })
   },
-
   async readFile(folderName: string, fileName: string) {
     return new Promise((resolve, reject) => {
       fs.readFile(

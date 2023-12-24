@@ -1,7 +1,8 @@
 import { Model, PaginateModel, PopulateOptions, ProjectionType } from 'mongoose'
-import { AlbumDocument } from '../models/album.model'
+import { TrackDocument } from '../models/track.model'
 import { CategoryDocument, ModelKeys } from './common.types'
 import { UserDTO } from '../dto/user.dto'
+import { AlbumItemDTO } from '../dto/album.dto'
 
 export interface Pagination {
   totalDocs: number
@@ -33,7 +34,7 @@ export type SearchParams = Record<'$text', { '$search': string }>
 
 export interface SearchResult {
   key: SearchModelKey
-  data: Partial<AlbumDocument | CategoryDocument>[]
+  data: Partial<AlbumItemDTO | CategoryDocument | TrackDocument>[]
 }
 
 export interface SearchConfig {

@@ -1,19 +1,17 @@
 
 import { SearchConfig, SearchModelKey, SearchParams, SearchPayload, SearchResult } from '../types/reqres.types'
-import { CategoryDocument, CategoryResponse } from '../types/category.types'
-// @ts-ignore
-import { AlbumDocument, AlbumResponse } from '../types/album.types'
-import { TrackResponse } from '../types/Track'
-import { Album } from '../models/album.model'
+import { Album, AlbumDocument } from '../models/album.model'
 import { Embedded } from '../models/embedded.model'
 import { Artist } from '../models/artist.model'
 import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
 import { Collection } from '../models/collection.model'
-import { Playlist } from '../models/compilation.model'
-import { Track } from '../models/track.model'
+import { Compilation } from '../models/compilation.model'
+import { Track, TrackDocument } from '../models/track.model'
+import { CategoryDocument } from '../types/common.types'
 import albumsServices from './albums.services'
 import tracksServices from './tracks.services'
+import { AlbumItemDTO } from 'src/dto/album.dto'
 
 const searchMap = new Map<SearchModelKey, SearchConfig>([
   [
@@ -84,9 +82,9 @@ const searchMap = new Map<SearchModelKey, SearchConfig>([
     }
   ],
   [
-    'playlists',
+    'compilations',
     {
-      instance: Playlist,
+      instance: Compilation,
       options: { _id: true, title: true, avatar: true }
     }
   ],
@@ -103,9 +101,9 @@ const searchMap = new Map<SearchModelKey, SearchConfig>([
   ]
 ])
 
-class SearchServices {
+export default {
   async search(payload: SearchPayload) {
-    const mappedResult = new Map<SearchModelKey, Partial<AlbumDocument | CategoryDocument>[]>()
+    const mappedResult = new Map<SearchModelKey, Partial<AlbumItemDTO | TrackDocument | CategoryDocument>[]>()
 
     if (payload.key) {
       mappedResult.set(
@@ -122,8 +120,7 @@ class SearchServices {
       if (data?.length) acc.push({ key, data })
       return acc
     }, [])
-  }
-
+  },
   async searchSplitter({ query, key }: SearchPayload, config?: SearchConfig) {
     if (!config) {
       throw new Error('Query config not found')
@@ -132,18 +129,17 @@ class SearchServices {
     const searchParams = { $text: { $search: query } }
 
     if (key === 'albums') {
-      const albumRes = await this.searchEntry<AlbumResponse[]>(searchParams, config)
+      const albumRes = await this.searchEntry<AlbumDocument[]>(searchParams, config)
       const coveredAlbums = await albumsServices.getCoveredAlbums(albumRes)
       return await Promise.all(coveredAlbums)
     } else if (key === 'tracks') {
-      const trackRes = await this.searchEntry<TrackResponse[]>(searchParams, config)
+      const trackRes = await this.searchEntry<TrackDocument[]>(searchParams, config)
       const coveredTracks = await tracksServices.getCoveredTracks(trackRes)
       return await Promise.all(coveredTracks)
     } else {
-      return await this.searchEntry<CategoryResponse[]>(searchParams, config)
+      return await this.searchEntry<CategoryDocument[]>(searchParams, config)
     }
-  }
-
+  },
   async searchEntry<T>(params: SearchParams, model: SearchConfig): Promise<T> {
     try {
       return await model.instance
@@ -156,5 +152,3 @@ class SearchServices {
     }
   }
 }
-
-export default new SearchServices()

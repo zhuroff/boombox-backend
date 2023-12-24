@@ -14,7 +14,7 @@ import utils from '../utils'
 import categoriesServices from './categories.services'
 import tracksServices from './tracks.services'
 import collectionsServices from './collections.services'
-import playlistsServices from './compilations.services'
+import compilationsServices from './compilations.services'
 
 export default {
   async getAlbumDocs() {
@@ -65,10 +65,10 @@ export default {
   async removeAlbum(_id: Types.ObjectId | string) {
     const album = await this.getSingle(_id, false)
     const collections = album.inCollections?.map(({ _id }) => _id)
-    const playlists = album.tracks.reduce<Map<string, string[]>>((acc, next) => {
-      const playlistsIds = next.inCompilations?.map(({ _id }) => _id)
-      if (playlistsIds?.length) {
-        playlistsIds.forEach((key) => {
+    const compilations = album.tracks.reduce<Map<string, string[]>>((acc, next) => {
+      const compilationsIds = next.inCompilations?.map(({ _id }) => _id)
+      if (compilationsIds?.length) {
+        compilationsIds.forEach((key) => {
           acc.has(key.toString())
             ? acc.get(key.toString())?.push(next._id)
             : acc.set(key.toString(), [next._id])
@@ -86,8 +86,8 @@ export default {
       await collectionsServices.cleanCollection(collections, _id)
     }
 
-    if (playlists.size > 0) {
-      await playlistsServices.cleanPlaylist(playlists)
+    if (compilations.size > 0) {
+      await compilationsServices.cleanCompilation(compilations)
     }
 
     return await Album.findByIdAndDelete(_id)

@@ -2,25 +2,24 @@ import { Types } from 'mongoose'
 import { CompilationDTO } from '../dto/compilation.dto'
 import { Compilation, CompilationDocument } from '../models/compilation.model'
 import { Track } from '../models/track.model'
-import { PlayListCreatePayload, PlayListUpdatePayload } from '../types/compilation.types'
+import { CompilationCreatePayload, CompilationUpdatePayload } from '../types/compilation.types'
 import filesServices from './files.services'
 
-class PlaylistsServices {
-  async create({ title, track }: PlayListCreatePayload) {
+export default {
+  async create({ title, track }: CompilationCreatePayload) {
     const payload = {
       title,
       tracks: [{ track, order: 1 }]
     }
 
-    const newPlaylist = new Compilation(payload)
+    const newCompilation = new Compilation(payload)
 
-    await newPlaylist.save()
-    await this.updateTrack(newPlaylist._id, track, false)
+    await newCompilation.save()
+    await this.updateTrack(newCompilation._id, track, false)
 
-    return { message: 'Playlist successfully created' }
-  }
-
-  async update({ _id, inList, track, order }: PlayListUpdatePayload) {
+    return { message: 'Compilation successfully created' }
+  },
+  async update({ _id, inList, track, order }: CompilationUpdatePayload) {
     const query = { _id }
     const update = inList
       ? { $pull: { tracks: { track } } }
@@ -32,21 +31,19 @@ class PlaylistsServices {
 
     return {
       message: inList
-        ? 'Track successfully removed from playlist'
-        : 'Track successfully added to playlist'
+        ? 'Track successfully removed from compilation'
+        : 'Track successfully added to compilation'
     }
-  }
-
-  async cleanPlaylist(playlists: Map<string, string[]>) {
-    return await Promise.all(Array.from(playlists).map(async ([playlistId, trackIds]) => (
+  },
+  async cleanCompilation(compilations: Map<string, string[]>) {
+    return await Promise.all(Array.from(compilations).map(async ([compilationId, trackIds]) => (
       await Compilation.updateMany(
-        { _id: playlistId },
+        { _id: compilationId },
         { $pull: { tracks: { track: { $in: trackIds } } } }
       )
     )))
-  }
-
-  async getAllPlaylists() {
+  },
+  async getList() {
     const config = { title: true, tracks: true, avatar: true }
     const response = await Compilation.find({}, config).sort({ title: 1 }).exec()
 
@@ -55,10 +52,9 @@ class PlaylistsServices {
     }
 
     throw new Error('Incorrect request options')
-  }
-
+  },
   async single(id: string) {
-    const dbPlaylist: CompilationDocument = await Compilation.findById(id)
+    const dbCompilation: CompilationDocument = await Compilation.findById(id)
       .populate({
         path: 'tracks.track',
         select: ['title', 'listened', 'duration', 'path'],
@@ -80,8 +76,8 @@ class PlaylistsServices {
       })
       .lean()
 
-    if (dbPlaylist) {
-      // const promisedTracks = dbPlaylist.tracks.map(async ({ track, order }) => {
+    if (dbCompilation) {
+      // const promisedTracks = dbCompilation.tracks.map(async ({ track, order }) => {
       //   const trackRes = await CloudLib.get<CloudFile>(track.path)
       //   const albumCoverRes = await CloudLib.get<CloudFile>(track.inAlbum.albumCover)
       //   return {
@@ -96,12 +92,11 @@ class PlaylistsServices {
       //   }
       // })
 
-      // return { ...dbPlaylist, tracks: await Promise.all(promisedTracks) }
+      // return { ...dbCompilation, tracks: await Promise.all(promisedTracks) }
     }
 
     throw new Error('Incorrect request options')
-  }
-
+  },
   async remove(_id: string) {
     const response = await Compilation.findByIdAndDelete({ _id })
     const tracks = response?.tracks
@@ -124,38 +119,35 @@ class PlaylistsServices {
     }
 
     return { message: 'Compilation was successfully deleted' }
-  }
-
+  },
   async reorder({ oldOrder, newOrder }: any /* CollectionReorder */, _id: string) {
-    const targetPlaylist = await Compilation.findById(_id).exec()
+    const targetCompilation = await Compilation.findById(_id).exec()
 
-    if (targetPlaylist) {
-      targetPlaylist.tracks.splice(
+    if (targetCompilation) {
+      targetCompilation.tracks.splice(
         newOrder, 0,
-        ...targetPlaylist.tracks.splice(oldOrder, 1)
+        ...targetCompilation.tracks.splice(oldOrder, 1)
       )
 
-      targetPlaylist.tracks.forEach((el, index) => {
+      targetCompilation.tracks.forEach((el, index) => {
         el.order = index + 1
       })
 
-      await Compilation.updateOne({ _id }, { $set: { tracks: targetPlaylist.tracks } })
+      await Compilation.updateOne({ _id }, { $set: { tracks: targetCompilation.tracks } })
 
       return { message: 'Order successfully updated' }
     }
 
     throw new Error('Incorrect request options')
-  }
-
+  },
   async rename(_id: string, title: string) {
     const query = { _id }
     const update = { title }
 
     await Compilation.findOneAndUpdate(query, update)
 
-    return { message: 'Playlist title was successfully updated' }
-  }
-
+    return { message: 'Compilation title was successfully updated' }
+  },
   async updateTrack(listID: Types.ObjectId | string, trackID: Types.ObjectId | string, inList: boolean) {
     const query = { _id: trackID }
     const update = inList
@@ -166,5 +158,3 @@ class PlaylistsServices {
     await Track.findOneAndUpdate(query, update, options)
   }
 }
-
-export default new PlaylistsServices()

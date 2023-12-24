@@ -1,9 +1,9 @@
-export type PlayListCreatePayload = {
+export type CompilationCreatePayload = {
   title: string
   track: string
 }
 
-export type PlayListUpdatePayload = {
+export type CompilationUpdatePayload = {
   _id: string
   inList: boolean
   track: string

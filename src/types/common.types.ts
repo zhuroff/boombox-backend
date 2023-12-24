@@ -10,12 +10,11 @@ export type ModelKeys =
   | 'genres'
   | 'periods'
   | 'collections'
-  | 'playlists'
+  | 'compilations'
   | 'tracks'
   | 'radio'
   | 'users'
   | 'tokens'
-  | 'toys'
 
 export interface BasicEntity {
   _id: Types.ObjectId

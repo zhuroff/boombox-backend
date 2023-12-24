@@ -2,11 +2,13 @@ import { Types } from 'mongoose'
 import { BasicEntity } from '../types/common.types'
 
 export class EntityBasicDTO implements BasicEntity {
-  title: string
   _id: Types.ObjectId
+  title: string
+  cloudURL?: string
 
-  constructor(id: Types.ObjectId, title: string) {
-    this.title = title
+  constructor(id: Types.ObjectId, title: string, cloudURL?: string) {
     this._id = id
+    this.title = title
+    this.cloudURL = cloudURL
   }
 }
