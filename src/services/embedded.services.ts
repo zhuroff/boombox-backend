@@ -3,16 +3,17 @@ import { Embedded } from '../models/embedded.model'
 import { Artist } from '../models/artist.model'
 import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
+import { EmbeddedPayload } from '../types/embedded.types'
 import { PaginationDTO } from '../dto/pagination.dto'
 
 export default {
-  async create(frame: any) {
-    const newBCAlbum = new Embedded(frame)
+  async create(payload: EmbeddedPayload) {
+    const newBCAlbum = new Embedded(payload)
     const dbAlbum = await newBCAlbum.save()
 
-    await this.saveAlbumToCategory(Artist, frame.artist, dbAlbum._id)
-    await this.saveAlbumToCategory(Genre, frame.genre, dbAlbum._id)
-    await this.saveAlbumToCategory(Period, frame.period, dbAlbum._id)
+    await this.saveAlbumToCategory(Artist, payload.artist, dbAlbum._id)
+    await this.saveAlbumToCategory(Genre, payload.genre, dbAlbum._id)
+    await this.saveAlbumToCategory(Period, payload.period, dbAlbum._id)
 
     const createdDoc = await Embedded.findById(dbAlbum._id)
       .populate({ path: 'artist', select: ['title'] })
@@ -74,7 +75,7 @@ export default {
 
     return { message: 'Album successfully deleted' }
   },
-  async saveAlbumToCategory(...args: [PaginateModel<any>, Types.ObjectId, Types.ObjectId]) {
+  async saveAlbumToCategory(...args: [PaginateModel<any>, Types.ObjectId | string, Types.ObjectId]) {
     const [Model, id, albumID] = args
     const query = { _id: id }
     const update = { $push: { framesAlbums: albumID } }
