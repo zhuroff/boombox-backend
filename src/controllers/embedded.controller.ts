@@ -29,10 +29,8 @@ export default {
     }
   },
   async remove(req: Request, res: Response) {
-    const { artist, genre, period } = req.body
-
     try {
-      const response = await embeddedServices.remove(String(req.params['id']), { artist, genre, period })
+      const response = await embeddedServices.remove(String(req.params['id']))
       res.json(response)
     } catch (error) {
       throw error

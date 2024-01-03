@@ -79,6 +79,7 @@ export default {
     return new CategoryPageDTO({ ...categorySingle, albums: coveredAlbums })
   },
   async create(Model: PaginateModel<CategoryDocument>, title: string, _id?: Types.ObjectId) {
+    if (!title) throw new Error('Title is required')
     const query = { title }
     const update = { $push: { albums: _id } }
     const options = { upsert: true, new: true, setDefaultsOnInsert: true }

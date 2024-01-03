@@ -11,9 +11,9 @@ export default {
     const newBCAlbum = new Embedded(payload)
     const dbAlbum = await newBCAlbum.save()
 
-    await this.saveAlbumToCategory(Artist, payload.artist, dbAlbum._id)
-    await this.saveAlbumToCategory(Genre, payload.genre, dbAlbum._id)
-    await this.saveAlbumToCategory(Period, payload.period, dbAlbum._id)
+    await this.saveAlbumToCategory(Artist, new Types.ObjectId(payload.artist), dbAlbum._id)
+    await this.saveAlbumToCategory(Genre, new Types.ObjectId(payload.genre), dbAlbum._id)
+    await this.saveAlbumToCategory(Period, new Types.ObjectId(payload.period), dbAlbum._id)
 
     const createdDoc = await Embedded.findById(dbAlbum._id)
       .populate({ path: 'artist', select: ['title'] })
@@ -66,19 +66,20 @@ export default {
 
     throw new Error('Incorrect request options')
   },
-  async remove(_id: string, { artist, genre, period }: any) {
+  async remove(_id: string) {
+    const entity = await this.single(_id)
     await Embedded.deleteOne({ _id })
 
-    await this.removeAlbumFromCategory(Artist, artist, _id)
-    await this.removeAlbumFromCategory(Genre, genre, _id)
-    await this.removeAlbumFromCategory(Period, period, _id)
+    await this.removeAlbumFromCategory(Artist, entity.artist._id, _id)
+    await this.removeAlbumFromCategory(Genre, entity.genre._id, _id)
+    await this.removeAlbumFromCategory(Period, entity.period._id, _id)
 
-    return { message: 'Album successfully deleted' }
+    return { message: 'deletedEmbeddedMessage' }
   },
-  async saveAlbumToCategory(...args: [PaginateModel<any>, Types.ObjectId | string, Types.ObjectId]) {
+  async saveAlbumToCategory(...args: [PaginateModel<any>, Types.ObjectId, Types.ObjectId]) {
     const [Model, id, albumID] = args
     const query = { _id: id }
-    const update = { $push: { framesAlbums: albumID } }
+    const update = { $push: { embeddedAlbums: albumID } }
     const options = { upsert: true, new: true, setDefaultsOnInsert: true }
 
     return await Model.findOneAndUpdate(query, update, options)
@@ -86,7 +87,7 @@ export default {
   async removeAlbumFromCategory(...args: [PaginateModel<any>, Types.ObjectId, string]) {
     const [Model, id, albumID] = args
     const query = { _id: id }
-    const update = { $pull: { framesAlbums: albumID } }
+    const update = { $pull: { embeddedAlbums: albumID } }
     const options = { new: true }
 
     return await Model.findOneAndUpdate(query, update, options)
