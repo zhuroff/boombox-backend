@@ -1,11 +1,12 @@
 import { Request } from 'express'
-import { Types } from 'mongoose'
+import { PaginateOptions, Types } from 'mongoose'
 import { CompilationCreatePayload, CompilationUpdatePayload } from '../types/common.types'
 import { CollectionReorder, CollectionUpdateProps } from '../types/collection.types'
 import { Collection, CollectionDocument, CollectionDocumentAlbum } from '../models/collection.model'
 import { CollectionItemDTO, CollectionPageDTO } from '../dto/collection.dto'
 import { Album, AlbumDocument } from '../models/album.model'
 import { AlbumItemDTO } from '../dto/album.dto'
+import { PaginationDTO } from '../dto/pagination.dto'
 import albumsServices from './albums.services'
 
 export default {
@@ -33,37 +34,42 @@ export default {
       inList: false
     })
 
-    return {
-      id: newCollection._id.toString(),
-      title: title,
-      albums: [entityID]
-    }
+    return new CollectionItemDTO(newCollection)
   },
-  async remove(_id: string) {
-    const response = await Collection.findByIdAndDelete(_id)
+  async remove(id: string) {
+    const response = await Collection.findByIdAndDelete(id)
 
     if (response) {
-      await this.cleanAlbums(response.albums, _id)
-      return { message: 'Collection successfully removed' }
+      await this.cleanAlbums(response.albums, id)
+      return { message: 'collections.drop' }
     }
 
     throw new Error('Incorrect request options')
   },
   async getCollectionsList(req: Request, isOnlyTitles = false) {
-    const options = {
-      title: true,
-      albums: true,
-      avatar: true
+    const options: PaginateOptions = {
+      page: req.body.page,
+      limit: req.body.limit,
+      sort: req.body.sort,
+      lean: true,
+      populate: [
+        { path: 'albums', select: ['_id'] }
+      ],
+      select: {
+        title: true,
+        avatar: true
+      }
     }
 
-    const dbList = await Collection.find({}, options)
-      .populate({ path: 'albums.album', select: ['title', 'cloudURL'] })
+    const dbList = await Collection.paginate({}, options)
 
     if (dbList) {
-      if (isOnlyTitles) return dbList.map(({ title }) => title)
-      const docs = dbList.map((collection) => new CollectionItemDTO(collection))
+      if (isOnlyTitles) return dbList.docs.map(({ title }) => title)
+      const { totalDocs, totalPages, page } = dbList
+      const pagination = new PaginationDTO({ totalDocs, totalPages, page })
+      const docs = dbList.docs.map((collection) => new CollectionItemDTO(collection))
 
-      return { docs }
+      return { docs, pagination }
     }
 
     throw new Error('Incorrect request options')
