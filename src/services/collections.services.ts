@@ -1,13 +1,16 @@
 import { Request } from 'express'
 import { PaginateOptions, Types } from 'mongoose'
-import { Collection } from '../models/collection.model'
-import { Album } from '../models/album.model'
+import { Collection, CollectionDocument } from '../models/collection.model'
+import { Album, AlbumDocument } from '../models/album.model'
 // import { Period } from '../models/period.model'
 // import { Artist } from '../models/artist.model'
 // import { Genre } from '../models/genre.model'
 import { PaginationDTO } from '../dto/pagination.dto'
-import { CollectionDTO } from '../dto/collection.dto'
+import { CollectionItemDTO, CollectionPageDTO } from '../dto/collection.dto'
 import { CompilationCreatePayload, CompilationUpdatePayload } from '../types/common.types'
+import albumsServices from './albums.services'
+import { AlbumItemDTO } from '../dto/album.dto'
+import { CollectionReorder } from '../types/collection.types'
 
 class CollectionsServices {
   async create({ title, entityID }: CompilationCreatePayload) {
@@ -73,7 +76,7 @@ class CollectionsServices {
       if (isOnlyTitles) return dbList.docs.map(({ title }) => title)
       const { totalDocs, totalPages, page } = dbList
       const pagination = new PaginationDTO({ totalDocs, totalPages, page })
-      const docs = dbList.docs.map((collection) => new CollectionDTO(collection))
+      const docs = dbList.docs.map((collection) => new CollectionItemDTO(collection))
 
       return { docs, pagination }
     }
@@ -82,10 +85,10 @@ class CollectionsServices {
   }
 
   async single(id: string) {
-    const response = await Collection.findById(id)
+    const singleCollection: CollectionDocument = await Collection.findById(id)
       .populate({
         path: 'albums.album',
-        select: ['title', 'artist', 'genre', 'period', 'albumCover'],
+        select: ['title', 'artist', 'genre', 'period', 'albumCover', 'folderName', 'cloudURL'],
         populate: [
           { path: 'artist', select: ['title'] },
           { path: 'genre', select: ['title'] },
@@ -93,49 +96,12 @@ class CollectionsServices {
         ]
       })
       .lean()
+      
+    const coveredAlbums: AlbumItemDTO[] = await albumsServices.getCoveredAlbums(
+      (singleCollection.albums || []).map(({ album }) => album as AlbumDocument)
+    )
 
-    // let existingAlbums: CollectionListItem[] = []
-    // let deletedAlbums: DeletedCollectionAlbum[] = []
-
-    // response?.albums.forEach((el) => {
-    //   if (el.album) {
-    //     existingAlbums.push({ ...el, album: el.album as AlbumResponse })
-    //   } else {
-    //     deletedAlbums.push({
-    //       listID: id,
-    //       itemID: el._id
-    //     })
-    //   }
-    // })
-
-    // existingAlbums.sort((a, b) => {
-    //   if (a.order < b.order) return -1
-    //   if (a.order > b.order) return 1
-    //   return 0
-    // })
-
-    // if (deletedAlbums.length) {
-    //   console.log('Album was deleted!!!')
-    //   // deletedAlbums.map(async (album) => await removeItemFromCollection(album))
-    // }
-
-    // const coveredAlbums = existingAlbums.length
-    //   ? existingAlbums.map(async (el) => {
-    //     return await el
-    //     // const coveredAlbum = await CloudLib.covers([el.album])
-    //     // return { ...el, album: coveredAlbum[0] }
-    //   })
-    //   : []
-
-    const result = {
-      _id: response?._id,
-      title: response?.title,
-      poster: response?.poster,
-      avatar: response?.avatar,
-      // albums: await Promise.all(coveredAlbums)
-    }
-
-    return result
+    return new CollectionPageDTO(singleCollection, coveredAlbums)
   }
 
   async update({ entityID, gatheringID, isInList, order }: CompilationUpdatePayload) {
@@ -158,7 +124,7 @@ class CollectionsServices {
     )
   }
 
-  async reorder({ oldOrder, newOrder }: any /* CollectionReorder */, _id: string) {
+  async reorder({ oldOrder, newOrder }: CollectionReorder, _id: string) {
     const targetCollection = await Collection.findById(_id).exec()
 
     if (targetCollection) {
@@ -167,13 +133,12 @@ class CollectionsServices {
         ...targetCollection.albums.splice(oldOrder, 1)
       )
 
-      // targetCollection.albums.forEach((el, index) => {
-      //   el.order = index + 1
-      // })
+      targetCollection.albums.forEach((el, index) => {
+        el.order = index + 1
+      })
 
       await Collection.updateOne({ _id }, { $set: { albums: targetCollection.albums } })
-
-      return { message: 'Order successfully changed' }
+      return { message: 'collections.reordered' }
     }
 
     throw new Error('Incorrect request options')

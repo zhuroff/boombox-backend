@@ -1,5 +1,4 @@
 import { Document, Types } from 'mongoose'
-import { AlbumResponse } from './album.types'
 
 // export type CollectionModelAlbum = {
 //   _id: Types.ObjectId
@@ -13,11 +12,6 @@ export interface CollectionModel {
   avatar: string
   poster: string
   albums: Types.ObjectId[]
-}
-
-export type CollectionResponse = Omit<CollectionModel, 'albums'> & {
-  _id: Types.ObjectId
-  albums: AlbumResponse[]
 }
 
 // export type CollectionListItem = {
@@ -38,9 +32,9 @@ export type CollectionResponse = Omit<CollectionModel, 'albums'> & {
 //   order: number
 // }
 
-// export type CollectionReorder = {
-//   oldOrder: number
-//   newOrder: number
-// }
+export interface CollectionReorder {
+  oldOrder: number
+  newOrder: number
+}
 
 export interface CollectionDocument extends Document, CollectionModel { }
