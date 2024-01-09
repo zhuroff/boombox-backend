@@ -21,16 +21,28 @@ export interface BasicEntity {
   title: string
 }
 
-export interface CompilationCreatePayload {
+export interface GatheringCreatePayload {
   entityID: string
   title: string
 }
 
-export interface CompilationUpdatePayload {
+export interface GatheringUpdatePayload {
   entityID: Types.ObjectId | string
   gatheringID: string
   isInList: boolean
   order: number
+}
+
+export interface GatheringUpdateProps {
+  itemID: string | Types.ObjectId
+  inList: boolean
+  listID: string
+  order?: number
+}
+
+export interface GatheringReorder {
+  oldOrder: number
+  newOrder: number
 }
 
 export type CategoryDocument = ArtistDocument | GenreDocument | PeriodDocument

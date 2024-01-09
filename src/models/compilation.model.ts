@@ -37,8 +37,8 @@ const schema = new Schema({
 schema.index({ title: 'text' })
 schema.plugin(paginate)
 
-export interface CompilationDocumentAlbum {
-  album: TrackDocument | Types.ObjectId
+export interface CompilationDocumentTrack {
+  track: TrackDocument | Types.ObjectId
   order: number
 }
 
@@ -46,7 +46,7 @@ export interface CompilationDocument extends Omit<
   InferSchemaType<typeof schema> & { _id: Types.ObjectId },
   'tracks'
 > {
-  tracks: CompilationDocumentAlbum[]
+  tracks: CompilationDocumentTrack[]
 }
 
 export const Compilation = model<CompilationDocument, PaginateModel<CompilationDocument>>('compilations', schema)

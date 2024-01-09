@@ -4,6 +4,7 @@ import upload from '../middleware/upload'
 
 const router = Router()
 
+// router.patch('/:id/rename', controller.rename)
 router.post('/create', controller.create)
 router.patch('/update', controller.update)
 router.post('/', controller.getCollectionsList)

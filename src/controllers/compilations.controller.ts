@@ -1,39 +1,32 @@
 import { Request, Response } from 'express'
 import { Model } from 'mongoose'
-import { CompilationUpdatePayload } from '../types/compilation.types'
+// import { GatheringUpdatePayload } from '../types/common.types'
 import { Compilation, CompilationDocument } from '../models/compilation.model'
 import compilationsServices from '../services/compilations.services'
 import filesServices from '../services/files.services'
 
 export default {
   async create(req: Request, res: Response) {
-    const { title, track } = req.body
-
     try {
-      const response = await compilationsServices.create({ title, track })
+      const response = await compilationsServices.create(req.body)
       res.status(201).json(response)
     } catch (error) {
-      throw error
+      res.status(409).json({ message: (error as Error).message })
     }
   },
   async update(req: Request, res: Response) {
-    const payload: CompilationUpdatePayload = {
-      _id: String(req.body['listID']),
-      inList: req.body['inList'],
-      track: req.body['itemID'],
-      order: req.body['order']
-    }
+    const { entityID, gatheringID, isInList, order } = req.body
 
     try {
-      const response = await compilationsServices.update(payload)
+      const response = await compilationsServices.update({ entityID, gatheringID, isInList, order })
       res.status(201).json(response)
     } catch (error) {
       throw error
     }
   },
-  async getList(req: Request, res: Response) {
+  async getCompilationsList(req: Request, res: Response) {
     try {
-      const response = await compilationsServices.getList()
+      const response = await compilationsServices.getCompilationsList(req)
       res.json(response)
     } catch (error) {
       throw error

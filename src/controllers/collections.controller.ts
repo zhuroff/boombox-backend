@@ -5,6 +5,14 @@ import collectionsServices from '../services/collections.services'
 import filesServices from '../services/files.services'
 
 export default {
+  async create(req: Request, res: Response) {
+    try {
+      const response = await collectionsServices.create(req.body)
+      res.status(201).json(response)
+    } catch (error) {
+      res.status(409).json({ message: (error as Error).message })
+    }
+  },
   async getCollectionsList(req: Request, res: Response) {
     try {
       const response = await collectionsServices.getCollectionsList(req)
@@ -29,14 +37,6 @@ export default {
       res.status(201).json(response)
     } catch (error) {
       throw error
-    }
-  },
-  async create(req: Request, res: Response) {
-    try {
-      const response = await collectionsServices.create(req.body)
-      res.status(201).json(response)
-    } catch (error) {
-      res.status(409).json({ message: (error as Error).message })
     }
   },
   async remove(req: Request, res: Response) {

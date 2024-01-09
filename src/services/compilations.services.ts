@@ -1,126 +1,63 @@
-import { Types } from 'mongoose'
-import { CompilationDTO } from '../dto/compilation.dto'
-import { Compilation, CompilationDocument } from '../models/compilation.model'
-import { Track } from '../models/track.model'
-import { CompilationCreatePayload, CompilationUpdatePayload } from '../types/compilation.types'
-import filesServices from './files.services'
+import { Request } from 'express'
+import { Types, PaginateOptions } from 'mongoose'
+import { CompilationItemDTO, CompilationPageDTO } from '../dto/compilation.dto'
+import { PaginationDTO } from '../dto/pagination.dto'
+import { TrackDTO } from '../dto/track.dto'
+import { Track, TrackDocument } from '../models/track.model'
+import { Compilation, CompilationDocument, CompilationDocumentTrack } from '../models/compilation.model'
+import { GatheringCreatePayload, GatheringUpdatePayload, GatheringUpdateProps, GatheringReorder } from '../types/common.types'
 
 export default {
-  async create({ title, track }: CompilationCreatePayload) {
+  async create({ title, entityID }: GatheringCreatePayload) {
+    const compilations = await Compilation.find({}, { title: true })
+    
+    if (compilations.some((col) => col.title === title)) {
+      throw new Error('compilations.exists')
+    }
+
     const payload = {
       title,
-      tracks: [{ track, order: 1 }]
+      tracks: [
+        {
+          track: new Types.ObjectId(entityID),
+          order: 1
+        }
+      ]
     }
 
     const newCompilation = new Compilation(payload)
-
     await newCompilation.save()
-    await this.updateTrack(newCompilation._id, track, false)
+    await this.updateTrack({
+      listID: newCompilation._id.toString(),
+      itemID: entityID,
+      inList: false
+    })
 
-    return { message: 'Compilation successfully created' }
+    return new CompilationItemDTO(newCompilation)
   },
-  async update({ _id, inList, track, order }: CompilationUpdatePayload) {
-    const query = { _id }
-    const update = inList
-      ? { $pull: { tracks: { track } } }
-      : { $push: { tracks: { track, order } } }
+  async update({ entityID, gatheringID, isInList, order }: GatheringUpdatePayload) {
+    const query = { _id: gatheringID }
+    const update = isInList
+      ? { $pull: { tracks: { track: entityID } } }
+      : { $push: { tracks: { track: entityID, order } } }
     const options = { new: true }
 
     await Compilation.findOneAndUpdate(query, update, options)
-    await this.updateTrack(_id, track, inList)
+    await this.updateTrack({ listID: gatheringID, itemID: entityID, inList: isInList })
 
-    return {
-      message: inList
-        ? 'Track successfully removed from compilation'
-        : 'Track successfully added to compilation'
-    }
+    return { message: isInList ? 'compilations.removed' : 'compilations.added' }
   },
-  async cleanCompilation(compilations: Map<string, string[]>) {
-    return await Promise.all(Array.from(compilations).map(async ([compilationId, trackIds]) => (
-      await Compilation.updateMany(
-        { _id: compilationId },
-        { $pull: { tracks: { track: { $in: trackIds } } } }
-      )
-    )))
-  },
-  async getList() {
-    const config = { title: true, tracks: true, avatar: true }
-    const response = await Compilation.find({}, config).sort({ title: 1 }).exec()
+  async remove(id: string) {
+    const response = await Compilation.findByIdAndDelete(id)
 
     if (response) {
-      return response.map((el) => new CompilationDTO(el))
+      await this.cleanTracks(response.tracks, id)
+      return { message: 'compilations.drop' }
     }
 
     throw new Error('Incorrect request options')
   },
-  async single(id: string) {
-    const dbCompilation: CompilationDocument = await Compilation.findById(id)
-      .populate({
-        path: 'tracks.track',
-        select: ['title', 'listened', 'duration', 'path'],
-        populate: [
-          {
-            path: 'artist',
-            select: ['title']
-          },
-          {
-            path: 'inAlbum',
-            select: ['title', 'albumCover'],
-            options: { lean: true },
-            populate: [
-              { path: 'period', select: ['title'] },
-              { path: 'genre', select: ['title'] }
-            ]
-          }
-        ]
-      })
-      .lean()
-
-    if (dbCompilation) {
-      // const promisedTracks = dbCompilation.tracks.map(async ({ track, order }) => {
-      //   const trackRes = await CloudLib.get<CloudFile>(track.path)
-      //   const albumCoverRes = await CloudLib.get<CloudFile>(track.inAlbum.albumCover)
-      //   return {
-      //     order,
-      //     ...{
-      //       ...new TrackDTO({ ...track, ...trackRes.data }),
-      //       inAlbum: {
-      //         ...track.inAlbum,
-      //         albumCover: albumCoverRes.data.file
-      //       }
-      //     }
-      //   }
-      // })
-
-      // return { ...dbCompilation, tracks: await Promise.all(promisedTracks) }
-    }
-
-    throw new Error('Incorrect request options')
-  },
-  async remove(_id: string) {
-    const response = await Compilation.findByIdAndDelete({ _id })
-    const tracks = response?.tracks
-    const images = [response?.poster, response?.avatar]
-      .reduce<string[]>((acc, next) => {
-        if (next !== undefined) {
-          acc.push(next)
-        }
-
-        return acc
-      }, [])
-
-    if (tracks && tracks.length > 0) {
-      // @ts-ignore
-      tracks.map(async (el) => await this.updateTrack(_id, el.track, true))
-    }
-
-    if (images.length > 0) {
-      filesServices.remove(images)
-    }
-
-    return { message: 'Compilation was successfully deleted' }
-  },
-  async reorder({ oldOrder, newOrder }: any /* CollectionReorder */, _id: string) {
+  async reorder({ oldOrder, newOrder }: GatheringReorder, _id: string) {
     const targetCompilation = await Compilation.findById(_id).exec()
 
     if (targetCompilation) {
@@ -133,12 +70,74 @@ export default {
         el.order = index + 1
       })
 
-      await Compilation.updateOne({ _id }, { $set: { tracks: targetCompilation.tracks } })
-
-      return { message: 'Order successfully updated' }
+      await Compilation.updateOne({ _id }, { $set: { albums: targetCompilation.tracks } })
+      return { message: 'compilations.reordered' }
     }
 
     throw new Error('Incorrect request options')
+  },
+  async getCompilationsList(req: Request) {
+    const options: PaginateOptions = {
+      page: req.body.page,
+      limit: req.body.limit,
+      sort: req.body.sort,
+      lean: true,
+      populate: [
+        { path: 'tracks', select: ['_id'] }
+      ],
+      select: {
+        title: true,
+        avatar: true
+      }
+    }
+
+    const dbList = await Compilation.paginate({}, options)
+
+    if (dbList) {
+      const { totalDocs, totalPages, page } = dbList
+      const pagination = new PaginationDTO({ totalDocs, totalPages, page })
+      const docs = dbList.docs.map((compilation) => new CompilationItemDTO(compilation))
+
+      return { docs, pagination }
+    }
+
+    throw new Error('Incorrect request options')
+  },
+  async single(id: string) {
+    const singleCompilation: CompilationDocument = await Compilation.findById(id)
+      .populate({
+        path: 'tracks.track',
+        select: ['title', 'listened', 'duration', 'path', 'cloudURL'],
+        populate: [
+          {
+            path: 'artist',
+            select: ['title']
+          },
+          {
+            path: 'inAlbum',
+            select: ['title', 'cloudURL'],
+            options: { lean: true },
+            populate: [
+              { path: 'period', select: ['title'] },
+              { path: 'genre', select: ['title'] }
+            ]
+          }
+        ]
+      })
+      .lean()
+
+      return new CompilationPageDTO(
+        singleCompilation,
+        singleCompilation.tracks.map(({ track }) => new TrackDTO(track as TrackDocument))
+      )
+  },
+  async cleanCompilation(compilations: Map<string, string[]>) {
+    return await Promise.all(Array.from(compilations).map(async ([compilationId, trackIds]) => (
+      await Compilation.updateMany(
+        { _id: compilationId },
+        { $pull: { tracks: { track: { $in: trackIds } } } }
+      )
+    )))
   },
   async rename(_id: string, title: string) {
     const query = { _id }
@@ -148,13 +147,29 @@ export default {
 
     return { message: 'Compilation title was successfully updated' }
   },
-  async updateTrack(listID: Types.ObjectId | string, trackID: Types.ObjectId | string, inList: boolean) {
-    const query = { _id: trackID }
-    const update = inList
-      ? { $pull: { inCompilations: listID } }
-      : { $push: { inCompilations: listID } }
-    const options = { new: true }
+  async updateTrack({ listID, itemID, inList }: GatheringUpdateProps) {
+    try {
+      const query = { _id: itemID }
+      const update = inList
+        ? { $pull: { inCollections: listID } }
+        : { $push: { inCollections: listID } }
+      const options = { new: true }
 
-    await Track.findOneAndUpdate(query, update, options)
+      await Track.findOneAndUpdate(query, update, options)
+    } catch (error) {
+      console.log(error)
+      throw error
+    }
+  },
+  async cleanTracks(tracks: CompilationDocumentTrack[], listID: string) {
+    const cleanProcess = tracks.map(async (track) => {
+      const query = { _id: track.track }
+      const update = { $pull: { inCompilations: listID } }
+      const options = { new: true }
+
+      return await Track.findOneAndUpdate(query, update, options)
+    })
+
+    return await Promise.all(cleanProcess)
   }
 }

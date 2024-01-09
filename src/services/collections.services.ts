@@ -1,7 +1,6 @@
 import { Request } from 'express'
 import { PaginateOptions, Types } from 'mongoose'
-import { CompilationCreatePayload, CompilationUpdatePayload } from '../types/common.types'
-import { CollectionReorder, CollectionUpdateProps } from '../types/collection.types'
+import { GatheringCreatePayload, GatheringUpdatePayload, GatheringUpdateProps, GatheringReorder } from '../types/common.types'
 import { Collection, CollectionDocument, CollectionDocumentAlbum } from '../models/collection.model'
 import { CollectionItemDTO, CollectionPageDTO } from '../dto/collection.dto'
 import { Album, AlbumDocument } from '../models/album.model'
@@ -10,8 +9,9 @@ import { PaginationDTO } from '../dto/pagination.dto'
 import albumsServices from './albums.services'
 
 export default {
-  async create({ title, entityID }: CompilationCreatePayload) {
+  async create({ title, entityID }: GatheringCreatePayload) {
     const collections = await Collection.find({}, { title: true })
+
     if (collections.some((col) => col.title === title)) {
       throw new Error('collections.exists')
     }
@@ -36,12 +36,43 @@ export default {
 
     return new CollectionItemDTO(newCollection)
   },
+  async update({ entityID, gatheringID, isInList, order }: GatheringUpdatePayload) {
+    const query = { _id: gatheringID }
+    const update = isInList
+      ? { $pull: { albums: { album: entityID } } }
+      : { $push: { albums: { album: entityID, order } } }
+    const options = { new: true }
+
+    await Collection.findOneAndUpdate(query, update, options)
+    await this.updateAlbum({ listID: gatheringID, itemID: entityID, inList: isInList })
+
+    return { message: isInList ? 'collections.removed' : 'collections.added' }
+  },
   async remove(id: string) {
     const response = await Collection.findByIdAndDelete(id)
 
     if (response) {
       await this.cleanAlbums(response.albums, id)
       return { message: 'collections.drop' }
+    }
+
+    throw new Error('Incorrect request options')
+  },
+  async reorder({ oldOrder, newOrder }: GatheringReorder, _id: string) {
+    const targetCollection = await Collection.findById(_id).exec()
+
+    if (targetCollection) {
+      targetCollection.albums.splice(
+        newOrder, 0,
+        ...targetCollection.albums.splice(oldOrder, 1)
+      )
+
+      targetCollection.albums.forEach((el, index) => {
+        el.order = index + 1
+      })
+
+      await Collection.updateOne({ _id }, { $set: { albums: targetCollection.albums } })
+      return { message: 'collections.reordered' }
     }
 
     throw new Error('Incorrect request options')
@@ -93,44 +124,13 @@ export default {
 
     return new CollectionPageDTO(singleCollection, coveredAlbums)
   },
-  async update({ entityID, gatheringID, isInList, order }: CompilationUpdatePayload) {
-    const query = { _id: gatheringID }
-    const update = isInList
-      ? { $pull: { albums: { album: entityID } } }
-      : { $push: { albums: { album: entityID, order } } }
-    const options = { new: true }
-
-    await Collection.findOneAndUpdate(query, update, options)
-    await this.updateAlbum({ listID: gatheringID, itemID: entityID, inList: isInList })
-
-    return { message: isInList ? 'collections.removed' : 'collections.added' }
-  },
   async cleanCollection(collectionIds: Types.ObjectId[], albumId: Types.ObjectId | string) {
     return await Collection.updateMany(
       { _id: { $in: collectionIds } },
       { $pull: { albums: { album: albumId } } }
     )
   },
-  async reorder({ oldOrder, newOrder }: CollectionReorder, _id: string) {
-    const targetCollection = await Collection.findById(_id).exec()
-
-    if (targetCollection) {
-      targetCollection.albums.splice(
-        newOrder, 0,
-        ...targetCollection.albums.splice(oldOrder, 1)
-      )
-
-      targetCollection.albums.forEach((el, index) => {
-        el.order = index + 1
-      })
-
-      await Collection.updateOne({ _id }, { $set: { albums: targetCollection.albums } })
-      return { message: 'collections.reordered' }
-    }
-
-    throw new Error('Incorrect request options')
-  },
-  async updateAlbum({ listID, itemID, inList }: CollectionUpdateProps) {
+  async updateAlbum({ listID, itemID, inList }: GatheringUpdateProps) {
     try {
       const query = { _id: itemID }
       const update = inList
