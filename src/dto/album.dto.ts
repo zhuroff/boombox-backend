@@ -29,6 +29,6 @@ export class AlbumPageDTO extends AlbumItemDTO {
 
   constructor(album: AlbumDocument, albumCover?: string) {
     super(album, albumCover)
-    this.tracks = album.tracks.map((track) => new TrackDTO(track))
+    this.tracks = album.tracks.map((track) => new TrackDTO(track, album.period))
   }
 }

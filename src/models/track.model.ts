@@ -60,7 +60,7 @@ const schema = new Schema({
   inCompilations: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'albums',
+      ref: 'compilations',
       required: false
     }
   ],

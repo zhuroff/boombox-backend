@@ -1,11 +1,12 @@
 import { Request } from 'express'
-import { Types, PaginateOptions } from 'mongoose'
+import { Types, PaginateOptions, PipelineStage } from 'mongoose'
 import { CompilationItemDTO, CompilationPageDTO } from '../dto/compilation.dto'
 import { PaginationDTO } from '../dto/pagination.dto'
 import { TrackDTO } from '../dto/track.dto'
 import { Track, TrackDocument } from '../models/track.model'
 import { Compilation, CompilationDocument, CompilationDocumentTrack } from '../models/compilation.model'
 import { GatheringCreatePayload, GatheringUpdatePayload, GatheringUpdateProps, GatheringReorder } from '../types/common.types'
+import { RequestFilter } from '../types/reqres.types'
 
 export default {
   async create({ title, entityID }: GatheringCreatePayload) {
@@ -77,6 +78,10 @@ export default {
     throw new Error('Incorrect request options')
   },
   async getCompilationsList(req: Request) {
+    if (req.body.isRandom) {
+      return await this.getListRandom(req.body.limit, req.body.filter)
+    }
+
     const options: PaginateOptions = {
       page: req.body.page,
       limit: req.body.limit,
@@ -103,7 +108,7 @@ export default {
 
     throw new Error('Incorrect request options')
   },
-  async single(id: string) {
+  async single(id: string | Types.ObjectId) {
     const singleCompilation: CompilationDocument = await Compilation.findById(id)
       .populate({
         path: 'tracks.track',
@@ -115,11 +120,10 @@ export default {
           },
           {
             path: 'inAlbum',
-            select: ['title', 'cloudURL'],
+            select: ['title', 'cloudURL', 'period'],
             options: { lean: true },
             populate: [
-              { path: 'period', select: ['title'] },
-              { path: 'genre', select: ['title'] }
+              { path: 'period', select: ['title'] }
             ]
           }
         ]
@@ -128,7 +132,10 @@ export default {
 
       return new CompilationPageDTO(
         singleCompilation,
-        singleCompilation.tracks.map(({ track }) => new TrackDTO(track as TrackDocument))
+        singleCompilation.tracks.map(({ track }) => {
+          const trackDoc = track as TrackDocument
+          return new TrackDTO(trackDoc, trackDoc.inAlbum.period)
+        })
       )
   },
   async cleanCompilation(compilations: Map<string, string[]>) {
@@ -171,5 +178,19 @@ export default {
     })
 
     return await Promise.all(cleanProcess)
+  },
+  async getListRandom(size: number, filter: RequestFilter) {
+    const basicConfig: PipelineStage[] = [
+      { $sample: { size } },
+      { $match: { _id: { $ne: new Types.ObjectId(filter.excluded?.['_id']) } } }
+    ]
+
+    const response = await Compilation.aggregate<CompilationDocument>(basicConfig)
+
+    if (response) {
+      return { docs: response }
+    }
+
+    throw new Error('Incorrect request options')
   }
 }
