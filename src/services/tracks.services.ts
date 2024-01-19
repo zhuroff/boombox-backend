@@ -24,19 +24,15 @@ export default {
     })
     return await newTrack.save()
   },
-
   async remove(tracks: (string | Types.ObjectId)[]) {
     return await Track.deleteMany({ _id: { $in: tracks } })
   },
-
   async incrementListeningCounter(id: string) {
     return await Track.findByIdAndUpdate(id, { $inc: { listened: 1 } })
   },
-
   async saveTrackDuration(id: string, duration: number) {
     return await Track.findByIdAndUpdate(id, { $set: { duration } })
   },
-
   async getLyrics(id: string) {
     const response = await Track.findById(id)
 
@@ -46,7 +42,6 @@ export default {
 
     throw new Error('Incorrect request options')
   },
-
   async getLyricsExternal(query: string) {
     const searches = await GClient.songs.search(query)
     const resultArray = searches.map(async (el) => {
@@ -67,16 +62,13 @@ export default {
 
     return await Promise.all(resultArray)
   },
-
   async saveLyrics(id: string, lyrics: string) {
     return await Track.findByIdAndUpdate(id, { $set: { lyrics } })
   },
-
   async getAudio(path: string, cloudURL: string) {
     const cloudAPI = getCloudApi(cloudURL)
     return await cloudAPI.getFile(path, 'audio')
   },
-
   async getCoveredTracks(docs: TrackDocument[]) {
     return await Promise.all(docs.map(async (track) => {
       const cloudAPI = getCloudApi(track.cloudURL)

@@ -6,7 +6,6 @@ import cors from 'cors'
 import morgan from 'morgan'
 import usersRoutes from './routes/users.routes'
 import albumsRoutes from './routes/albums.routes'
-import toyRoutes from './routes/toy.routes'
 import discogsRoutes from './routes/discogs.routes'
 import tracksRoutes from './routes/tracks.routes'
 import artistsRoutes from './routes/artists.routes'
@@ -29,7 +28,7 @@ dotenv.config()
 const app = express()
 const PORT = 3001
 export const rootDir = path.resolve(__dirname, '../')
-export const cloudRootPath = `${process.env['COLLECTION_ROOT']}/Collection`
+export const cloudRootPath = `${process.env['COLLECTION_ROOT']}`
 
 export const cloudsMap = new Map<string, CloudApi>([
   ['https://eapi.pcloud.com', new PCloudApi(cloudRootPath)],
@@ -48,7 +47,6 @@ app.use(express.urlencoded({ extended: true }))
 app.use(json())
 app.use('/api/users', usersRoutes)
 app.use('/api/albums', albumsRoutes)
-app.use('/api/toy', toyRoutes)
 app.use('/api/discogs', discogsRoutes)
 app.use('/api/tracks', tracksRoutes)
 app.use('/api/artists', artistsRoutes)

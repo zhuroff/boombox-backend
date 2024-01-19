@@ -1,13 +1,13 @@
 import axios, {AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios';
 import { CloudEntityDTO } from '../dto/cloud.dto';
-import { Cloud, YandexCloudEntity, YandexCloudResponse } from '../types/cloud.types';
+import { Cloud, CloudFileTypes, YandexCloudEntity, YandexCloudResponse } from '../types/cloud.types';
 
 export class YandexCloudApi implements Cloud {
   #client: AxiosInstance
   #domain = process.env['YCLOUD_DOMAIN']
   #cloudRootPath: string
-  #qBuilder(path: string) {
-    return `${this.#domain}${this.#cloudRootPath}/${path}`
+  #qBuilder(path: string, root? :string) {
+    return `${this.#domain}${this.#cloudRootPath}/${root || 'Collection'}/${path}`
   }
 
   constructor(cloudRootPath: string) {
@@ -27,32 +27,32 @@ export class YandexCloudApi implements Cloud {
         return data._embedded.items.map((item) => new CloudEntityDTO(item, url))
       })
       .catch((error: AxiosError) => {
-        console.error('getFolders', error.message)
+        console.error(error.message)
         return null
       })
   }
   
-  async getFolderContent(path: string) {
+  async getFolderContent(path: string, root?: string) {
     return await this.#client
-      .get<YandexCloudResponse<YandexCloudEntity>>(this.#qBuilder(path))
+      .get<YandexCloudResponse<YandexCloudEntity>>(this.#qBuilder(path, root))
       .then(({ config: { url }, data }) => {
         if (!url) {
           throw new Error('"url" property is not found in cloud response')
         }
         return {
           ...data._embedded,
-          items: data._embedded.items.map((item) => new CloudEntityDTO(item, url))
+          items: data._embedded.items.map((item) => new CloudEntityDTO(item, url, root))
         }
       })
-      .catch((error: AxiosError) => console.error('getFolderContent', error.message))
+      .catch((error: AxiosError) => console.error(error.message))
   }
 
-  async getFile(path: string) {
+  async getFile(path: string, fileType: CloudFileTypes, root?: string) {
     return await this.#client
-      .get<YandexCloudResponse<YandexCloudEntity>>(this.#qBuilder(path))
+      .get<YandexCloudResponse<YandexCloudEntity>>(this.#qBuilder(path, root))
       .then(({ data }) => data.file)
       .catch((error: AxiosError) => {
-        console.error('getFile', error.message)
+        console.error(error.message)
         return undefined
       })
   }

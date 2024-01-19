@@ -8,8 +8,21 @@ export default {
       res.json(result)
     } catch (error) {
       if (error instanceof Error) {
-        console.error(error.message)
         res.status(404).json({ message: error.message })
+      } else {
+        res.status(500).json({ message: 'Internal server error' })
+      }
+    }
+  },
+  async getImage(req: Request, res: Response) {
+    try {
+      const result = await cloudServices.getFile(req.body)
+      res.json(result)
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(404).json({ message: error.message })
+      } else {
+        res.status(500).json({ message: 'Internal server error' })
       }
     }
   },
@@ -19,8 +32,21 @@ export default {
       res.json(result)
     } catch (error) {
       if (error instanceof Error) {
-        console.error(error.message)
         res.status(404).json({ message: error.message })
+      } else {
+        res.status(500).json({ message: 'Internal server error' })
+      }
+    }
+  },
+  async getFolderContent(req: Request, res: Response) {
+    try {
+      const result = await cloudServices.getFolderContent(req['body'])
+      res.json(result)
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(404).json({ message: error.message })
+      } else {
+        res.status(500).json({ message: 'Internal server error' })
       }
     }
   }

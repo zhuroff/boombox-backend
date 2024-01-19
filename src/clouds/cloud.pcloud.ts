@@ -47,7 +47,7 @@ export class PCloudApi implements Cloud {
     this.#digest = await this.#getDigest()
     return await this.#client
       .get<PCloudResponse<PCloudEntity> | PCloudResponseError>(this.#qBuilder(
-        `listfolder?path=/${this.#cloudRootPath}${path}`
+        `listfolder?path=/${this.#cloudRootPath}/Collection/${path}`
       ))
       .then(({ config: { url }, data }) => {
         if (!url) {
@@ -59,16 +59,16 @@ export class PCloudApi implements Cloud {
         return data.metadata.contents.map((item) => new CloudEntityDTO(item, url))
       })
       .catch((error) => {
-        console.error('getFolders', error)
+        console.error(error)
         return null
       })
   }
 
-  async getFolderContent(path: string) {
+  async getFolderContent(path: string, root?: string) {
     this.#digest = await this.#getDigest()
     return await this.#client
       .get<PCloudResponse<PCloudEntity> | PCloudResponseError>(this.#qBuilder(
-        `listfolder?path=/${this.#cloudRootPath}/${path}`
+        `listfolder?path=/${this.#cloudRootPath}/${root || 'Collection/'}${path}`
       ))
       .then(({ config: { url }, data }) => {
         if (!url) {
@@ -81,17 +81,17 @@ export class PCloudApi implements Cloud {
           limit: -1,
           offset: 0,
           total: data.metadata.contents.length,
-          items: data.metadata.contents.map((item) => new CloudEntityDTO(item, url))
+          items: data.metadata.contents.map((item) => new CloudEntityDTO(item, url, root))
         }
       })
-      .catch((error) => console.error('getFolderContent', error))
+      .catch((error) => console.error(error))
   }
 
-  async getFile(path: string, fileType: CloudFileTypes) {
+  async getFile(path: string, fileType: CloudFileTypes, root?: string) {
     this.#digest = await this.#getDigest()
     return await this.#client
       .get<PCloudFileResponse | PCloudResponseError>(this.#qBuilder(
-        `${this.#fileTypesMap.get(fileType)}?path=/${this.#cloudRootPath}/${path}`
+        `${this.#fileTypesMap.get(fileType)}?path=/${this.#cloudRootPath}/${root || 'Collection/'}${path}`
       ))
       .then(async ({ data }) => {
         if ('error' in data) {
@@ -100,7 +100,7 @@ export class PCloudApi implements Cloud {
         return this.#getFileLink(data)
       })
       .catch((error) => {
-        console.error('getFile', error.message)
+        console.error(error.message)
         return undefined
       })
   }

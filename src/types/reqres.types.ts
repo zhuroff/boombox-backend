@@ -3,6 +3,7 @@ import { TrackDocument } from '../models/track.model'
 import { CategoryDocument, ModelKeys } from './common.types'
 import { UserDTO } from '../dto/user.dto'
 import { AlbumItemDTO } from '../dto/album.dto'
+import { CloudFileTypes } from './cloud.types'
 
 export interface Pagination {
   totalDocs: number
@@ -47,4 +48,16 @@ export interface UserResponse {
   user: UserDTO
   accessToken: string
   refreshToken: string
+}
+
+export interface CloudReqPayload {
+  path: string
+  cloudURL: string
+}
+
+export interface CloudReqPayloadFilter extends CloudReqPayload {
+  type?: CloudFileTypes
+  root?: string
+  limit?: number
+  offset?: number
 }

@@ -70,6 +70,6 @@ export type CloudFolderContent = {
 
 export interface Cloud {
   getFolders: (path: string, params?: AxiosRequestConfig) => Promise<null | CloudEntityDTO[]>
-  getFolderContent: (path: string) => Promise<void | CloudFolderContent>
+  getFolderContent: (path: string, root?: string) => Promise<void | CloudFolderContent>
   getFile: (path: string, fileType: CloudFileTypes) => Promise<void | any>
 }
