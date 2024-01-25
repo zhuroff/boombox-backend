@@ -2,7 +2,7 @@ import { UnionCloudsEntity } from '../types/cloud.types'
 import utils from '../utils'
 
 export class CloudEntityDTO {
-  _id: string
+  id: string
   path: string
   title: string
   cloudURL: string
@@ -28,7 +28,7 @@ export class CloudEntityDTO {
   }
 
   constructor(item: UnionCloudsEntity, cloudURL: string, root = 'Collection/') {
-    this._id = this.#idSetter(item)
+    this.id = this.#idSetter(item)
     this.path = utils.sanitizeURL(item.path, `${process.env['COLLECTION_ROOT']}/${root}`)
     this.title = item.name
     this.cloudURL = new URL(cloudURL).origin

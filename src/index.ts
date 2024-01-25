@@ -22,6 +22,7 @@ import cloudRoutes from './routes/cloud.routes'
 import { CloudApi } from './types/cloud.types'
 import { PCloudApi } from './clouds/cloud.pcloud'
 import { YandexCloudApi } from './clouds/cloud.yandex'
+// import { cleanEverything } from './utils/clean'
 
 dotenv.config()
 
@@ -38,7 +39,10 @@ export const cloudsMap = new Map<string, CloudApi>([
 export const getCloudApi = (url: string) => cloudsMap.get(url) as CloudApi
 
 mongoose.connect(process.env['MONGO_URI'] as string)
-  .then(() => console.log('MongoDB connected'))
+  .then(() => {
+    console.log('MongoDB connected')
+    // cleanEverything().then(() => console.log('Everything cleaned'))
+  })
   .catch((error) => console.log(error))
 
 app.use(cors())

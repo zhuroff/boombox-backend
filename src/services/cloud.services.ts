@@ -47,7 +47,6 @@ export default {
       .split('/')
       .reduce((acc, next) => acc + utils.sanitizeURL(next) + '/', '')
       .slice(0, -1)
-      console.log(satitizedPath)
 
     const file = await cloudApi.getFile(satitizedPath, type, root)
     

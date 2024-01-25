@@ -2,6 +2,8 @@ import { Types } from 'mongoose'
 import { Client } from 'genius-lyrics'
 import { getCloudApi } from '..'
 import { Track, TrackDocument } from '../models/track.model'
+import { CompilationDocumentTrack } from '../models/compilation.model'
+import { GatheringUpdateProps } from '../types/common.types'
 import { CloudEntityDTO } from '../dto/cloud.dto'
 import utils from '../utils'
 
@@ -14,15 +16,19 @@ export default {
     artistId: Types.ObjectId,
     cloudURL: string
   ) {
-    const newTrack = new Track({
-      ...track,
-      title: utils.parseTrackTitle(track.title),
-      fileName: track.title,
-      inAlbum: albumId,
-      artist: artistId,
-      cloudURL
-    })
-    return await newTrack.save()
+    try {
+      const newTrack = new Track({
+        ...track,
+        title: utils.parseTrackTitle(track.title),
+        fileName: track.title,
+        inAlbum: albumId,
+        artist: artistId,
+        cloudURL
+      })
+      return await newTrack.save()
+    } catch (error) {
+      throw error
+    }
   },
   async remove(tracks: (string | Types.ObjectId)[]) {
     return await Track.deleteMany({ _id: { $in: tracks } })
@@ -79,5 +85,30 @@ export default {
       if (cover) track.cover = cover
       return track
     }))
-  }
+  },
+  async reduceTracksCompilations(tracks: CompilationDocumentTrack[], listID: string) {
+    const cleanProcess = tracks.map(async (track) => {
+      return await this.updateCompilationInTrack({
+        listID,
+        inList: false,
+        itemID: track.track instanceof Types.ObjectId ? track.track : track.track._id
+      })
+    })
+
+    return await Promise.all(cleanProcess)
+  },
+  async updateCompilationInTrack({ listID, itemID, inList }: GatheringUpdateProps) {
+    try {
+      const query = { _id: itemID }
+      const update = inList
+        ? { $pull: { inCompilations: listID } }
+        : { $push: { inCompilations: listID } }
+      const options = { new: true }
+
+      await Track.findOneAndUpdate(query, update, options)
+    } catch (error) {
+      console.log(error)
+      throw error
+    }
+  } 
 }

@@ -39,27 +39,32 @@ export default {
   },
 
   async createAlbum(shape: AlbumShape) {
-    const newAlbum = new Album(shape)
-    const newArtist = await categoriesServices.create(Artist, shape.artist, newAlbum._id)
-    const newGenre = await categoriesServices.create(Genre, shape.genre, newAlbum._id)
-    const newPeriod = await categoriesServices.create(Period, shape.period, newAlbum._id)
+    try {
+      const newAlbum = new Album(shape)
+      const newArtist = await categoriesServices.create(Artist, shape.artist, newAlbum._id)
+      const newGenre = await categoriesServices.create(Genre, shape.genre, newAlbum._id)
+      const newPeriod = await categoriesServices.create(Period, shape.period, newAlbum._id)
 
-    if (newArtist && newGenre && newPeriod) {
-      const albumTracks = await Promise.all(shape.tracks.map(async (track) => (
-        await tracksServices.create(track, newAlbum._id, newArtist._id, shape.cloudURL)
-      )))
-      const dateOfCreation = new Date()
+      if (newArtist && newGenre && newPeriod) {
+        const albumTracks = await Promise.all(shape.tracks.map(async (track) => (
+          await tracksServices.create(track, newAlbum._id, newArtist._id, shape.cloudURL)
+        )))
+        const dateOfCreation = new Date()
 
-      newAlbum.$set({ artist: newArtist._id })
-      newAlbum.$set({ genre: newGenre._id })
-      newAlbum.$set({ period: newPeriod._id })
-      newAlbum.$set({ created: dateOfCreation })
-      newAlbum.$set({ modified: dateOfCreation })
-      newAlbum.$set({ tracks: albumTracks.map(({ _id }) => _id) })
+        newAlbum.$set({ artist: newArtist._id })
+        newAlbum.$set({ genre: newGenre._id })
+        newAlbum.$set({ period: newPeriod._id })
+        newAlbum.$set({ created: dateOfCreation })
+        newAlbum.$set({ modified: dateOfCreation })
+        newAlbum.$set({ tracks: albumTracks.map(({ _id }) => _id) })
 
-      return await newAlbum.save()
+        return await newAlbum.save()
+      }
+
+      return false
+    } catch (error) {
+      throw error
     }
-    return false
   },
 
   async removeAlbum(_id: Types.ObjectId | string) {
@@ -85,7 +90,7 @@ export default {
     if (collections?.length) {
       await collectionsServices.cleanCollection(collections, _id)
     }
-
+    
     if (compilations.size > 0) {
       await compilationsServices.cleanCompilation(compilations)
     }
@@ -233,7 +238,8 @@ export default {
         path: 'tracks',
         populate: [
           { path: 'artist', select: ['title'] },
-          { path: 'inAlbum', select: ['title', 'folderName', 'cloudURL'] }
+          { path: 'inAlbum', select: ['title', 'folderName', 'cloudURL'] },
+          { path: 'inCompilations', select: ['title'] }
         ]
       })
       .lean()

@@ -47,7 +47,7 @@ export class PCloudApi implements Cloud {
     this.#digest = await this.#getDigest()
     return await this.#client
       .get<PCloudResponse<PCloudEntity> | PCloudResponseError>(this.#qBuilder(
-        `listfolder?path=/${this.#cloudRootPath}/Collection/${path}`
+        `listfolder?path=/${this.#cloudRootPath}/Collection${path}`
       ))
       .then(({ config: { url }, data }) => {
         if (!url) {

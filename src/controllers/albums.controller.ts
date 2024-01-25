@@ -57,6 +57,7 @@ export default {
         deleted: 0
       }
     } catch (error) {
+      console.log(error)
       throw error
     }
   },

@@ -3,10 +3,11 @@ import { Types, PaginateOptions, PipelineStage } from 'mongoose'
 import { CompilationItemDTO, CompilationPageDTO } from '../dto/compilation.dto'
 import { PaginationDTO } from '../dto/pagination.dto'
 import { TrackDTO } from '../dto/track.dto'
-import { Track, TrackDocument } from '../models/track.model'
-import { Compilation, CompilationDocument, CompilationDocumentTrack } from '../models/compilation.model'
-import { GatheringCreatePayload, GatheringUpdatePayload, GatheringUpdateProps, GatheringReorder } from '../types/common.types'
+import { TrackDocument } from '../models/track.model'
+import { Compilation, CompilationDocument } from '../models/compilation.model'
+import { GatheringCreatePayload, GatheringUpdatePayload, GatheringReorder } from '../types/common.types'
 import { RequestFilter } from '../types/reqres.types'
+import tracksServices from './tracks.services'
 
 export default {
   async create({ title, entityID }: GatheringCreatePayload) {
@@ -28,7 +29,7 @@ export default {
 
     const newCompilation = new Compilation(payload)
     await newCompilation.save()
-    await this.updateTrack({
+    await tracksServices.updateCompilationInTrack({
       listID: newCompilation._id.toString(),
       itemID: entityID,
       inList: false
@@ -44,7 +45,7 @@ export default {
     const options = { new: true }
 
     await Compilation.findOneAndUpdate(query, update, options)
-    await this.updateTrack({ listID: gatheringID, itemID: entityID, inList: isInList })
+    await tracksServices.updateCompilationInTrack({ listID: gatheringID, itemID: entityID, inList: isInList })
 
     return { message: isInList ? 'compilations.removed' : 'compilations.added' }
   },
@@ -52,7 +53,7 @@ export default {
     const response = await Compilation.findByIdAndDelete(id)
 
     if (response) {
-      await this.cleanTracks(response.tracks, id)
+      await tracksServices.reduceTracksCompilations(response.tracks, id)
       return { message: 'compilations.drop' }
     }
 
@@ -153,31 +154,6 @@ export default {
     await Compilation.findOneAndUpdate(query, update)
 
     return { message: 'Compilation title was successfully updated' }
-  },
-  async updateTrack({ listID, itemID, inList }: GatheringUpdateProps) {
-    try {
-      const query = { _id: itemID }
-      const update = inList
-        ? { $pull: { inCollections: listID } }
-        : { $push: { inCollections: listID } }
-      const options = { new: true }
-
-      await Track.findOneAndUpdate(query, update, options)
-    } catch (error) {
-      console.log(error)
-      throw error
-    }
-  },
-  async cleanTracks(tracks: CompilationDocumentTrack[], listID: string) {
-    const cleanProcess = tracks.map(async (track) => {
-      const query = { _id: track.track }
-      const update = { $pull: { inCompilations: listID } }
-      const options = { new: true }
-
-      return await Track.findOneAndUpdate(query, update, options)
-    })
-
-    return await Promise.all(cleanProcess)
   },
   async getListRandom(size: number, filter: RequestFilter) {
     const basicConfig: PipelineStage[] = [
