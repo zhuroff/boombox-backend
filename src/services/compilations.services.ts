@@ -72,7 +72,7 @@ export default {
         el.order = index + 1
       })
 
-      await Compilation.updateOne({ _id }, { $set: { albums: targetCompilation.tracks } })
+      await Compilation.updateOne({ _id }, { $set: { tracks: targetCompilation.tracks } })
       return { message: 'compilations.reordered' }
     }
 
