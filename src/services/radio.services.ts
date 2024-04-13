@@ -28,7 +28,7 @@ export default {
   async allStations({ genre, offset }: RadioRequestConfig) {
     const filter = {
       by: 'tag',
-      limit: 51,
+      limit: 50,
       searchterm: genre,
       offset
     }

@@ -44,7 +44,7 @@ export default {
   },
   async getAudio(req: Request, res: Response) {
     try {
-      const response = await tracksServices.getAudio(req.body['path'], req.body['cloudURL'])
+      const response = await tracksServices.getAudio(req.body['path'], req.body['cloudURL'], req.body['root'])
       res.json(response)
     } catch (error) {
       console.info(error)

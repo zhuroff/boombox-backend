@@ -71,9 +71,9 @@ export default {
   async saveLyrics(id: string, lyrics: string) {
     return await Track.findByIdAndUpdate(id, { $set: { lyrics } })
   },
-  async getAudio(path: string, cloudURL: string) {
+  async getAudio(path: string, cloudURL: string, root?: string) {
     const cloudAPI = getCloudApi(cloudURL)
-    return await cloudAPI.getFile(path, 'audio')
+    return await cloudAPI.getFile(path, 'audio', root)
   },
   async getCoveredTracks(docs: TrackDocument[]) {
     return await Promise.all(docs.map(async (track) => {

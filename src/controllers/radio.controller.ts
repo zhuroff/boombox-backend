@@ -2,19 +2,17 @@ import { Request, Response } from 'express'
 import radioServices from '../services/radio.services'
 
 export default {
-  async savedStations(req: Request, res: Response) {
-    try {
-      const response = await radioServices.savedStations()
-      res.json(response)
-    } catch (error) {
-      throw error
-    }
-  },
-  async allStations(req: Request, res: Response) {
+  async getStations(req: Request, res: Response) {
     const { offset, genre } = req.body
+    let response
 
     try {
-      const response = await radioServices.allStations({ offset, genre })
+      if (genre) {
+        response = await radioServices.allStations({ offset, genre })
+      } else {
+        response = await radioServices.savedStations()
+      }
+
       res.json(response)
     } catch (error) {
       throw error
