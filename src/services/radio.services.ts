@@ -25,12 +25,12 @@ export default {
 
     throw new Error('Incorrect request options')
   },
-  async allStations({ genre, offset }: RadioRequestConfig) {
+  async allStations({ genre, offset, limit }: RadioRequestConfig) {
     const filter = {
       by: 'tag',
-      limit: 50,
       searchterm: genre,
-      offset
+      offset,
+      limit
     }
 
     const response: RadioBrowserStationResponse[] = await RadioBrowser.getStations(filter)

@@ -3,12 +3,12 @@ import radioServices from '../services/radio.services'
 
 export default {
   async getStations(req: Request, res: Response) {
-    const { offset, genre } = req.body
+    const { genre, offset, limit } = req.body
     let response
 
     try {
       if (genre) {
-        response = await radioServices.allStations({ offset, genre })
+        response = await radioServices.allStations({ genre, offset, limit })
       } else {
         response = await radioServices.savedStations()
       }
