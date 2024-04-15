@@ -6,7 +6,7 @@ export class UserDTO {
   name: string
   email: string
   role: string
-  surname?: string
+  surname?: string | null
   login: string
 
   constructor(model: UserDocument) {

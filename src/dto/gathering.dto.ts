@@ -4,8 +4,8 @@ import { EntityBasicDTO } from './basic.dto'
 
 export default abstract class GatheringEntity extends EntityBasicDTO {
   readonly dateCreated: Date
-  poster?: string
-  avatar?: string
+  poster?: string | null
+  avatar?: string | null
 
   constructor(gathering: CollectionDocument | CompilationDocument) {
     super(gathering._id, gathering.title)

@@ -1,5 +1,5 @@
 import { Request } from 'express'
-import { PaginateModel, PaginateOptions, Types } from 'mongoose'
+import { FilterQuery, PaginateModel, PaginateOptions, Types } from 'mongoose'
 import { AlbumDocument } from '../models/album.model'
 import { Embedded } from '../models/embedded.model'
 import { CategoryDocument } from '../types/common.types'
@@ -87,7 +87,7 @@ export default {
     return await Model.findOneAndUpdate(query, update, options)
   },
   async remove<T>(Model: PaginateModel<T>, _id: string) {
-    await Model.deleteOne({ _id })
+    await Model.deleteOne({ _id } as FilterQuery<T>)
     return { message: 'Category successfully deleted' }
   },
   async cleanAlbums(Model: PaginateModel<CategoryDocument>, categoryId: Types.ObjectId, albumId: Types.ObjectId | string) {

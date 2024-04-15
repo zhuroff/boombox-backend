@@ -229,7 +229,7 @@ export default {
       return randomAlbum
     }
 
-    const singleAlbum: AlbumDocument = await Album.findById(id)
+    const singleAlbum: AlbumDocument | null = await Album.findById(id)
       .populate({ path: 'artist', select: ['title'] })
       .populate({ path: 'genre', select: ['title'] })
       .populate({ path: 'period', select: ['title'] })
@@ -243,6 +243,10 @@ export default {
         ]
       })
       .lean()
+
+    if (!singleAlbum) {
+      throw new Error('Incorrect request options or album not found')
+    }
 
     try {
       const cloudAPI = getCloudApi(singleAlbum.cloudURL)

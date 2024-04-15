@@ -5,7 +5,7 @@ import { EntityBasicDTO } from './basic.dto'
 
 export class CategoryItemDTO extends EntityBasicDTO {
   albums: number
-  avatar?: string
+  avatar?: string | null
 
   #calcAlbumsLength(category: CategoryDocument) {
     return (
@@ -22,8 +22,8 @@ export class CategoryItemDTO extends EntityBasicDTO {
 }
 
 export class CategoryPageDTO extends EntityBasicDTO {
-  poster?: string
-  avatar?: string
+  poster?: string | null
+  avatar?: string | null
   albums: AlbumItemDTO[]
   embeddedAlbums?: EmbeddedDocument[]
 

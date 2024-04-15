@@ -1,5 +1,5 @@
 import { Request } from 'express'
-import { PaginateOptions, Types } from 'mongoose'
+import { FilterQuery, PaginateOptions, Types } from 'mongoose'
 import { GatheringCreatePayload, GatheringUpdatePayload, GatheringUpdateProps, GatheringReorder } from '../types/common.types'
 import { Collection, CollectionDocument, CollectionDocumentAlbum } from '../models/collection.model'
 import { CollectionItemDTO, CollectionPageDTO } from '../dto/collection.dto'
@@ -106,7 +106,7 @@ export default {
     throw new Error('Incorrect request options')
   },
   async single(id: string) {
-    const singleCollection: CollectionDocument = await Collection.findById(id)
+    const singleCollection: CollectionDocument | null = await Collection.findById(id)
       .populate({
         path: 'albums.album',
         select: ['title', 'artist', 'genre', 'period', 'albumCover', 'folderName', 'cloudURL'],
@@ -117,6 +117,10 @@ export default {
         ]
       })
       .lean()
+
+    if (!singleCollection) {
+      throw new Error('Incorrect request options or collection not found')
+    }
       
     const coveredAlbums: AlbumItemDTO[] = await albumsServices.getCoveredAlbums(
       (singleCollection.albums || []).map(({ album }) => album as AlbumDocument)
@@ -146,7 +150,7 @@ export default {
   },
   async cleanAlbums(albums: CollectionDocumentAlbum[], listID: string) {
     const cleanProcess = albums.map(async (album) => {
-      const query = { _id: album.album }
+      const query: FilterQuery<AlbumDocument> = { _id: new Types.ObjectId(album.album.toString()) }
       const update = { $pull: { inCollections: listID } }
       const options = { new: true }
 

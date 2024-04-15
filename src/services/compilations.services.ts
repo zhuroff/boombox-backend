@@ -110,7 +110,7 @@ export default {
     throw new Error('Incorrect request options')
   },
   async single(id: string | Types.ObjectId) {
-    const singleCompilation: CompilationDocument = await Compilation.findById(id)
+    const singleCompilation: CompilationDocument | null = await Compilation.findById(id)
       .populate({
         path: 'tracks.track',
         select: ['title', 'listened', 'duration', 'path', 'cloudURL'],
@@ -131,13 +131,17 @@ export default {
       })
       .lean()
 
-      return new CompilationPageDTO(
-        singleCompilation,
-        singleCompilation.tracks.map(({ track }) => {
-          const trackDoc = track as TrackDocument
-          return new TrackDTO(trackDoc, trackDoc.inAlbum.period)
-        })
-      )
+    if (!singleCompilation) {
+      throw new Error('Incorrect request options or compilation not found')
+    }
+
+    return new CompilationPageDTO(
+      singleCompilation,
+      singleCompilation.tracks.map(({ track }) => {
+        const trackDoc = track as TrackDocument
+        return new TrackDTO(trackDoc, trackDoc.inAlbum.period)
+      })
+    )
   },
   async cleanCompilation(compilations: Map<string, string[]>) {
     return await Promise.all(Array.from(compilations).map(async ([compilationId, trackIds]) => (

@@ -7,8 +7,8 @@ export class TrackDTO {
   title: string
   path: string
   cloudURL: string
-  duration?: number
-  listened?: number
+  duration?: number | null
+  listened?: number | null
   period: BasicEntity
   artist: BasicEntity
   inAlbum: AlbumDocument

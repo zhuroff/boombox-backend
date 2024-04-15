@@ -1,4 +1,4 @@
-import { LeanDocument, Model, PaginateModel } from 'mongoose'
+import { Document, Model, PaginateModel } from 'mongoose'
 import { rootDir } from '..'
 import { Album } from '../models/album.model'
 import { Artist } from '../models/artist.model'
@@ -29,7 +29,7 @@ export default {
 
     await this.createFolder(timestamp)
     const backuping = [...modelsDictMap].map(async ([key, model]) => {
-      const response = await model.find({}).lean()
+      const response = await model.find({})//.lean()
       return await this.writeFile(`${key}.json`, timestamp, response)
     })
 
@@ -70,7 +70,7 @@ export default {
       )
     })
   },
-  async writeFile(fileName: string, folderName: string, data: LeanDocument<any>[]) {
+  async writeFile(fileName: string, folderName: string, data: Document<any>[]) {
     return new Promise((resolve, reject) => {
       fs.writeFile(
         path.join(rootDir, './backups', folderName, fileName),
