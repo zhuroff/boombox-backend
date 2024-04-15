@@ -2170,11 +2170,6 @@ qs@^6.7.0:
   dependencies:
     side-channel "^1.0.4"
 
-radio-browser@^2.1.10:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/radio-browser/-/radio-browser-2.2.1.tgz#faedce7249252093ad00b4656a4352d7a3accf99"
-  integrity sha512-HZ0tpRYcSDF7k41cQ+nLYJ9kv+y53zP19PJsY4fCiv4okIcthMLnoigxwgPUgKcIuFdQp1jWD5fsWLAoiduu1w==
-
 range-parser@~1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/range-parser/-/range-parser-1.2.1.tgz#3cf37023d199e1c24d1a55b84800c2f3e6468031"

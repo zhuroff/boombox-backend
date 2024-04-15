@@ -29,7 +29,7 @@ export interface RequestFilter {
   excluded?: Record<string, string>
 }
 
-export type SearchModelKey = Omit<ModelKeys, 'radio' | 'users' | 'tokens' | 'toys'>
+export type SearchModelKey = Omit<ModelKeys, 'users' | 'tokens' | 'toys'>
 
 export type SearchParams = Record<'$text', { '$search': string }>
 

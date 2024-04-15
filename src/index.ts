@@ -15,7 +15,6 @@ import embeddedRoutes from './routes/embedded.routes'
 import compilationsRoutes from './routes/compilations.routes'
 import searchRoutes from './routes/search.routes'
 import collectionsRoutes from './routes/collections.routes'
-import radioRoutes from './routes/radio.routes'
 import backupRoutes from './routes/backup.routes'
 import synchronizeRoutes from './routes/sync.routes'
 import cloudRoutes from './routes/cloud.routes'
@@ -59,7 +58,6 @@ app.use('/api/periods', periodsRoutes)
 app.use('/api/embedded', embeddedRoutes)
 app.use('/api/compilations', compilationsRoutes)
 app.use('/api/collections', collectionsRoutes)
-app.use('/api/radio', radioRoutes)
 app.use('/api/backup', backupRoutes)
 app.use('/api/sync', synchronizeRoutes)
 app.use('/api/cloud', cloudRoutes)

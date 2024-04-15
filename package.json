@@ -28,8 +28,7 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.4",
     "passport": "^0.5.2",
-    "passport-jwt": "^4.0.0",
-    "radio-browser": "^2.1.10"
+    "passport-jwt": "^4.0.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",

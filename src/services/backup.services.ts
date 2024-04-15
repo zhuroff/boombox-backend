@@ -7,7 +7,6 @@ import { Embedded } from '../models/embedded.model'
 import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
 import { Compilation } from '../models/compilation.model'
-import { Radio } from '../models/radio.model'
 import { Track } from '../models/track.model'
 import { ModelKeys } from '../types/common.types'
 import fs from 'fs'
@@ -21,9 +20,7 @@ const modelsDictMap = new Map<ModelKeys, PaginateModel<any, {}, {}> | Model<any,
   ['genres', Genre],
   ['periods', Period],
   ['compilations', Compilation],
-  ['radio', Radio],
-  ['tracks', Track],
-  ['radio', Radio]
+  ['tracks', Track]
 ])
 
 export default {

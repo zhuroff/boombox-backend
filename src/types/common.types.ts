@@ -12,7 +12,6 @@ export type ModelKeys =
   | 'collections'
   | 'compilations'
   | 'tracks'
-  | 'radio'
   | 'users'
   | 'tokens'
 
