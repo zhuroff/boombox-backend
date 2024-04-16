@@ -26,6 +26,14 @@ export default {
       throw error
     }
   },
+  async getWave(req: Request, res: Response) {
+    try {
+      const response = await tracksServices.getWave(req)
+      res.json(response)
+    } catch (error) {
+      throw error
+    }
+  },
   async getLyricsExternal(req: Request, res: Response): Promise<void | ReturnType<typeof setTimeout>> {
     try {
       const response = await tracksServices.getLyricsExternal(req.body.query)

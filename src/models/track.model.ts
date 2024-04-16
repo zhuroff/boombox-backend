@@ -2,9 +2,11 @@ import { model, Schema, PaginateModel, InferSchemaType, Types } from 'mongoose'
 import { AlbumDocument } from './album.model'
 import { ArtistDocument } from './artist.model'
 import { CompilationDocument } from './compilation.model'
+import { GenreDocument } from './genre.model'
+import { PeriodDocument } from './period.model'
 import paginate from 'mongoose-paginate-v2'
 
-type TrackObjectIdKeys = 'inAlbum' | 'inCompilations' | 'artist'
+type TrackObjectIdKeys = 'inAlbum' | 'inCompilations' | 'artist' | 'genre' | 'period'
 
 const schema = new Schema({
   title: {
@@ -68,6 +70,16 @@ const schema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'artists',
     required: false
+  },
+  genre: {
+    type: Schema.Types.ObjectId,
+    ref: 'genres',
+    required: false
+  },
+  period: {
+    type: Schema.Types.ObjectId,
+    ref: 'periods',
+    required: false
   }
 })
 
@@ -78,10 +90,12 @@ export interface TrackDocument extends Omit<
   InferSchemaType<typeof schema> & { _id: Types.ObjectId },
   TrackObjectIdKeys
 > {
-  cover?: string
+  coverURL?: string
   inAlbum: AlbumDocument
   inCompilations: CompilationDocument[]
   artist: ArtistDocument
+  genre: GenreDocument
+  period: PeriodDocument
 }
 
 export const Track = model<TrackDocument, PaginateModel<TrackDocument>>('tracks', schema)

@@ -1,3 +1,4 @@
+import { Request } from 'express'
 import { Types } from 'mongoose'
 import { Client } from 'genius-lyrics'
 import { getCloudApi } from '..'
@@ -5,6 +6,7 @@ import { Track, TrackDocument } from '../models/track.model'
 import { CompilationDocumentTrack } from '../models/compilation.model'
 import { GatheringUpdateProps } from '../types/common.types'
 import { CloudEntityDTO } from '../dto/cloud.dto'
+import { TrackDTO } from '../dto/track.dto'
 import utils from '../utils'
 
 const GClient = new Client(process.env['GENIUS_SECRET'])
@@ -14,6 +16,8 @@ export default {
     track: Required<CloudEntityDTO>,
     albumId: Types.ObjectId,
     artistId: Types.ObjectId,
+    genreId: Types.ObjectId,
+    periodId: Types.ObjectId,
     cloudURL: string
   ) {
     try {
@@ -23,6 +27,8 @@ export default {
         fileName: track.title,
         inAlbum: albumId,
         artist: artistId,
+        genre: genreId,
+        period: periodId,
         cloudURL
       })
       return await newTrack.save()
@@ -47,6 +53,66 @@ export default {
     }
 
     throw new Error('Incorrect request options')
+  },
+  async getWave(req: Request) {
+    const config = [
+      {
+        $lookup: {
+          from: 'artists',
+          localField: 'artist',
+          foreignField: '_id',
+          as: 'artist'
+        }
+      },
+      {
+        $lookup: {
+          from: 'genres',
+          localField: 'genre',
+          foreignField: '_id',
+          as: 'genre'
+        }
+      },
+      {
+        $lookup: {
+          from: 'periods',
+          localField: 'period',
+          foreignField: '_id',
+          as: 'period'
+        }
+      },
+      {
+        $lookup: {
+          from: 'albums',
+          localField: 'inAlbum',
+          foreignField: '_id',
+          as: 'inAlbum'
+        }
+      },
+      { $match: { [req.body['filter']['key']]: req.body['filter']['name'] } },
+      { $sample: { size: req.body['limit'] } }
+    ]
+
+    const waveTracks = await Track.aggregate(config)
+    const coveredWaveTracks = await Promise.all(waveTracks.map(async (track) => {
+      const cloudAPI = getCloudApi(track.inAlbum[0].cloudURL)
+      return {
+        ...track,
+        coverURL: await cloudAPI.getFile(
+          `${utils.sanitizeURL(track.inAlbum[0].folderName)}/cover.webp`,
+          'image'
+        )
+      }
+    }))
+
+    return coveredWaveTracks.map((track: any) => (
+      new TrackDTO({
+        ...track,
+        artist: track.artist[0],
+        genre: track.genre[0],
+        period: track.period[0],
+        inAlbum: track.inAlbum[0]
+      })
+    ))
   },
   async getLyricsExternal(query: string) {
     const searches = await GClient.songs.search(query)
@@ -82,7 +148,7 @@ export default {
         `${utils.sanitizeURL(track.inAlbum.folderName)}/cover.webp`,
         'image'
       )
-      if (cover) track.cover = cover
+      if (cover) track.coverURL = cover
       return track
     }))
   },

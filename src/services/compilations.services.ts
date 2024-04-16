@@ -120,6 +120,14 @@ export default {
             select: ['title']
           },
           {
+            path: 'genre',
+            select: ['title']
+          },
+          {
+            path: 'period',
+            select: ['title']
+          },
+          {
             path: 'inAlbum',
             select: ['title', 'cloudURL', 'period'],
             options: { lean: true },
@@ -139,7 +147,7 @@ export default {
       singleCompilation,
       singleCompilation.tracks.map(({ track }) => {
         const trackDoc = track as TrackDocument
-        return new TrackDTO(trackDoc, trackDoc.inAlbum.period)
+        return new TrackDTO(trackDoc)
       })
     )
   },

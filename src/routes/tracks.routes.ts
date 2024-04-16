@@ -4,6 +4,7 @@ import controller from '../controllers/tracks.controller'
 const router = Router()
 
 router.get('/:id/lyrics', controller.getLyrics)
+router.post('/wave', controller.getWave)
 router.post('/audio', controller.getAudio)
 router.post('/lyrics', controller.getLyricsExternal)
 router.patch('/:id/listened/update', controller.incrementListeningCounter)

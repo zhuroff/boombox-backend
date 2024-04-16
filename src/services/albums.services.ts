@@ -47,7 +47,14 @@ export default {
 
       if (newArtist && newGenre && newPeriod) {
         const albumTracks = await Promise.all(shape.tracks.map(async (track) => (
-          await tracksServices.create(track, newAlbum._id, newArtist._id, shape.cloudURL)
+          await tracksServices.create(
+            track,
+            newAlbum._id,
+            newArtist._id,
+            newGenre._id,
+            newPeriod._id,
+            shape.cloudURL
+          )
         )))
         const dateOfCreation = new Date()
 
@@ -238,6 +245,8 @@ export default {
         path: 'tracks',
         populate: [
           { path: 'artist', select: ['title'] },
+          { path: 'genre', select: ['title'] },
+          { path: 'period', select: ['title'] },
           { path: 'inAlbum', select: ['title', 'folderName', 'cloudURL'] },
           { path: 'inCompilations', select: ['title'] }
         ]
@@ -272,6 +281,8 @@ export default {
         path: 'tracks',
         populate: [
           { path: 'artist', select: ['title'] },
+          { path: 'genre', select: ['title'] },
+          { path: 'period', select: ['title'] },
           { path: 'inAlbum', select: ['title'] }
         ]
       })
