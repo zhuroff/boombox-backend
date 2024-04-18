@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { CloudEntityDTO } from 'src/dto/cloud.dto'
+import { CloudEntityDTO } from '../dto/cloud.dto'
 
 export default {
   sanitizeURL: (path: string, subPath = '') => (
@@ -69,6 +69,21 @@ export default {
     const albumYear = albumYearRegExp.exec(name)
     const albumYearResult = albumYear && albumYear[1] ? albumYear[1] : 'unknown year'
     return albumYearResult
+  },
+
+  shuffleArray: <T>(array: T[]) => {
+    let length = array.length
+    let index: number
+    let temp: T
+  
+    while (length) {
+      index = Math.floor(Math.random() * length--)
+      temp = array[length]!
+      array[length] = array[index]!
+      array[index] = temp
+    }
+  
+    return array
   },
 
   audioMimeTypes: new Set([

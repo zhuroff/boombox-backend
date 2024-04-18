@@ -89,5 +89,31 @@ export default {
     }
 
     throw new Error('Content not found')
+  },
+  async getRandomTracks({ path, cloudURL, root, limit, years }: CloudReqPayloadFilter & { years: string[] }): Promise<any> {
+    const response = years.map(async (year) => (
+      await this.getFolderContent({ path, cloudURL, root: `${root}/${year}` })
+    ))
+
+    const content = await Promise.all(response)
+
+    const allTracks =  content.reduce<CloudEntityDTO[]>((acc, next) => {
+      acc.push(...next.items.filter((item) => item.mimeType && utils.audioMimeTypes.has(item.mimeType)))
+      return acc
+    }, [])
+
+    if (!limit || allTracks.length <= limit) {
+      return utils.shuffleArray(allTracks)
+    }
+
+    let overLimit = allTracks.length - limit
+
+    while (overLimit) {
+      const randomIndex = Math.floor(Math.random() * allTracks.length)
+      allTracks.splice(randomIndex, 1)
+      overLimit--
+    }
+
+    return utils.shuffleArray(allTracks)
   }
 }
