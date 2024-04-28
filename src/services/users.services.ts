@@ -57,12 +57,11 @@ export default {
     return dbUsers
   },
   async refresh(req: Request) {
-    const { refreshToken } = req.cookies
-
-    if (!refreshToken) {
+    if (!req.cookies?.refreshToken) {
       throw { message: 'user.unauthorized' }
     }
 
+    const { refreshToken } = req.cookies
     const userData = tokenService.validateRefreshToken(refreshToken)
     const dbToken = await tokenService.findToken(refreshToken)
 

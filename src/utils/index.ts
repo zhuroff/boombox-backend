@@ -1,7 +1,21 @@
+import { Response } from 'express'
 import { createHash } from 'node:crypto'
 import { CloudEntityDTO } from '../dto/cloud.dto'
+import { UserResponse } from '../types/reqres.types'
 
 export default {
+  cookieSetter: (res: Response, payload: UserResponse) => {
+    res.cookie(
+      'refreshToken',
+      payload?.refreshToken,
+      {
+        maxAge: 30 * 24 + 60 * 60 * 1000,
+        httpOnly: true,
+        secure: process.env['NODE_ENV'] === 'production'
+      }
+    )
+  },
+
   sanitizeURL: (path: string, subPath = '') => (
     encodeURIComponent(
       path

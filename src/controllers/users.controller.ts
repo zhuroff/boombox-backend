@@ -1,19 +1,8 @@
 import { Request, Response } from 'express'
-import { UserResponse } from '../types/reqres.types'
 import userServices from '../services/users.services'
+import utils from '../utils'
 
 export default {
-  cookieSetter(res: Response, payload: UserResponse) {
-    res.cookie(
-      'refreshToken',
-      payload?.refreshToken,
-      {
-        maxAge: 30 * 24 + 60 * 60 * 1000,
-        httpOnly: true,
-        secure: process.env['NODE_ENV'] === 'production'
-      }
-    )
-  },
   async registration(req: Request, res: Response) {
     try {
       const response = await userServices.registration(req)
@@ -25,7 +14,7 @@ export default {
   async login(req: Request, res: Response) {
     try {
       const response = await userServices.login(req)
-      this.cookieSetter(res, response)
+      utils.cookieSetter(res, response)
       res.status(200).json(response)
     } catch (error) {
       res.status(400).json(error)
@@ -42,7 +31,7 @@ export default {
   async refresh(req: Request, res: Response) {
     try {
       const response = await userServices.refresh(req)
-      this.cookieSetter(res, response)
+      utils.cookieSetter(res, response)
       res.status(200).json(response)
     } catch (error) {
       res.status(400).json(error)
