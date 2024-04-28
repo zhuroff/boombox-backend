@@ -9,10 +9,6 @@ const schema = new Schema({
     type: Date,
     default: Date.now
   },
-  name: {
-    type: String,
-    required: true
-  },
   email: {
     type: String,
     required: true
@@ -24,10 +20,6 @@ const schema = new Schema({
   role: {
     type: String,
     required: true
-  },
-  surname: {
-    type: String,
-    required: false
   }
 })
 

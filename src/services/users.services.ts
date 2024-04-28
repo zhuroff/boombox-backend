@@ -13,21 +13,18 @@ export default {
       throw errors.array()
     }
 
-    const { email, password }: Pick<UserDocument, 'email' | 'password'> = req.body
-    const candidate = await User.findOne({ email })
+    const { email, password, role, login }: UserDocument = req.body
+    const candidateByEmail = await User.findOne({ email })
+    const candidateByLogin = await User.findOne({ login })
 
-    if (candidate) {
+    if (candidateByEmail || candidateByLogin) {
       throw { message: 'user.exist' }
     }
 
     const hashPassword = await bcrypt.hash(password, 3)
-    const user = await User.create({ email, password: hashPassword, role: 'listener' })
+    const user = await User.create({ login, email, role, password: hashPassword })
     const userDTO = new UserDTO(user)
-    const tokens = tokenService.generateTokens({ ...userDTO })
-
-    await tokenService.saveToken(userDTO.id, tokens.refreshToken)
-
-    return { ...tokens, user: userDTO }
+    return userDTO
   },
   async login(req: Request) {
     const { email, password }: Pick<UserDocument, 'email' | 'password'> = req.body
@@ -46,9 +43,18 @@ export default {
     const userDTO = new UserDTO(dbUser)
     const tokens = tokenService.generateTokens({ ...userDTO })
 
-    await tokenService.saveToken(userDTO.id, tokens.refreshToken)
+    await tokenService.saveToken(userDTO._id, tokens.refreshToken)
 
     return { ...tokens, user: userDTO }
+  },
+  async getList() {
+    const dbUsers = await User.find()
+    
+    if (!dbUsers) {
+      throw { message: 'users.unexist' }
+    }
+
+    return dbUsers
   },
   async refresh(req: Request) {
     const { refreshToken } = req.cookies
@@ -73,7 +79,7 @@ export default {
     const userDTO = new UserDTO(dbUser)
     const tokens = tokenService.generateTokens({ ...userDTO })
 
-    await tokenService.saveToken(userDTO.id, tokens.refreshToken)
+    await tokenService.saveToken(userDTO._id, tokens.refreshToken)
 
     return { ...tokens, user: userDTO }
   }

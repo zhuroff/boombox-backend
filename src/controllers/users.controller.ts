@@ -17,7 +17,6 @@ export default {
   async registration(req: Request, res: Response) {
     try {
       const response = await userServices.registration(req)
-      this.cookieSetter(res, response)
       res.status(201).json(response)
     } catch (error) {
       res.status(400).json(error)
@@ -30,6 +29,14 @@ export default {
       res.status(200).json(response)
     } catch (error) {
       res.status(400).json(error)
+    }
+  },
+  async getList(req: Request, res: Response) {
+    try {
+      const response = await userServices.getList()
+      res.status(200).json(response)
+    } catch (error) {
+      res.status(404).json(error)
     }
   },
   async refresh(req: Request, res: Response) {
