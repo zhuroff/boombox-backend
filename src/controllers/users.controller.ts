@@ -20,6 +20,14 @@ export default {
       res.status(400).json(error)
     }
   },
+  async logout(req: Request, res: Response) {
+    try {
+      const response = await userServices.logout(req, res)
+      res.status(200).json(response)
+    } catch (error) {
+      res.status(500).json(error)
+    }
+  },
   async getList(req: Request, res: Response) {
     try {
       const response = await userServices.getList()

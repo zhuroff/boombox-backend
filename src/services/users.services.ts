@@ -1,4 +1,4 @@
-import { Request } from 'express'
+import { Request, Response } from 'express'
 import { validationResult } from 'express-validator'
 import { User, UserDocument } from '../models/user.model'
 import { UserDTO } from '../dto/user.dto'
@@ -37,7 +37,7 @@ export default {
     const isPasswordsEquals = await bcrypt.compare(password, dbUser.password)
 
     if (!isPasswordsEquals) {
-      throw { message: 'user.unexist' }
+      throw { message: 'password.incorrect' }
     }
 
     const userDTO = new UserDTO(dbUser)
@@ -46,6 +46,15 @@ export default {
     await tokenService.saveToken(userDTO._id, tokens.refreshToken)
 
     return { ...tokens, user: userDTO }
+  },
+  async logout(req: Request, res: Response) {
+    if (!req.cookies?.['refreshToken']) {
+      throw { message: 'user.unauthorized' }
+    }
+
+    const { refreshToken } = req.cookies
+    res.clearCookie('refreshToken')
+    return await tokenService.removeToken(refreshToken)
   },
   async getList() {
     const dbUsers = await User.find()
@@ -57,7 +66,7 @@ export default {
     return dbUsers
   },
   async refresh(req: Request) {
-    if (!req.cookies?.refreshToken) {
+    if (!req.cookies?.['refreshToken']) {
       throw { message: 'user.unauthorized' }
     }
 
@@ -69,7 +78,7 @@ export default {
       throw { message: 'user.unauthorized' }
     }
 
-    const dbUser = await User.findById(userData['id'])
+    const dbUser = await User.findById(userData['_id'])
 
     if (!dbUser) {
       throw { message: 'user.unexist' }

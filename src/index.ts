@@ -4,6 +4,7 @@ import express, { json } from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
 import morgan from 'morgan'
+import cookieParser from 'cookie-parser'
 import usersRoutes from './routes/users.routes'
 import albumsRoutes from './routes/albums.routes'
 import discogsRoutes from './routes/discogs.routes'
@@ -27,6 +28,12 @@ dotenv.config()
 
 const app = express()
 const PORT = 3001
+const corsConfig = {
+  credentials: true,
+  origin: process.env['NODE_ENV'] === 'development'
+    ? process.env['CLIENT_URL_DEV']
+    : process.env['CLIENT_URL_PROD']
+}
 export const rootDir = path.resolve(__dirname, '../')
 export const cloudRootPath = `${process.env['COLLECTION_ROOT']}`
 
@@ -44,10 +51,12 @@ mongoose.connect(process.env['MONGO_URI'] as string)
   })
   .catch((error) => console.log(error))
 
-app.use(cors())
-app.use(morgan('tiny'))
+app.use(cors(corsConfig))
 app.use(express.urlencoded({ extended: true }))
-app.use(json())
+app.use(cookieParser())
+app.use(json({ limit: '1000kb' }))
+app.use(morgan('tiny'))
+
 app.use('/api/users', usersRoutes)
 app.use('/api/albums', albumsRoutes)
 app.use('/api/discogs', discogsRoutes)
