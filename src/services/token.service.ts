@@ -8,7 +8,7 @@ export default {
     const accessToken = jwt.sign(
       payload,
       process.env['JWT_SECRET_TOKEN'] as string,
-      { expiresIn: '15m' }
+      { expiresIn: '24h' }
     )
 
     const refreshToken = jwt.sign(

@@ -13,7 +13,7 @@ export const authValidator = [
     .withMessage('email.invalid'),
   body('role')
     .exists()
-    .isIn(['admin', 'user'])
+    .isIn(['admin', 'user', 'listener'])
     .withMessage('role.invalid'),
   body('password')  
     .exists()

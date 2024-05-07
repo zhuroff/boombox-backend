@@ -90,5 +90,22 @@ export default {
     await tokenService.saveToken(userDTO._id, tokens.refreshToken)
 
     return { ...tokens, user: userDTO }
+  },
+  async remove(req: Request, res: Response) {
+    if (!req.cookies?.['refreshToken']) {
+      throw { message: 'user.unauthorized' }
+    }
+
+    if (!req.params['id']) {
+      throw { message: 'required.userId' }
+    }
+
+    const { refreshToken } = req.cookies
+    res.clearCookie('refreshToken')
+
+    await tokenService.removeToken(refreshToken)
+    await User.deleteOne({ _id: req.params['id'] })
+
+    return { message: 'success' }
   }
 }

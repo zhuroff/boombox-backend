@@ -9,5 +9,6 @@ router.post('/registration', authValidator, controller.registration)
 router.post('/login', controller.login)
 router.post('/logout', controller.logout)
 router.get('/refresh', authValidator, controller.refresh)
+router.delete('/:id', authValidator, controller.remove)
 
 export default router
