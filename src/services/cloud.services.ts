@@ -37,7 +37,8 @@ export default {
 
     throw new Error('Files not found')
   },
-  async getFile({ path, cloudURL, type, root }: Required<CloudReqPayloadFilter>) {
+  
+  async getFile({ path, cloudURL, type, root }: CloudReqPayloadFilter) {
     if (!path || !cloudURL || !type) {
       throw new Error('Incorrect request options: both "path" and "cloudURL" properties are required')
     }
@@ -56,6 +57,7 @@ export default {
 
     throw new Error('File not found')
   },
+
   async getTrackDuration({ path, cloudURL }: CloudReqPayload) {
     if (!path || !cloudURL) {
       throw new Error('Incorrect request options: both "path" and "cloudURL" properties are required')
@@ -64,10 +66,12 @@ export default {
     const cloudApi = getCloudApi(cloudURL)
     return cloudApi.getFile(path, 'file')
   },
+
   async getImageWithURL(item: Required<CloudEntityDTO>, cloudApi: CloudApi, root?: string) {
     const fetchedFile = await cloudApi.getFile(item.path, 'image', root)
     return { ...item, url: fetchedFile }
   },
+
   async getFolderContent({ path, cloudURL, root, limit, offset }: CloudReqPayloadFilter) {
     if ([path, cloudURL].some((prop) => typeof prop === 'undefined')) {
       throw new Error('Incorrect request options: both "path" and "cloudURL" properties are required')
@@ -90,6 +94,7 @@ export default {
 
     throw new Error('Content not found')
   },
+
   async getRandomTracks({ path, cloudURL, root, limit, years }: CloudReqPayloadFilter & { years: string[] }): Promise<any> {
     const response = years.map(async (year) => (
       await this.getFolderContent({ path, cloudURL, root: `${root}/${year}` })
@@ -115,5 +120,86 @@ export default {
     }
 
     return utils.shuffleArray(allTracks)
+  },
+
+  async getRandomAlbums({
+    path, cloudURL, root, limit, criteria, exclude, value
+  }: CloudReqPayloadFilter & { criteria: string; exclude: string; value: string }): Promise<any> {
+    switch(criteria) {
+      case 'genre':
+        return await this.getRandomAlbumsByGenre({ path, cloudURL, root, limit, value, exclude })
+      case 'year':
+        return await this.getRandomAlbumsByYear({ path, cloudURL, root, limit, value, exclude })
+      default:
+        throw new Error('Unknown criteria')
+    }
+  },
+
+  async getRandomAlbumsByGenre({
+    path, cloudURL, root, limit = 5, exclude, value
+  }: CloudReqPayloadFilter & { value: string; exclude: string }) {
+    if (!root) throw new Error('Root property is required')
+
+    const response = await this.getFolderContent({ path, cloudURL, root: encodeURIComponent(`${root}/${value}`), offset: 0 })
+    const filteredItems = utils.shuffleArray(response.items.filter(({ title, mimeType }) => (
+      !mimeType && !title.startsWith('-') && title !== exclude
+    )))
+
+    while (filteredItems.length > Math.abs(limit)) {
+      const randomIndex = Math.floor(Math.random() * filteredItems.length)
+      filteredItems.splice(randomIndex, 1)
+    }
+
+    return await Promise.all(filteredItems.map(async (folder) => ({
+      title: `TOY: ${value}`,
+      artist: { title: 'Various Artists' },
+      genre: { title: value },
+      period: { title: folder.title },
+      coverURL: await this.getFile({
+        path: `${value}/${folder.title}/cover.webp`,
+        type: 'image',
+        cloudURL,
+        root
+      })
+    })))
+  },
+
+  async getRandomAlbumsByYear({
+    path, cloudURL, root, exclude, limit = 5, value
+  }: CloudReqPayloadFilter & { value: string; exclude: string }) {
+    if (!root) throw new Error('Root property is required')
+
+    const genres = await this.getFolderContent({ path, cloudURL, root, offset: 0 })
+    const filteredGenres = utils.shuffleArray(genres.items.filter(({ title, mimeType }) => (
+      !mimeType && title !== exclude
+    )))
+
+    const albums = await Promise.all(filteredGenres.map(async (genre) => {
+      try {
+        return {
+          title: `TOY: ${genre.title}`,
+          artist: { title: 'Various Artists' },
+          genre: { title: genre.title },
+          period: { title: value },
+          coverURL: await this.getFile({
+            path: `${genre.title}/${value}/cover.webp`,
+            type: 'image',
+            cloudURL,
+            root
+          })
+        }
+      } catch (error) {
+        return null
+      }
+    }))
+    
+    const filteredAlbums = albums.filter((album) => album)
+
+    while (filteredAlbums.length > Math.abs(limit)) {
+      const randomIndex = Math.floor(Math.random() * filteredAlbums.length)
+      filteredAlbums.splice(randomIndex, 1)
+    }
+
+    return filteredAlbums
   }
 }

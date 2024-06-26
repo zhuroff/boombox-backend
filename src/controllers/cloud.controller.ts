@@ -46,6 +46,14 @@ export default {
       res.status(500).json({ message: 'Internal server error' })
     }
   },
+  async getRandomAlbums(req: Request, res: Response) {
+    try {
+      const result = await cloudServices.getRandomAlbums(req['body'])
+      res.json(result)
+    } catch (error) {
+      res.status(500).json({ message: 'Internal server error' })
+    }
+  },
   async getFolderContent(req: Request, res: Response) {
     try {
       const result = await cloudServices.getFolderContent(req['body'])
