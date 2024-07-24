@@ -57,10 +57,10 @@ export default {
         deleted: 0
       }
     } catch (error) {
-      console.log(error)
       throw error
     }
   },
+
   async remove(albums: Types.ObjectId[]) {
     try {
       return await Promise.all(albums.map(async (id) => (
@@ -70,6 +70,7 @@ export default {
       throw error
     }
   },
+
   async update(albums: AlbumDocument[]) {
     try {
       return await albumsServices.updateAlbums(albums)
@@ -77,31 +78,37 @@ export default {
       throw error
     }
   },
+
   async getList(req: Request, res: Response) {
     try {
       const result = await albumsServices.getList(req)
-      return res.json(result)
+      res.json(result)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   },
+
   async getSingle(req: Request<{ id: string }>, res: Response) {
     try {
       const result = await albumsServices.getSingle(req.params['id'])
-      return res.json(result)
+      res.json(result)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   },
+
   async getListRandom(req: Request, res: Response) {
     if (Array.isArray(req.query)) {
       throw new Error('Query should be a string in this request')
     }
     try {
       const result = await albumsServices.getListRandom(parseInt(String(req.query?.['quantity'] || 8)))
-      return res.json(result)
+      res.json(result)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   }
 }

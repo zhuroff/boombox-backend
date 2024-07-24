@@ -8,41 +8,46 @@ export default {
   getSingle: (model: PaginateModel<CategoryDocument>) => async (req: Request, res: Response) => {
     try {
       const result = await categoriesServices.single(model, req)
-      return res.json(result)
+      res.json(result)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   },
   getList: (model: PaginateModel<CategoryDocument>) => async (req: Request, res: Response) => {
     try {
       const result = await categoriesServices.getList(model, req)
-      return res.json(result)
+      res.json(result)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   },
   create: (model: PaginateModel<CategoryDocument>) => async (req: Request, res: Response) => {
     try {
       const response = await categoriesServices.create(model, req.body.value)
-      return res.json(response)
+      res.json(response)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   },
   upload: (model: PaginateModel<CategoryDocument>) => async (req: Request, res: Response) => {
     try {
       const response = await filesServices.upload<CategoryDocument, PaginateModel<CategoryDocument>>(model, req)
-      return res.json(response)
+      res.json(response)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   },
   remove: (model: PaginateModel<CategoryDocument>) => async (req: Request, res: Response) => {
     try {
       const response = await categoriesServices.remove(model, String(req.params['id']))
-      return res.json(response)
+      res.json(response)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   }
 }

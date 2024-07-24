@@ -13,39 +13,46 @@ export default {
       throw errors.array()
     }
 
-    const { email, password, role, login }: UserDocument = req.body
-    const candidateByEmail = await User.findOne({ email })
-    const candidateByLogin = await User.findOne({ login })
+    try {
+      const { email, password, role, login }: UserDocument = req.body
+      const candidateByEmail = await User.findOne({ email })
+      const candidateByLogin = await User.findOne({ login })
 
-    if (candidateByEmail || candidateByLogin) {
-      throw { message: 'user.exist' }
+      if (candidateByEmail || candidateByLogin) {
+        throw { message: 'user.exist' }
+      }
+
+      const hashPassword = await bcrypt.hash(password, 3)
+      const user = await User.create({ login, email, role, password: hashPassword })
+      return new UserDTO(user)
+    } catch (error) {
+      throw error
     }
-
-    const hashPassword = await bcrypt.hash(password, 3)
-    const user = await User.create({ login, email, role, password: hashPassword })
-    const userDTO = new UserDTO(user)
-    return userDTO
   },
   async login(req: Request) {
-    const { email, password }: Pick<UserDocument, 'email' | 'password'> = req.body
-    const dbUser = await User.findOne({ email })
+    try {
+      const { email, password }: Pick<UserDocument, 'email' | 'password'> = req.body
+      const dbUser = await User.findOne({ email })
 
-    if (!dbUser) {
-      throw { message: 'user.unexist' }
+      if (!dbUser) {
+        throw { message: 'user.unexist' }
+      }
+
+      const isPasswordsEquals = await bcrypt.compare(password, dbUser.password)
+
+      if (!isPasswordsEquals) {
+        throw { message: 'password.incorrect' }
+      }
+
+      const userDTO = new UserDTO(dbUser)
+      const tokens = tokenService.generateTokens({ ...userDTO })
+
+      await tokenService.saveToken(userDTO._id, tokens.refreshToken)
+
+      return { ...tokens, user: userDTO }
+    } catch (error) {
+      throw error
     }
-
-    const isPasswordsEquals = await bcrypt.compare(password, dbUser.password)
-
-    if (!isPasswordsEquals) {
-      throw { message: 'password.incorrect' }
-    }
-
-    const userDTO = new UserDTO(dbUser)
-    const tokens = tokenService.generateTokens({ ...userDTO })
-
-    await tokenService.saveToken(userDTO._id, tokens.refreshToken)
-
-    return { ...tokens, user: userDTO }
   },
   async logout(req: Request, res: Response) {
     if (!req.cookies?.['refreshToken']) {
@@ -54,42 +61,55 @@ export default {
 
     const { refreshToken } = req.cookies
     res.clearCookie('refreshToken')
-    return await tokenService.removeToken(refreshToken)
+    
+    try {
+      return await tokenService.removeToken(refreshToken)
+    } catch (error) {
+      throw error
+    }
   },
   async getList() {
-    const dbUsers = await User.find()
+    try {
+      const dbUsers = await User.find()
     
-    if (!dbUsers) {
-      throw { message: 'users.unexist' }
-    }
+      if (!dbUsers) {
+        throw { message: 'users.unexist' }
+      }
 
-    return dbUsers
+      return dbUsers
+    } catch (error) {
+      throw error
+    }
   },
   async refresh(req: Request) {
     if (!req.cookies?.['refreshToken']) {
       throw { message: 'user.unauthorized' }
     }
 
-    const { refreshToken } = req.cookies
-    const userData = tokenService.validateRefreshToken(refreshToken)
-    const dbToken = await tokenService.findToken(refreshToken)
+    try {
+      const { refreshToken } = req.cookies
+      const userData = tokenService.validateRefreshToken(refreshToken)
+      const dbToken = await tokenService.findToken(refreshToken)
 
-    if (!userData || !dbToken) {
-      throw { message: 'user.unauthorized' }
+      if (!userData || !dbToken) {
+        throw { message: 'user.unauthorized' }
+      }
+
+      const dbUser = await User.findById(userData['_id'])
+
+      if (!dbUser) {
+        throw { message: 'user.unexist' }
+      }
+
+      const userDTO = new UserDTO(dbUser)
+      const tokens = tokenService.generateTokens({ ...userDTO })
+
+      await tokenService.saveToken(userDTO._id, tokens.refreshToken)
+
+      return { ...tokens, user: userDTO }
+    } catch (error) {
+      throw error
     }
-
-    const dbUser = await User.findById(userData['_id'])
-
-    if (!dbUser) {
-      throw { message: 'user.unexist' }
-    }
-
-    const userDTO = new UserDTO(dbUser)
-    const tokens = tokenService.generateTokens({ ...userDTO })
-
-    await tokenService.saveToken(userDTO._id, tokens.refreshToken)
-
-    return { ...tokens, user: userDTO }
   },
   async remove(req: Request, res: Response) {
     if (!req.cookies?.['refreshToken']) {
@@ -103,9 +123,13 @@ export default {
     const { refreshToken } = req.cookies
     res.clearCookie('refreshToken')
 
-    await tokenService.removeToken(refreshToken)
-    await User.deleteOne({ _id: req.params['id'] })
+    try {
+      await tokenService.removeToken(refreshToken)
+      await User.deleteOne({ _id: req.params['id'] })
 
-    return { message: 'success' }
+      return { message: 'success' }
+    } catch (error) {
+      throw error
+    }
   }
 }

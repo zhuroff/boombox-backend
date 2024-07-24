@@ -27,8 +27,8 @@ export class YandexCloudApi implements Cloud {
         return data._embedded.items.map((item) => new CloudEntityDTO(item, url))
       })
       .catch((error: AxiosError) => {
-        console.error(error.message)
-        return null
+        console.error(error)
+        throw error
       })
   }
   
@@ -44,7 +44,10 @@ export class YandexCloudApi implements Cloud {
           items: data._embedded.items.map((item) => new CloudEntityDTO(item, url, root))
         }
       })
-      .catch((error: AxiosError) => console.error(error.message))
+      .catch((error: AxiosError) => {
+        console.error(error)
+        throw error
+      })
   }
 
   async getFile(path: string, fileType: CloudFileTypes, root?: string) {
@@ -52,8 +55,8 @@ export class YandexCloudApi implements Cloud {
       .get<YandexCloudResponse<YandexCloudEntity>>(this.#qBuilder(path, root))
       .then(({ data }) => data.file)
       .catch((error: AxiosError) => {
-        console.error(error.message)
-        return undefined
+        console.error(error)
+        throw error
       })
   }
 }

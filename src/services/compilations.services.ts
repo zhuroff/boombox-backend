@@ -11,31 +11,35 @@ import tracksServices from './tracks.services'
 
 export default {
   async create({ title, entityID }: GatheringCreatePayload) {
-    const compilations = await Compilation.find({}, { title: true })
+    try {
+      const compilations = await Compilation.find({}, { title: true })
     
-    if (compilations.some((col) => col.title === title)) {
-      throw new Error('compilations.exists')
+      if (compilations.some((col) => col.title === title)) {
+        throw new Error('compilations.exists')
+      }
+
+      const payload = {
+        title,
+        tracks: [
+          {
+            track: new Types.ObjectId(entityID),
+            order: 1
+          }
+        ]
+      }
+
+      const newCompilation = new Compilation(payload)
+      await newCompilation.save()
+      await tracksServices.updateCompilationInTrack({
+        listID: newCompilation._id.toString(),
+        itemID: entityID,
+        inList: false
+      })
+
+      return new CompilationItemDTO(newCompilation)
+    } catch (error) {
+      throw error
     }
-
-    const payload = {
-      title,
-      tracks: [
-        {
-          track: new Types.ObjectId(entityID),
-          order: 1
-        }
-      ]
-    }
-
-    const newCompilation = new Compilation(payload)
-    await newCompilation.save()
-    await tracksServices.updateCompilationInTrack({
-      listID: newCompilation._id.toString(),
-      itemID: entityID,
-      inList: false
-    })
-
-    return new CompilationItemDTO(newCompilation)
   },
   async update({ entityID, gatheringID, isInList, order }: GatheringUpdatePayload) {
     const query = { _id: gatheringID }
@@ -44,128 +48,155 @@ export default {
       : { $push: { tracks: { track: entityID, order } } }
     const options = { new: true }
 
-    await Compilation.findOneAndUpdate(query, update, options)
-    await tracksServices.updateCompilationInTrack({ listID: gatheringID, itemID: entityID, inList: isInList })
+    try {
+      await Compilation.findOneAndUpdate(query, update, options)
+      await tracksServices.updateCompilationInTrack({ listID: gatheringID, itemID: entityID, inList: isInList })
 
-    return { message: isInList ? 'compilations.removed' : 'compilations.added' }
+      return { message: isInList ? 'compilations.removed' : 'compilations.added' }
+    } catch (error) {
+      throw error
+    }
   },
   async remove(id: string) {
-    const response = await Compilation.findByIdAndDelete(id)
+    try {
+      const response = await Compilation.findByIdAndDelete(id)
 
-    if (response) {
-      await tracksServices.reduceTracksCompilations(response.tracks, id)
-      return { message: 'compilations.drop' }
+      if (response) {
+        await tracksServices.reduceTracksCompilations(response.tracks, id)
+        return { message: 'compilations.drop' }
+      }
+
+      throw new Error('Incorrect request options')
+    } catch (error) {
+      throw error
     }
-
-    throw new Error('Incorrect request options')
   },
   async reorder({ oldOrder, newOrder }: GatheringReorder, _id: string) {
-    const targetCompilation = await Compilation.findById(_id).exec()
+    try {
+      const targetCompilation = await Compilation.findById(_id).exec()
 
-    if (targetCompilation) {
-      targetCompilation.tracks.splice(
-        newOrder, 0,
-        ...targetCompilation.tracks.splice(oldOrder, 1)
-      )
+      if (targetCompilation) {
+        targetCompilation.tracks.splice(
+          newOrder, 0,
+          ...targetCompilation.tracks.splice(oldOrder, 1)
+        )
 
-      targetCompilation.tracks.forEach((el, index) => {
-        el.order = index + 1
-      })
+        targetCompilation.tracks.forEach((el, index) => {
+          el.order = index + 1
+        })
 
-      await Compilation.updateOne({ _id }, { $set: { tracks: targetCompilation.tracks } })
-      return { message: 'compilations.reordered' }
+        await Compilation.updateOne({ _id }, { $set: { tracks: targetCompilation.tracks } })
+        return { message: 'compilations.reordered' }
+      }
+
+      throw new Error('Incorrect request options')
+    } catch (error) {
+      throw error
     }
-
-    throw new Error('Incorrect request options')
   },
   async getCompilationsList(req: Request) {
-    if (req.body.isRandom) {
-      return await this.getListRandom(req.body.limit, req.body.filter)
-    }
-
-    const options: PaginateOptions = {
-      page: req.body.page,
-      limit: req.body.limit,
-      sort: req.body.sort,
-      lean: true,
-      populate: [
-        { path: 'tracks', select: ['_id'] }
-      ],
-      select: {
-        title: true,
-        avatar: true
+    try {
+      if (req.body.isRandom) {
+        return await this.getListRandom(req.body.limit, req.body.filter)
       }
+  
+      const options: PaginateOptions = {
+        page: req.body.page,
+        limit: req.body.limit,
+        sort: req.body.sort,
+        lean: true,
+        populate: [
+          { path: 'tracks', select: ['_id'] }
+        ],
+        select: {
+          title: true,
+          avatar: true
+        }
+      }
+  
+      const dbList = await Compilation.paginate({}, options)
+  
+      if (dbList) {
+        const { totalDocs, totalPages, page } = dbList
+        const pagination = new PaginationDTO({ totalDocs, totalPages, page })
+        const docs = dbList.docs.map((compilation) => new CompilationItemDTO(compilation))
+  
+        return { docs, pagination }
+      }
+  
+      throw new Error('Incorrect request options')
+    } catch (error) {
+      throw error
     }
-
-    const dbList = await Compilation.paginate({}, options)
-
-    if (dbList) {
-      const { totalDocs, totalPages, page } = dbList
-      const pagination = new PaginationDTO({ totalDocs, totalPages, page })
-      const docs = dbList.docs.map((compilation) => new CompilationItemDTO(compilation))
-
-      return { docs, pagination }
-    }
-
-    throw new Error('Incorrect request options')
   },
   async single(id: string | Types.ObjectId) {
-    const singleCompilation: CompilationDocument | null = await Compilation.findById(id)
-      .populate({
-        path: 'tracks.track',
-        select: ['title', 'listened', 'duration', 'path', 'cloudURL'],
-        populate: [
-          {
-            path: 'artist',
-            select: ['title']
-          },
-          {
-            path: 'genre',
-            select: ['title']
-          },
-          {
-            path: 'period',
-            select: ['title']
-          },
-          {
-            path: 'inAlbum',
-            select: ['title', 'cloudURL', 'period'],
-            options: { lean: true },
-            populate: [
-              { path: 'period', select: ['title'] }
-            ]
-          }
-        ]
-      })
-      .lean()
+    try {
+      const singleCompilation: CompilationDocument | null = await Compilation.findById(id)
+        .populate({
+          path: 'tracks.track',
+          select: ['title', 'listened', 'duration', 'path', 'cloudURL'],
+          populate: [
+            {
+              path: 'artist',
+              select: ['title']
+            },
+            {
+              path: 'genre',
+              select: ['title']
+            },
+            {
+              path: 'period',
+              select: ['title']
+            },
+            {
+              path: 'inAlbum',
+              select: ['title', 'cloudURL', 'period'],
+              options: { lean: true },
+              populate: [
+                { path: 'period', select: ['title'] }
+              ]
+            }
+          ]
+        })
+        .lean()
 
-    if (!singleCompilation) {
-      throw new Error('Incorrect request options or compilation not found')
+      if (!singleCompilation) {
+        throw new Error('Incorrect request options or compilation not found')
+      }
+
+      return new CompilationPageDTO(
+        singleCompilation,
+        singleCompilation.tracks.map(({ track }) => {
+          const trackDoc = track as TrackDocument
+          return new TrackDTO(trackDoc)
+        })
+      )
+    } catch (error) {
+      throw error
     }
-
-    return new CompilationPageDTO(
-      singleCompilation,
-      singleCompilation.tracks.map(({ track }) => {
-        const trackDoc = track as TrackDocument
-        return new TrackDTO(trackDoc)
-      })
-    )
   },
   async cleanCompilation(compilations: Map<string, string[]>) {
-    return await Promise.all(Array.from(compilations).map(async ([compilationId, trackIds]) => (
-      await Compilation.updateMany(
-        { _id: compilationId },
-        { $pull: { tracks: { track: { $in: trackIds } } } }
-      )
-    )))
+    try {
+      return await Promise.all(Array.from(compilations).map(async ([compilationId, trackIds]) => (
+        await Compilation.updateMany(
+          { _id: compilationId },
+          { $pull: { tracks: { track: { $in: trackIds } } } }
+        )
+      )))
+    } catch (error) {
+      throw error
+    }
   },
   async rename(_id: string, title: string) {
     const query = { _id }
     const update = { title }
 
-    await Compilation.findOneAndUpdate(query, update)
-
-    return { message: 'Compilation title was successfully updated' }
+    try {
+      await Compilation.findOneAndUpdate(query, update)
+      return { message: 'Compilation title was successfully updated' }
+    } catch (error) {
+      throw error
+    }
   },
   async getListRandom(size: number, filter: RequestFilter) {
     const basicConfig: PipelineStage[] = [
@@ -173,12 +204,16 @@ export default {
       { $match: { _id: { $ne: new Types.ObjectId(filter.excluded?.['_id']) } } }
     ]
 
-    const response = await Compilation.aggregate<CompilationDocument>(basicConfig)
+    try {
+      const response = await Compilation.aggregate<CompilationDocument>(basicConfig)
 
-    if (response) {
-      return { docs: response }
+      if (response) {
+        return { docs: response }
+      }
+
+      throw new Error('Incorrect request options')
+    } catch (error) {
+      throw error
     }
-
-    throw new Error('Incorrect request options')
   }
 }

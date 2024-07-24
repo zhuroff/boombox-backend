@@ -25,71 +25,95 @@ const modelsDictMap = new Map<ModelKeys, PaginateModel<any, {}, {}> | Model<any,
 
 export default {
   async save() {
-    const timestamp = String(new Date().getTime())
+    try {
+      const timestamp = String(new Date().getTime())
 
-    await this.createFolder(timestamp)
-    const backuping = [...modelsDictMap].map(async ([key, model]) => {
-      const response = await model.find({})//.lean()
-      return await this.writeFile(`${key}.json`, timestamp, response)
-    })
+      await this.createFolder(timestamp)
+      const backuping = [...modelsDictMap].map(async ([key, model]) => {
+        const response = await model.find({})//.lean()
+        return await this.writeFile(`${key}.json`, timestamp, response)
+      })
 
-    await Promise.all(backuping)
-    return { message: 'Data backup completed successfully' }
+      await Promise.all(backuping)
+      return { message: 'Data backup completed successfully' }
+    } catch (error) {
+      throw error
+    }
   },
   get() {
     return fs.readdirSync(path.join(rootDir, '.', 'backups'))
   },
   async recover(date: string) {
-    await Promise.all([...modelsDictMap].map(async ([key, model]) => {
-      const folderName = date
-      const fileContent = await this.readFile(folderName, `${key}.json`)
-      await model.deleteMany({})
-      await model.insertMany(fileContent)
-      return key
-    }))
-    return { message: 'Data restore completed successfully' }
+    try {
+      await Promise.all([...modelsDictMap].map(async ([key, model]) => {
+        const folderName = date
+        const fileContent = await this.readFile(folderName, `${key}.json`)
+        await model.deleteMany({})
+        await model.insertMany(fileContent)
+        return key
+      }))
+      return { message: 'Data restore completed successfully' }
+    } catch (error) {
+      throw error
+    }
   },
   async remove(folderName: string) {
-    return new Promise((resolve, reject) => {
-      fs.rm(
-        path.join(rootDir, './backups', folderName),
-        { recursive: true },
-        (error) => {
-          error ? reject(error) : resolve({ message: 'Backup was successfully deleted' })
-        }
-      )
-    })
+    try {
+      return new Promise((resolve, reject) => {
+        fs.rm(
+          path.join(rootDir, './backups', folderName),
+          { recursive: true },
+          (error) => {
+            error ? reject(error) : resolve({ message: 'Backup was successfully deleted' })
+          }
+        )
+      })
+    } catch (error) {
+      throw error
+    }
   },
   async createFolder(folderName: string) {
-    return new Promise((resolve, reject) => {
-      fs.mkdir(
-        path.join(rootDir, './backups', folderName),
-        (error) => {
-          error ? reject(error) : resolve(true)
-        }
-      )
-    })
+    try {
+      return new Promise((resolve, reject) => {
+        fs.mkdir(
+          path.join(rootDir, './backups', folderName),
+          (error) => {
+            error ? reject(error) : resolve(true)
+          }
+        )
+      })
+    } catch (error) {
+      throw error
+    }
   },
   async writeFile(fileName: string, folderName: string, data: Document<any>[]) {
-    return new Promise((resolve, reject) => {
-      fs.writeFile(
-        path.join(rootDir, './backups', folderName, fileName),
-        JSON.stringify(data),
-        (error) => {
-          error ? reject(error) : resolve(true)
-        }
-      )
-    })
+    try {
+      return new Promise((resolve, reject) => {
+        fs.writeFile(
+          path.join(rootDir, './backups', folderName, fileName),
+          JSON.stringify(data),
+          (error) => {
+            error ? reject(error) : resolve(true)
+          }
+        )
+      })
+    } catch (error) {
+      throw error
+    }
   },
   async readFile(folderName: string, fileName: string) {
-    return new Promise((resolve, reject) => {
-      fs.readFile(
-        path.join(rootDir, './backups', folderName, fileName),
-        'utf8',
-        (error, data) => (
-          error ? reject(error) : resolve(JSON.parse(data))
+    try {
+      return new Promise((resolve, reject) => {
+        fs.readFile(
+          path.join(rootDir, './backups', folderName, fileName),
+          'utf8',
+          (error, data) => (
+            error ? reject(error) : resolve(JSON.parse(data))
+          )
         )
-      )
-    })
+      })
+    } catch (error) {
+      throw error
+    }
   }
 }

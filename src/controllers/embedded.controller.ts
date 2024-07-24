@@ -7,7 +7,8 @@ export default {
       const response = await embeddedServices.create(req.body)
       res.json(response)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   },
   async getAllEmbedded(req: Request, res: Response) {
@@ -17,7 +18,8 @@ export default {
       const response = await embeddedServices.getAllEmbedded({ page, limit, sort })
       res.json(response)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   },
   async single(req: Request, res: Response) {
@@ -25,7 +27,8 @@ export default {
       const response = await embeddedServices.single(String(req.params['id']))
       res.json(response)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   },
   async remove(req: Request, res: Response) {
@@ -33,7 +36,8 @@ export default {
       const response = await embeddedServices.remove(String(req.params['id']))
       res.json(response)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   }
 }

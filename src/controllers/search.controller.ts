@@ -9,7 +9,8 @@ export default {
       const response = await searchServices.search({ query, key })
       res.json(response)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   }
 }

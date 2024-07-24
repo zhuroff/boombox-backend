@@ -9,16 +9,21 @@ export default {
       throw new Error('ID not found in request params')
     }
 
-    if (req.file) {
-      const $set: Record<string, string> = {
-        [req.file.fieldname]: `/uploads/${req.file.filename}`
+    try {
+      if (req.file) {
+        const $set: Record<string, string> = {
+          [req.file.fieldname]: `/uploads/${req.file.filename}`
+        }
+  
+        return await Model.findOneAndUpdate({
+          _id: req.params['id']
+        } as FilterQuery<T>, { $set }, { new: true })
       }
-
-      return await Model.findOneAndUpdate({
-        _id: req.params['id']
-      } as FilterQuery<T>, { $set }, { new: true })
+      
+      throw new Error('File not found')
+    } catch (error) {
+      throw error
     }
-    throw new Error('File not found')
   },
 
   remove(files: string[]) {

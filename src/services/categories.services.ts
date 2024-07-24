@@ -27,72 +27,95 @@ export default {
       }
     }
 
-    const dbList = await Model.paginate({}, options)
+    try {
+      const dbList = await Model.paginate({}, options)
 
-    if (dbList) {
-      const { totalDocs, totalPages, page } = dbList
-      const pagination = new PaginationDTO({ totalDocs, totalPages, page })
+      if (dbList) {
+        const { totalDocs, totalPages, page } = dbList
+        const pagination = new PaginationDTO({ totalDocs, totalPages, page })
 
-      const docs = dbList.docs.map((category) => new CategoryItemDTO(category))
+        const docs = dbList.docs.map((category) => new CategoryItemDTO(category))
 
-      return { docs, pagination }
+        return { docs, pagination }
+      }
+
+      throw new Error('Database error')
+    } catch (error) {
+      throw error
     }
-
-    throw new Error()
   },
   async single(Model: PaginateModel<CategoryDocument>, req: Request) {
-    const categorySingle = await Model.findById(req.params['id'])
-      .populate({
-        path: 'albums',
-        select: ['title', 'folderName', 'cloudURL'],
-        populate: [
-          { path: 'artist', select: ['title', '_id'] },
-          { path: 'genre', select: ['title', '_id'] },
-          { path: 'period', select: ['title', '_id'] }
-        ]
-      })
-      .populate({
-        path: 'embeddedAlbums',
-        select: ['title', 'frame'],
-        populate: [
-          { path: 'artist', select: ['title', '_id'] },
-          { path: 'genre', select: ['title', '_id'] },
-          { path: 'period', select: ['title', '_id'] }
-        ]
-      })
-      .lean()
+    try {
+      const categorySingle = await Model.findById(req.params['id'])
+        .populate({
+          path: 'albums',
+          select: ['title', 'folderName', 'cloudURL'],
+          populate: [
+            { path: 'artist', select: ['title', '_id'] },
+            { path: 'genre', select: ['title', '_id'] },
+            { path: 'period', select: ['title', '_id'] }
+          ]
+        })
+        .populate({
+          path: 'embeddedAlbums',
+          select: ['title', 'frame'],
+          populate: [
+            { path: 'artist', select: ['title', '_id'] },
+            { path: 'genre', select: ['title', '_id'] },
+            { path: 'period', select: ['title', '_id'] }
+          ]
+        })
+        .lean()
 
-    if (!categorySingle) {
-      throw new Error('Category not found')
+      if (!categorySingle) {
+        throw new Error('Category not found')
+      }
+
+      const coveredAlbumsRes = categorySingle.albums.map(async (album): Promise<AlbumDocument> => {
+        const cover = await getCloudApi(album.cloudURL).getFile(
+          `${utils.sanitizeURL(album.folderName)}/cover.webp`,
+          'image'
+        )
+        return { ...album, cover }
+      })
+
+      const coveredAlbums = await Promise.all(coveredAlbumsRes)
+
+      return new CategoryPageDTO({ ...categorySingle, albums: coveredAlbums })
+    } catch (error) {
+      throw error
     }
-
-    const coveredAlbumsRes = categorySingle.albums.map(async (album): Promise<AlbumDocument> => {
-      const cover = await getCloudApi(album.cloudURL).getFile(
-        `${utils.sanitizeURL(album.folderName)}/cover.webp`,
-        'image'
-      )
-      return { ...album, cover }
-    })
-
-    const coveredAlbums = await Promise.all(coveredAlbumsRes)
-
-    return new CategoryPageDTO({ ...categorySingle, albums: coveredAlbums })
   },
   async create(Model: PaginateModel<CategoryDocument>, title: string, _id?: Types.ObjectId) {
-    if (!title) throw new Error('Title is required')
-    const query = { title }
-    const update = { $push: { albums: _id } }
-    const options = { upsert: true, new: true, setDefaultsOnInsert: true }
+    try {
+      if (!title) {
+        throw new Error('Title is required')
+      }
 
-    return await Model.findOneAndUpdate(query, update, options)
+      const query = { title }
+      const update = { $push: { albums: _id } }
+      const options = { upsert: true, new: true, setDefaultsOnInsert: true }
+  
+      return await Model.findOneAndUpdate(query, update, options)
+    } catch (error) {
+      throw error
+    }
   },
   async remove<T>(Model: PaginateModel<T>, _id: string) {
-    await Model.deleteOne({ _id } as FilterQuery<T>)
-    return { message: 'Category successfully deleted' }
+    try {
+      await Model.deleteOne({ _id } as FilterQuery<T>)
+      return { message: 'Category successfully deleted' }
+    } catch (error) {
+      throw error
+    }
   },
   async cleanAlbums(Model: PaginateModel<CategoryDocument>, categoryId: Types.ObjectId, albumId: Types.ObjectId | string) {
-    const query = { _id: categoryId }
-    const update = { $pull: { albums: albumId } }
-    await Model.findOneAndUpdate(query, update)
+    try {
+      const query = { _id: categoryId }
+      const update = { $pull: { albums: albumId } }
+      await Model.findOneAndUpdate(query, update)
+    } catch (error) {
+      throw error
+    }
   }
 }

@@ -9,7 +9,8 @@ export default {
       const result = await discogsServices.getList({ artist, album, page })
       res.json(result)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json({ message: 'Internal server error' })
     }
   }
 }

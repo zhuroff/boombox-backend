@@ -18,23 +18,31 @@ import compilationsServices from './compilations.services'
 
 export default {
   async getAlbumDocs() {
-    return await Album.find({}, { folderName: true, cloudURL: true })
+    try {
+      return await Album.find({}, { folderName: true, cloudURL: true })
+    } catch (error) {
+      throw error
+    }
   },
 
   async createShape(album: CloudEntityDTO): Promise<AlbumShape> {
-    const cloudAPI = getCloudApi(album.cloudURL)
-    const albumContent = await cloudAPI.getFolderContent(
-      `${album.path}&limit=100`
-    ) || { items: [] }
-    
-    return {
-      folderName: album.title,
-      cloudURL: album.cloudURL,
-      title: utils.parseAlbumTitle(album.title),
-      artist: utils.parseArtistName(album.title),
-      genre: utils.parseAlbumGenre(album.title),
-      period: utils.getAlbumReleaseYear(album.title),
-      tracks: utils.fileFilter(albumContent.items, utils.audioMimeTypes)
+    try {
+      const cloudAPI = getCloudApi(album.cloudURL)
+      const albumContent = await cloudAPI.getFolderContent(
+        `${album.path}&limit=100`
+      ) || { items: [] }
+      
+      return {
+        folderName: album.title,
+        cloudURL: album.cloudURL,
+        title: utils.parseAlbumTitle(album.title),
+        artist: utils.parseArtistName(album.title),
+        genre: utils.parseAlbumGenre(album.title),
+        period: utils.getAlbumReleaseYear(album.title),
+        tracks: utils.fileFilter(albumContent.items, utils.audioMimeTypes)
+      }
+    } catch (error) {
+      throw error
     }
   },
 
@@ -75,89 +83,105 @@ export default {
   },
 
   async removeAlbum(_id: Types.ObjectId | string) {
-    const album = await this.getSingle(_id, false)
-    const collections = album.inCollections?.map(({ _id }) => _id)
-    const compilations = album.tracks.reduce<Map<string, string[]>>((acc, next) => {
-      const compilationsIds = next.inCompilations?.map(({ _id }) => _id)
-      if (compilationsIds?.length) {
-        compilationsIds.forEach((key) => {
-          acc.has(key.toString())
-            ? acc.get(key.toString())?.push(next._id)
-            : acc.set(key.toString(), [next._id])
-        })
+    try {
+      const album = await this.getSingle(_id, false)
+      const collections = album.inCollections?.map(({ _id }) => _id)
+      const compilations = album.tracks.reduce<Map<string, string[]>>((acc, next) => {
+        const compilationsIds = next.inCompilations?.map(({ _id }) => _id)
+        if (compilationsIds?.length) {
+          compilationsIds.forEach((key) => {
+            acc.has(key.toString())
+              ? acc.get(key.toString())?.push(next._id)
+              : acc.set(key.toString(), [next._id])
+          })
+        }
+        return acc
+      }, new Map())
+
+      await categoriesServices.cleanAlbums(Artist, album.artist._id, _id)
+      await categoriesServices.cleanAlbums(Genre, album.genre._id, _id)
+      await categoriesServices.cleanAlbums(Period, album.period._id, _id)
+      await tracksServices.remove(album.tracks.map(({ _id }) => _id))
+
+      if (collections?.length) {
+        await collectionsServices.cleanCollection(collections, _id)
       }
-      return acc
-    }, new Map())
+      
+      if (compilations.size > 0) {
+        await compilationsServices.cleanCompilation(compilations)
+      }
 
-    await categoriesServices.cleanAlbums(Artist, album.artist._id, _id)
-    await categoriesServices.cleanAlbums(Genre, album.genre._id, _id)
-    await categoriesServices.cleanAlbums(Period, album.period._id, _id)
-    await tracksServices.remove(album.tracks.map(({ _id }) => _id))
-
-    if (collections?.length) {
-      await collectionsServices.cleanCollection(collections, _id)
+      return await Album.findByIdAndDelete(_id)
+    } catch (error) {
+      throw error
     }
-    
-    if (compilations.size > 0) {
-      await compilationsServices.cleanCompilation(compilations)
-    }
-
-    return await Album.findByIdAndDelete(_id)
   },
 
   async updateAlbums(albums: AlbumDocument[]) {
-    return await Promise.all(albums.map(async (album) => (
-      await Album.findOneAndUpdate(
-        { _id: album._id },
-        { $set: { modified: new Date(), cloudURL: album.cloudURL } },
-        { new: true }
-      )
-    )))
+    try {
+      return await Promise.all(albums.map(async (album) => (
+        await Album.findOneAndUpdate(
+          { _id: album._id },
+          { $set: { modified: new Date(), cloudURL: album.cloudURL } },
+          { new: true }
+        )
+      )))
+    } catch (error) {
+      throw error
+    }
   },
 
   async getCoveredAlbums(docs: AlbumDocument[]) {
-    return await Promise.all(docs.map(async (album) => {
-      const cloudAPI = getCloudApi(album.cloudURL)
-      const cover = await cloudAPI.getFile(
-        `${utils.sanitizeURL(album.folderName)}/cover.webp`,
-        'image'
-      )
-      return new AlbumItemDTO(album, cover || undefined)
-    }))
+    try {
+      return await Promise.all(docs.map(async (album) => {
+        const cloudAPI = getCloudApi(album.cloudURL)
+        const cover = await cloudAPI.getFile(
+          `${utils.sanitizeURL(album.folderName)}/cover.webp`,
+          'image'
+        )
+        return new AlbumItemDTO(album, cover || undefined)
+      }))
+    } catch (error) {
+      throw error
+    }
   },
 
   async getList(req: Request) {
-    if (req.body.isRandom) {
-      return await this.getListRandom(req.body.limit, req.body.filter)
+    try {
+      if (req.body.isRandom) {
+        return await this.getListRandom(req.body.limit, req.body.filter)
+      }
+  
+      const populate: PopulateOptions[] = [
+        { path: 'artist', select: ['title'] },
+        { path: 'genre', select: ['title'] },
+        { path: 'period', select: ['title'] },
+        { path: 'inCollections', select: ['title'] }
+      ]
+  
+      const options: PaginateOptions = {
+        page: req.body.page,
+        limit: req.body.limit,
+        sort: req.body.sort,
+        populate,
+        lean: true,
+        select: { title: true, folderName: true, cloudURL: true }
+      }
+  
+      const dbList = await Album.paginate({}, options)
+  
+      if (dbList) {
+        const { totalDocs, totalPages, page } = dbList
+        const pagination = new PaginationDTO({ totalDocs, totalPages, page })
+        const docs = await this.getCoveredAlbums(dbList.docs)
+  
+        return { docs, pagination }
+      }
+  
+      throw new Error('Incorrect request options')
+    } catch (error) {
+      throw error
     }
-
-    const populate: PopulateOptions[] = [
-      { path: 'artist', select: ['title'] },
-      { path: 'genre', select: ['title'] },
-      { path: 'period', select: ['title'] },
-      { path: 'inCollections', select: ['title'] }
-    ]
-
-    const options: PaginateOptions = {
-      page: req.body.page,
-      limit: req.body.limit,
-      sort: req.body.sort,
-      populate,
-      lean: true,
-      select: { title: true, folderName: true, cloudURL: true }
-    }
-
-    const dbList = await Album.paginate({}, options)
-
-    if (dbList) {
-      const { totalDocs, totalPages, page } = dbList
-      const pagination = new PaginationDTO({ totalDocs, totalPages, page })
-      const docs = await this.getCoveredAlbums(dbList.docs)
-
-      return { docs, pagination }
-    }
-
-    throw new Error('Incorrect request options')
   },
 
   async getListRandom(size: number, filter?: RequestFilter) {
@@ -191,43 +215,47 @@ export default {
 
     const aggregateConfig: PipelineStage[] = []
 
-    for (const stage of basicConfig) {
-      aggregateConfig.push(stage)
-      if (!filter) continue
-      if (filter.from === (stage as PipelineStage.Lookup).$lookup?.from) {
-        aggregateConfig.push({
-          $match: {
-            [String(filter['key'])]: new Types.ObjectId(String(filter['value']))
-          }
-        })
-
-        if (filter['excluded']) {
-          const lastProp = aggregateConfig.at(-1) as PipelineStage.Match | undefined
-          if (lastProp) {
-            Object.entries(filter['excluded']).forEach(([key, value]) => {
-              lastProp.$match[key] = { $ne: new Types.ObjectId(String(value)) }
-            })
+    try {
+      for (const stage of basicConfig) {
+        aggregateConfig.push(stage)
+        if (!filter) continue
+        if (filter.from === (stage as PipelineStage.Lookup).$lookup?.from) {
+          aggregateConfig.push({
+            $match: {
+              [String(filter['key'])]: new Types.ObjectId(String(filter['value']))
+            }
+          })
+  
+          if (filter['excluded']) {
+            const lastProp = aggregateConfig.at(-1) as PipelineStage.Match | undefined
+            if (lastProp) {
+              Object.entries(filter['excluded']).forEach(([key, value]) => {
+                lastProp.$match[key] = { $ne: new Types.ObjectId(String(value)) }
+              })
+            }
           }
         }
       }
+  
+      const response = await Album.aggregate<AlbumDocument>(aggregateConfig)
+  
+      if (response) {
+        const coveredAlbums = await this.getCoveredAlbums(
+          response.map((album) => ({
+            ...album,
+            artist: Array.isArray(album.artist) ? album.artist[0] : album.artist,
+            genre: Array.isArray(album.genre) ? album.genre[0] : album.genre,
+            period: Array.isArray(album.period) ? album.period[0] : album.period
+          }))
+        )
+        const albums = await Promise.all(coveredAlbums)
+        return { docs: albums }
+      }
+  
+      throw new Error('Incorrect request options')
+    } catch (error) {
+      throw error
     }
-
-    const response = await Album.aggregate<AlbumDocument>(aggregateConfig)
-
-    if (response) {
-      const coveredAlbums = await this.getCoveredAlbums(
-        response.map((album) => ({
-          ...album,
-          artist: Array.isArray(album.artist) ? album.artist[0] : album.artist,
-          genre: Array.isArray(album.genre) ? album.genre[0] : album.genre,
-          period: Array.isArray(album.period) ? album.period[0] : album.period
-        }))
-      )
-      const albums = await Promise.all(coveredAlbums)
-      return { docs: albums }
-    }
-
-    throw new Error('Incorrect request options')
   },
 
   async getSingle(id: string | Types.ObjectId, withCover = true) {

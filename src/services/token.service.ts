@@ -42,21 +42,33 @@ export default {
   },
 
   async saveToken(userID: Types.ObjectId, refreshToken: string) {
-    const dbToken = await Token.findOne({ user: userID })
+    try {
+      const dbToken = await Token.findOne({ user: userID })
 
-    if (dbToken) {
-      dbToken.refreshToken = refreshToken
-      return dbToken.save()
+      if (dbToken) {
+        dbToken.refreshToken = refreshToken
+        return dbToken.save()
+      }
+
+      return await Token.create({ user: userID, refreshToken })
+    } catch (error) {
+      throw error
     }
-
-    return await Token.create({ user: userID, refreshToken })
   },
 
   async removeToken(refreshToken: string) {
-    return await Token.deleteOne({ refreshToken })
+    try {
+      return await Token.deleteOne({ refreshToken })
+    } catch (error) {
+      throw error
+    }
   },
 
   async findToken(refreshToken: string) {
-    return await Token.findOne({ refreshToken })
+    try {
+      return await Token.findOne({ refreshToken })
+    } catch (error) {
+      throw error
+    }
   }
 }

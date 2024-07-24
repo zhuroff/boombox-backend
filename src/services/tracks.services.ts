@@ -37,22 +37,38 @@ export default {
     }
   },
   async remove(tracks: (string | Types.ObjectId)[]) {
-    return await Track.deleteMany({ _id: { $in: tracks } })
+    try {
+      return await Track.deleteMany({ _id: { $in: tracks } })
+    } catch (error) {
+      throw error
+    }
   },
   async incrementListeningCounter(id: string) {
-    return await Track.findByIdAndUpdate(id, { $inc: { listened: 1 } })
+    try {
+      return await Track.findByIdAndUpdate(id, { $inc: { listened: 1 } })
+    } catch (error) {
+      throw error
+    }
   },
   async saveTrackDuration(id: string, duration: number) {
-    return await Track.findByIdAndUpdate(id, { $set: { duration } })
+    try {
+      return await Track.findByIdAndUpdate(id, { $set: { duration } })
+    } catch (error) {
+      throw error
+    }
   },
   async getLyrics(id: string) {
-    const response = await Track.findById(id)
+    try {
+      const response = await Track.findById(id)
 
-    if (response) {
-      return { lyrics: response.lyrics }
+      if (response) {
+        return { lyrics: response.lyrics }
+      }
+
+      throw new Error('Incorrect request options')
+    } catch (error) {
+      throw error
     }
-
-    throw new Error('Incorrect request options')
   },
   async getWave(req: Request) {
     const config = [
@@ -92,76 +108,101 @@ export default {
       { $sample: { size: req.body['limit'] } }
     ]
 
-    const waveTracks = await Track.aggregate(config)
-    const coveredWaveTracks = await Promise.all(waveTracks.map(async (track) => {
-      const cloudAPI = getCloudApi(track.inAlbum[0].cloudURL)
-      return {
-        ...track,
-        coverURL: await cloudAPI.getFile(
-          `${utils.sanitizeURL(track.inAlbum[0].folderName)}/cover.webp`,
-          'image'
-        )
-      }
-    }))
+    try {
+      const waveTracks = await Track.aggregate(config)
+      const coveredWaveTracks = await Promise.all(waveTracks.map(async (track) => {
+        const cloudAPI = getCloudApi(track.inAlbum[0].cloudURL)
+        return {
+          ...track,
+          coverURL: await cloudAPI.getFile(
+            `${utils.sanitizeURL(track.inAlbum[0].folderName)}/cover.webp`,
+            'image'
+          )
+        }
+      }))
 
-    return coveredWaveTracks.map((track: any) => (
-      new TrackDTO({
-        ...track,
-        artist: track.artist[0],
-        genre: track.genre[0],
-        period: track.period[0],
-        inAlbum: track.inAlbum[0]
-      })
-    ))
+      return coveredWaveTracks.map((track: any) => (
+        new TrackDTO({
+          ...track,
+          artist: track.artist[0],
+          genre: track.genre[0],
+          period: track.period[0],
+          inAlbum: track.inAlbum[0]
+        })
+      ))
+    } catch (error) {
+      throw error
+    }
   },
   async getLyricsExternal(query: string) {
-    const searches = await GClient.songs.search(query)
-    const resultArray = searches.map(async (el) => {
-      let lyrics = ''
-      try {
-        lyrics = await el.lyrics()
-      } catch (error) {
-        console.error(error)
-      }
+    try {
+      const searches = await GClient.songs.search(query)
+      const resultArray = searches.map(async (el) => {
+        let lyrics = ''
+        try {
+          lyrics = await el.lyrics()
+        } catch (error) {
+          console.error(error)
+        }
 
-      return {
-        title: el.title,
-        thumbnail: el.thumbnail,
-        artist: el.artist.name,
-        lyrics
-      }
-    })
+        return {
+          title: el.title,
+          thumbnail: el.thumbnail,
+          artist: el.artist.name,
+          lyrics
+        }
+      })
 
-    return await Promise.all(resultArray)
+      return await Promise.all(resultArray)
+    } catch (error) {
+      throw error
+    }
   },
   async saveLyrics(id: string, lyrics: string) {
-    return await Track.findByIdAndUpdate(id, { $set: { lyrics } })
+    try {
+      return await Track.findByIdAndUpdate(id, { $set: { lyrics } })
+    } catch (error) {
+      throw error
+    }
   },
   async getAudio(path: string, cloudURL: string, root?: string) {
     const cloudAPI = getCloudApi(cloudURL)
-    return await cloudAPI.getFile(path, 'audio', root)
+    
+    try {
+      return await cloudAPI.getFile(path, 'audio', root)
+    } catch (error) {
+      throw error
+    }
   },
   async getCoveredTracks(docs: TrackDocument[]) {
-    return await Promise.all(docs.map(async (track) => {
-      const cloudAPI = getCloudApi(track.cloudURL)
-      const cover = await cloudAPI.getFile(
-        `${utils.sanitizeURL(track.inAlbum.folderName)}/cover.webp`,
-        'image'
-      )
-      if (cover) track.coverURL = cover
-      return track
-    }))
+    try {
+      return await Promise.all(docs.map(async (track) => {
+        const cloudAPI = getCloudApi(track.cloudURL)
+        const cover = await cloudAPI.getFile(
+          `${utils.sanitizeURL(track.inAlbum.folderName)}/cover.webp`,
+          'image'
+        )
+        if (cover) track.coverURL = cover
+        return track
+      }))
+    } catch (error) {
+      throw error
+    }
   },
   async reduceTracksCompilations(tracks: CompilationDocumentTrack[], listID: string) {
-    const cleanProcess = tracks.map(async (track) => {
-      return await this.updateCompilationInTrack({
-        listID,
-        inList: false,
-        itemID: track.track instanceof Types.ObjectId ? track.track : track.track._id
+    try {
+      const cleanProcess = tracks.map(async (track) => {
+        return await this.updateCompilationInTrack({
+          listID,
+          inList: false,
+          itemID: track.track instanceof Types.ObjectId ? track.track : track.track._id
+        })
       })
-    })
-
-    return await Promise.all(cleanProcess)
+  
+      return await Promise.all(cleanProcess)
+    } catch (error) {
+      throw error
+    }
   },
   async updateCompilationInTrack({ listID, itemID, inList }: GatheringUpdateProps) {
     try {
@@ -173,7 +214,6 @@ export default {
 
       await Track.findOneAndUpdate(query, update, options)
     } catch (error) {
-      console.log(error)
       throw error
     }
   } 

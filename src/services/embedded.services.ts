@@ -8,19 +8,23 @@ import { PaginationDTO } from '../dto/pagination.dto'
 
 export default {
   async create(payload: EmbeddedPayload) {
-    const newBCAlbum = new Embedded(payload)
-    const dbAlbum = await newBCAlbum.save()
+    try {
+      const newBCAlbum = new Embedded(payload)
+      const dbAlbum = await newBCAlbum.save()
 
-    await this.saveAlbumToCategory(Artist, new Types.ObjectId(payload.artist), dbAlbum._id)
-    await this.saveAlbumToCategory(Genre, new Types.ObjectId(payload.genre), dbAlbum._id)
-    await this.saveAlbumToCategory(Period, new Types.ObjectId(payload.period), dbAlbum._id)
+      await this.saveAlbumToCategory(Artist, new Types.ObjectId(payload.artist), dbAlbum._id)
+      await this.saveAlbumToCategory(Genre, new Types.ObjectId(payload.genre), dbAlbum._id)
+      await this.saveAlbumToCategory(Period, new Types.ObjectId(payload.period), dbAlbum._id)
 
-    const createdDoc = await Embedded.findById(dbAlbum._id)
-      .populate({ path: 'artist', select: ['title'] })
-      .populate({ path: 'genre', select: ['title'] })
-      .populate({ path: 'period', select: ['title'] })
+      const createdDoc = await Embedded.findById(dbAlbum._id)
+        .populate({ path: 'artist', select: ['title'] })
+        .populate({ path: 'genre', select: ['title'] })
+        .populate({ path: 'period', select: ['title'] })
 
-    return createdDoc
+      return createdDoc
+    } catch (error) {
+      throw error
+    }
   },
   async getAllEmbedded({ page, limit, sort }: { page: number; limit: number; sort: { [index: string]: number } }) {
     const populate: PopulateOptions[] = [
@@ -42,39 +46,51 @@ export default {
       }
     }
 
-    const dbList = await Embedded.paginate({}, options)
+    try {
+      const dbList = await Embedded.paginate({}, options)
 
-    if (dbList) {
-      const { totalDocs, totalPages, page } = dbList
-      const pagination = new PaginationDTO({ totalDocs, totalPages, page })
-      const docs = dbList.docs
+      if (dbList) {
+        const { totalDocs, totalPages, page } = dbList
+        const pagination = new PaginationDTO({ totalDocs, totalPages, page })
+        const docs = dbList.docs
 
-      return { docs, pagination }
+        return { docs, pagination }
+      }
+
+      throw new Error('Incorrect request options')
+    } catch (error) {
+      throw error
     }
-
-    throw new Error('Incorrect request options')
   },
   async single(id: string) {
-    const response = await Embedded.findById(id)
-      .populate({ path: 'artist', select: ['title'] })
-      .populate({ path: 'genre', select: ['title'] })
-      .populate({ path: 'period', select: ['title'] })
+    try {
+      const response = await Embedded.findById(id)
+        .populate({ path: 'artist', select: ['title'] })
+        .populate({ path: 'genre', select: ['title'] })
+        .populate({ path: 'period', select: ['title'] })
 
-    if (response) {
-      return response
+      if (response) {
+        return response
+      }
+
+      throw new Error('Incorrect request options')
+    } catch (error) {
+      throw error
     }
-
-    throw new Error('Incorrect request options')
   },
   async remove(_id: string) {
-    const entity = await this.single(_id)
-    await Embedded.deleteOne({ _id })
+    try {
+      const entity = await this.single(_id)
+      await Embedded.deleteOne({ _id })
 
-    await this.removeAlbumFromCategory(Artist, entity.artist._id, _id)
-    await this.removeAlbumFromCategory(Genre, entity.genre._id, _id)
-    await this.removeAlbumFromCategory(Period, entity.period._id, _id)
+      await this.removeAlbumFromCategory(Artist, entity.artist._id, _id)
+      await this.removeAlbumFromCategory(Genre, entity.genre._id, _id)
+      await this.removeAlbumFromCategory(Period, entity.period._id, _id)
 
-    return { message: 'deletedEmbeddedMessage' }
+      return { message: 'deletedEmbeddedMessage' }
+    } catch (error) {
+      throw error
+    }
   },
   async saveAlbumToCategory(...args: [PaginateModel<any>, Types.ObjectId, Types.ObjectId]) {
     const [Model, id, albumID] = args
@@ -82,7 +98,11 @@ export default {
     const update = { $push: { embeddedAlbums: albumID } }
     const options = { upsert: true, new: true, setDefaultsOnInsert: true }
 
-    return await Model.findOneAndUpdate(query, update, options)
+    try {
+      return await Model.findOneAndUpdate(query, update, options)
+    } catch (error) {
+      throw error
+    }
   },
   async removeAlbumFromCategory(...args: [PaginateModel<any>, Types.ObjectId, string]) {
     const [Model, id, albumID] = args
@@ -90,6 +110,10 @@ export default {
     const update = { $pull: { embeddedAlbums: albumID } }
     const options = { new: true }
 
-    return await Model.findOneAndUpdate(query, update, options)
+    try {
+      return await Model.findOneAndUpdate(query, update, options)
+    } catch (error) {
+      throw error
+    }
   }
 }

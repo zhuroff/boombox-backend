@@ -8,6 +8,7 @@ export default {
       const response = await userServices.registration(req)
       res.status(201).json(response)
     } catch (error) {
+      console.error(error)
       res.status(400).json(error)
     }
   },
@@ -17,6 +18,7 @@ export default {
       utils.cookieSetter(res, response)
       res.status(200).json(response)
     } catch (error) {
+      console.error(error)
       res.status(400).json(error)
     }
   },
@@ -25,6 +27,7 @@ export default {
       const response = await userServices.logout(req, res)
       res.status(200).json(response)
     } catch (error) {
+      console.error(error)
       res.status(500).json(error)
     }
   },
@@ -33,6 +36,7 @@ export default {
       const response = await userServices.getList()
       res.status(200).json(response)
     } catch (error) {
+      console.error(error)
       res.status(404).json(error)
     }
   },
@@ -42,6 +46,7 @@ export default {
       utils.cookieSetter(res, response)
       res.status(200).json(response)
     } catch (error) {
+      console.error(error)
       res.status(400).json(error)
     }
   },
@@ -50,6 +55,7 @@ export default {
       await userServices.remove(req, res)
       res.status(200).json({ message: 'success' })
     } catch (error) {
+      console.error(error)
       res.status(400).json(error)
     }
   }

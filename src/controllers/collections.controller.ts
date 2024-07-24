@@ -10,6 +10,7 @@ export default {
       const response = await collectionsServices.create(req.body)
       res.status(201).json(response)
     } catch (error) {
+      console.error(error)
       res.status(409).json({ message: (error as Error).message })
     }
   },
@@ -18,7 +19,8 @@ export default {
       const response = await collectionsServices.getCollectionsList(req)
       res.json(response)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   },
   async single(req: Request, res: Response) {
@@ -26,7 +28,8 @@ export default {
       const response = await collectionsServices.single(String(req.params['id']))
       res.json(response)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   },
   async update(req: Request, res: Response) {
@@ -36,7 +39,8 @@ export default {
       const response = await collectionsServices.update({ entityID, gatheringID, isInList, order })
       res.status(201).json(response)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   },
   async remove(req: Request, res: Response) {
@@ -44,7 +48,8 @@ export default {
       const response = await collectionsServices.remove(String(req.params['id']))
       res.status(201).json(response)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   },
   async reorder(req: Request, res: Response) {
@@ -54,15 +59,17 @@ export default {
       const response = await collectionsServices.reorder({ oldOrder, newOrder }, String(req.params['id']))
       res.status(201).json(response)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   },
   async upload(req: Request, res: Response) {
     try {
       const response = await filesServices.upload<CollectionDocument, PaginateModel<CollectionDocument>>(Collection, req)
-      return res.json(response)
+      res.json(response)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   }
 }

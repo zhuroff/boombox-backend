@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from 'axios'
+import axios, { AxiosError, AxiosInstance } from 'axios'
 import utils from '../utils'
 import { Cloud, PCloudEntity, PCloudResponseError, PCloudFileResponse, PCloudResponse, CloudFileTypes } from '../types/cloud.types'
 import { CloudEntityDTO } from '../dto/cloud.dto'
@@ -58,9 +58,9 @@ export class PCloudApi implements Cloud {
         }
         return data.metadata.contents.map((item) => new CloudEntityDTO(item, url))
       })
-      .catch((error) => {
+      .catch((error: AxiosError) => {
         console.error(error)
-        return null
+        throw error
       })
   }
 
@@ -84,7 +84,10 @@ export class PCloudApi implements Cloud {
           items: data.metadata.contents.map((item) => new CloudEntityDTO(item, url, root))
         }
       })
-      .catch((error) => console.error(error))
+      .catch((error: AxiosError) => {
+        console.error(error)
+        throw error
+      })
   }
 
   async getFile(path: string, fileType: CloudFileTypes, root?: string) {
@@ -99,9 +102,9 @@ export class PCloudApi implements Cloud {
         }
         return this.#getFileLink(data)
       })
-      .catch((error) => {
-        console.error(error.message)
-        return undefined
+      .catch((error: AxiosError) => {
+        console.error(error)
+        throw error
       })
   }
 }

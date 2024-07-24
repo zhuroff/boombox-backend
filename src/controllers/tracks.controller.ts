@@ -7,7 +7,8 @@ export default {
       await tracksServices.incrementListeningCounter(String(req.params['id']))
       res.json({ message: 'success' })
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   },
   async saveTrackDuration(req: Request, res: Response) {
@@ -15,7 +16,8 @@ export default {
       await tracksServices.saveTrackDuration(String(req.params['id']), req.body.duration)
       res.json({ message: 'success' })
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   },
   async getLyrics(req: Request, res: Response) {
@@ -23,7 +25,8 @@ export default {
       const response = await tracksServices.getLyrics(String(req.params['id']))
       res.json(response)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   },
   async getWave(req: Request, res: Response) {
@@ -31,7 +34,8 @@ export default {
       const response = await tracksServices.getWave(req)
       res.json(response)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   },
   async getLyricsExternal(req: Request, res: Response): Promise<void | ReturnType<typeof setTimeout>> {
@@ -39,7 +43,8 @@ export default {
       const response = await tracksServices.getLyricsExternal(req.body.query)
       res.json(response)
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   },
   async saveLyrics(req: Request, res: Response) {
@@ -47,7 +52,8 @@ export default {
       await tracksServices.saveLyrics(String(req.params['id']), req.body.lyrics)
       res.json({ message: 'Lyrics successfully added to track' })
     } catch (error) {
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   },
   async getAudio(req: Request, res: Response) {
@@ -56,7 +62,8 @@ export default {
       res.json(response)
     } catch (error) {
       console.info(error)
-      throw error
+      console.error(error)
+      res.status(500).json(error)
     }
   }
 }
