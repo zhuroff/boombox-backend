@@ -150,6 +150,7 @@ export default {
   },
   async searchEntry<T>(params: SearchParams, model: SearchConfig): Promise<T> {
     try {
+      // @ts-ignore
       return await model.instance
         .find(params, model.options)
         // @ts-ignore
