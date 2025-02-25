@@ -38,7 +38,7 @@ export default class YandexCloudApi implements Cloud {
   }
   
   async getFolderContent(path: string, root?: string): Promise<CloudFolderContent> {
-    const query = this.#qBuilder(path, root)
+    const query = this.#qBuilder(`${path}&limit=100`, root)
 
     return await this.#client
       .get<YandexCloudResponse<YandexCloudEntity>>(query)

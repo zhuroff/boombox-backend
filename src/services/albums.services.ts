@@ -28,9 +28,7 @@ export default {
   async createShape(album: CloudEntityDTO): Promise<AlbumShape> {
     try {
       const cloudAPI = getCloudApi(album.cloudURL)
-      const albumContent = await cloudAPI.getFolderContent(
-        `${album.path}&limit=100`
-      ) || { items: [] }
+      const albumContent = await cloudAPI.getFolderContent(album.path, 'audio')
       
       return {
         folderName: album.title,

@@ -1,4 +1,4 @@
-import { GoogleCloudEntity, PCloudEntity, UnionCloudsEntity, YandexCloudEntity } from '../types/cloud.types'
+import { GoogleCloudEntity, PCloudEntity, YandexCloudEntity, UnionCloudsEntity } from '../types/cloud.types'
 import utils from '../utils'
 
 class CloudEntityDTO {
@@ -7,8 +7,8 @@ class CloudEntityDTO {
   cloudURL: string
   created: Date = new Date()
   modified: Date = new Date()
+  path: string
   mimeType?: string
-  path?: string
 
   constructor(
     id: string,
@@ -17,18 +17,15 @@ class CloudEntityDTO {
     requestURL: string,
     created: string,
     modified: string,
+    path: string,
     mimeType: string | undefined,
-    path?: string
   ) {
     this.id = id
     this.title = title
     this.created = new Date(created)
     this.modified = new Date(modified)
     this.cloudURL = new URL(requestURL).origin
-
-    if (path) {
-      this.path = utils.sanitizeURL(path, `${process.env['COLLECTION_ROOT']}/${root}`)
-    }
+    this.path = utils.sanitizeURL(path, `${process.env['COLLECTION_ROOT']}/${root}`)
 
     if (mimeType) {
       this.mimeType = mimeType
@@ -58,8 +55,8 @@ export default class CloudEntityFactoryDTO {
         requestURL,
         entity.created,
         entity.modified,
-        entity.contenttype,
-        entity.path
+        entity.path,
+        entity.contenttype
       )
     }
 
@@ -71,6 +68,7 @@ export default class CloudEntityFactoryDTO {
         requestURL,
         entity.createdTime,
         entity.modifiedTime,
+        entity.id,
         entity.mimeType
       )
     }
@@ -82,8 +80,8 @@ export default class CloudEntityFactoryDTO {
       requestURL,
       entity.created,
       entity.modified,
-      entity.mime_type,
-      entity.path
+      entity.path,
+      entity.mime_type
     )
   }
 }

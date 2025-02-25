@@ -70,7 +70,7 @@ export default class PCloudApi implements Cloud {
 
   async getFolderContent(path: string, root?: string): Promise<CloudFolderContent> {
     this.#digest = await this.#getDigest()
-    const query = this.#qBuilder(`listfolder?path=/${this.#cloudRootPath}/${root || 'Collection/'}${path}`)
+    const query = this.#qBuilder(`listfolder?path=/${this.#cloudRootPath}/${root || 'Collection/'}${path}&limit=100`)
 
     return await this.#client
       .get<PCloudResponse<PCloudEntity> | PCloudResponseError>(query)

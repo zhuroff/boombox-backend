@@ -3,6 +3,7 @@ import { auth } from 'google-auth-library'
 import { rootDir } from '..'
 import { Cloud, CloudEntityDTO, CloudFileTypes, CloudFolderContent, UnionCloudsEntity } from '../types/cloud.types'
 import path from 'path'
+import utils from '../utils'
 import CloudEntityFactoryDTO from '../dto/cloud.dto'
 
 export default class GoogleCloudApi implements Cloud {
@@ -11,6 +12,14 @@ export default class GoogleCloudApi implements Cloud {
   #keyFilePath = path.join(rootDir, './auth-google.json')
   #client: typeof auth
   #drive: drive_v3.Drive
+
+  #typesQuery: Record<string, string> = {
+    audio: [...utils.audioMimeTypes]
+      .map((mimeType) => `mimeType='${mimeType}'`).join(' or '),
+    image: [...utils.imagesMimeTypes]
+      .map((mimeType) => `mimeType='${mimeType}'`).join(' or ')
+  }
+
   #folderAttrs = new Set<keyof drive_v3.Schema$File>([
     'id',
     'name',
@@ -55,23 +64,41 @@ export default class GoogleCloudApi implements Cloud {
 
         return acc
       }, [])
-      console.log(cloudFolders)
-      // return cloudFolders || []
-      return []
+
+      return cloudFolders || []
     } catch (error) {
       console.error(error)
       throw error
     }
   }
 
-  async getFolderContent(path: string, root?: string): Promise<CloudFolderContent> {
+  async getFolderContent(id: string, fileType: string = 'audio'): Promise<CloudFolderContent> {
     try {
-      return await Promise.resolve({
+      const {
+        data: { files },
+        config: { url }
+      } = await this.#drive.files.list({
+        fields: `nextPageToken, files(${[...this.#folderAttrs].join(',')})`,
+        q: `'${id}' in parents and ${this.#typesQuery[fileType]}`
+      })
+
+      return {
         limit: -1,
         offset: 0,
-        total: 0,
-        items: []
-      })
+        total: files?.length || 0,
+        items: files?.reduce<CloudEntityDTO[]>((acc, next) => {
+          const isValidFile = url
+            && next
+            && this.#isFolderAcceptable(next)
+            && CloudEntityFactoryDTO.isGoogleCloudEntity(next)
+
+          if (isValidFile) {
+            acc.push(CloudEntityFactoryDTO.create(next, url, next.id))
+          }
+
+          return acc
+        }, []) || []
+      }
     } catch (error) {
       console.error(error)
       throw error
