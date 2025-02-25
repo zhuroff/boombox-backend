@@ -5,7 +5,7 @@ import { getCloudApi } from '..'
 import { Track, TrackDocument } from '../models/track.model'
 import { CompilationDocumentTrack } from '../models/compilation.model'
 import { GatheringUpdateProps } from '../types/common.types'
-import { CloudEntityDTO } from '../dto/cloud.dto'
+import { CloudEntityDTO } from '../types/cloud.types'
 import { TrackDTO } from '../dto/track.dto'
 import utils from '../utils'
 

@@ -1,8 +1,8 @@
-import axios, {AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios';
-import { CloudEntityDTO } from '../dto/cloud.dto';
-import { Cloud, CloudFileTypes, YandexCloudEntity, YandexCloudResponse } from '../types/cloud.types';
+import axios, {AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios'
+import { Cloud, CloudFileTypes, CloudFolderContent, YandexCloudEntity, YandexCloudResponse } from '../types/cloud.types'
+import CloudEntityFactoryDTO from '../dto/cloud.dto'
 
-export class YandexCloudApi implements Cloud {
+export default class YandexCloudApi implements Cloud {
   #client: AxiosInstance
   #domain = process.env['YCLOUD_DOMAIN']
   #cloudRootPath: string
@@ -18,13 +18,18 @@ export class YandexCloudApi implements Cloud {
   }
 
   async getFolders(path: string, params?: AxiosRequestConfig) {
+    const query = this.#qBuilder(path)
+
     return await this.#client
-      .get<YandexCloudResponse<YandexCloudEntity>>(this.#qBuilder(path), params)
+      .get<YandexCloudResponse<YandexCloudEntity>>(query, params)
       .then(({ config: { url }, data }) => {
         if (!url) {
           throw new Error('"url" property is not found in cloud response')
         }
-        return data._embedded.items.map((item) => new CloudEntityDTO(item, url))
+
+        return data._embedded.items.map((item) => (
+          CloudEntityFactoryDTO.create(item, url)
+        ))
       })
       .catch((error: AxiosError) => {
         console.error(error)
@@ -32,16 +37,21 @@ export class YandexCloudApi implements Cloud {
       })
   }
   
-  async getFolderContent(path: string, root?: string) {
+  async getFolderContent(path: string, root?: string): Promise<CloudFolderContent> {
+    const query = this.#qBuilder(path, root)
+
     return await this.#client
-      .get<YandexCloudResponse<YandexCloudEntity>>(this.#qBuilder(path, root))
+      .get<YandexCloudResponse<YandexCloudEntity>>(query)
       .then(({ config: { url }, data }) => {
         if (!url) {
           throw new Error('"url" property is not found in cloud response')
         }
+
         return {
           ...data._embedded,
-          items: data._embedded.items.map((item) => new CloudEntityDTO(item, url, root))
+          items: data._embedded.items.map((item) => (
+            CloudEntityFactoryDTO.create(item, url, root)
+          ))
         }
       })
       .catch((error: AxiosError) => {
@@ -51,8 +61,10 @@ export class YandexCloudApi implements Cloud {
   }
 
   async getFile(path: string, fileType: CloudFileTypes, root?: string) {
+    const query = this.#qBuilder(path, root)
+
     return await this.#client
-      .get<YandexCloudResponse<YandexCloudEntity>>(this.#qBuilder(path, root))
+      .get<YandexCloudResponse<YandexCloudEntity>>(query)
       .then(({ data }) => data.file)
       .catch((error: AxiosError) => {
         console.error(error)

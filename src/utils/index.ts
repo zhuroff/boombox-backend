@@ -1,6 +1,6 @@
 import { Response } from 'express'
 import { createHash } from 'node:crypto'
-import { CloudEntityDTO } from '../dto/cloud.dto'
+import { CloudEntityDTO } from '../types/cloud.types'
 import { UserResponse } from '../types/reqres.types'
 
 export default {

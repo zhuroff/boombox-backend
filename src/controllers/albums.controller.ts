@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { Types } from 'mongoose'
 import { AlbumDocument } from '../models/album.model'
 import { AlbumShape } from '../types/album.types'
-import { CloudEntityDTO } from '../dto/cloud.dto'
+import { CloudEntityDTO } from '../types/cloud.types'
 import albumsServices from '../services/albums.services'
 import utils from '../utils'
 

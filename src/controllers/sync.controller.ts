@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { Types } from 'mongoose'
 import { AlbumDocument } from '../models/album.model'
 import { cloudsMap } from '..'
-import { CloudEntityDTO } from '../dto/cloud.dto'
+import { CloudEntityDTO } from '../types/cloud.types'
 import albumController from './albums.controller'
 import albumsServices from '../services/albums.services'
 
@@ -68,8 +68,8 @@ export const syncController = {
   },
   async sync(_: Request, res: Response) {
     try {
-      const cloudFoldersArr = await Promise.all([...cloudsMap].map(async ([_, CloudAPI]) => {
-        return await CloudAPI.getFolders('', { params: { limit: 5000 } })
+      const cloudFoldersArr = await Promise.all([...cloudsMap].map(async ([_, cloudAPI]) => {
+        return await cloudAPI.getFolders('', { params: { limit: 5000 } })
       }))
       const cloudFolders = cloudFoldersArr.flatMap((el) => el ?? [])
       const dbFolders = await albumsServices.getAlbumDocs()

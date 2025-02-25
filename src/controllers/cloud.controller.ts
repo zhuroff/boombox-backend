@@ -1,10 +1,10 @@
 import { Request, Response } from 'express'
-import cloudServices from '../services/cloud.services'
+import cloudService from '../services/cloud.service'
 
 export default {
   async getImages(req: Request, res: Response) {
     try {
-      const result = await cloudServices.getImages(req.body)
+      const result = await cloudService.getImages(req.body)
       res.json(result)
     } catch (error) {
       if (error instanceof Error) {
@@ -16,7 +16,7 @@ export default {
   },
   async getImage(req: Request, res: Response) {
     try {
-      const result = await cloudServices.getFile(req.body)
+      const result = await cloudService.getFile(req.body)
       res.json(result)
     } catch (error) {
       if (error instanceof Error) {
@@ -28,7 +28,7 @@ export default {
   },
   async getTrackDuration(req: Request, res: Response) {
     try {
-      const result = await cloudServices.getTrackDuration(req['body'])
+      const result = await cloudService.getTrackDuration(req['body'])
       res.json(result)
     } catch (error) {
       if (error instanceof Error) {
@@ -40,7 +40,7 @@ export default {
   },
   async getRandomTracks(req: Request, res: Response) {
     try {
-      const result = await cloudServices.getRandomTracks(req['body'])
+      const result = await cloudService.getRandomTracks(req['body'])
       res.json(result)
     } catch (error) {
       res.status(500).json({ message: 'Internal server error' })
@@ -48,7 +48,7 @@ export default {
   },
   async getRandomAlbums(req: Request, res: Response) {
     try {
-      const result = await cloudServices.getRandomAlbums(req['body'])
+      const result = await cloudService.getRandomAlbums(req['body'])
       res.json(result)
     } catch (error) {
       res.status(500).json({ message: 'Internal server error' })
@@ -56,7 +56,7 @@ export default {
   },
   async getFolderContent(req: Request, res: Response) {
     try {
-      const result = await cloudServices.getFolderContent(req['body'])
+      const result = await cloudService.getFolderContent(req['body'])
       res.json(result)
     } catch (error) {
       if (error instanceof Error) {

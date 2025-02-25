@@ -1,9 +1,9 @@
 import axios, { AxiosError, AxiosInstance } from 'axios'
+import { Cloud, PCloudEntity, PCloudResponseError, PCloudFileResponse, PCloudResponse, CloudFileTypes, CloudFolderContent } from '../types/cloud.types'
+import CloudEntityFactoryDTO from '../dto/cloud.dto'
 import utils from '../utils'
-import { Cloud, PCloudEntity, PCloudResponseError, PCloudFileResponse, PCloudResponse, CloudFileTypes } from '../types/cloud.types'
-import { CloudEntityDTO } from '../dto/cloud.dto'
 
-export class PCloudApi implements Cloud {
+export default class PCloudApi implements Cloud {
   #client: AxiosInstance
   #domain = process.env['PCLOUD_DOMAIN']
   #login = process.env['PCLOUD_LOGIN']
@@ -45,18 +45,22 @@ export class PCloudApi implements Cloud {
 
   async getFolders(path: string) {
     this.#digest = await this.#getDigest()
+    const query = this.#qBuilder(`listfolder?path=/${this.#cloudRootPath}/Collection${path}`)
+
     return await this.#client
-      .get<PCloudResponse<PCloudEntity> | PCloudResponseError>(this.#qBuilder(
-        `listfolder?path=/${this.#cloudRootPath}/Collection${path}`
-      ))
+      .get<PCloudResponse<PCloudEntity> | PCloudResponseError>(query)
       .then(({ config: { url }, data }) => {
         if (!url) {
           throw new Error('"url" property is not found in cloud response')
         }
+
         if ('error' in data) {
           throw new Error(`${data.result}: ${data.error}`)
         }
-        return data.metadata.contents.map((item) => new CloudEntityDTO(item, url))
+
+        return data.metadata.contents.map((item) => (
+          CloudEntityFactoryDTO.create(item, url)
+        ))
       })
       .catch((error: AxiosError) => {
         console.error(error)
@@ -64,24 +68,28 @@ export class PCloudApi implements Cloud {
       })
   }
 
-  async getFolderContent(path: string, root?: string) {
+  async getFolderContent(path: string, root?: string): Promise<CloudFolderContent> {
     this.#digest = await this.#getDigest()
+    const query = this.#qBuilder(`listfolder?path=/${this.#cloudRootPath}/${root || 'Collection/'}${path}`)
+
     return await this.#client
-      .get<PCloudResponse<PCloudEntity> | PCloudResponseError>(this.#qBuilder(
-        `listfolder?path=/${this.#cloudRootPath}/${root || 'Collection/'}${path}`
-      ))
+      .get<PCloudResponse<PCloudEntity> | PCloudResponseError>(query)
       .then(({ config: { url }, data }) => {
         if (!url) {
           throw new Error('"url" property is not found in cloud response')
         }
+
         if ('error' in data) {
           throw new Error(`${data.result}: ${data.error}`)
         }
+
         return {
           limit: -1,
           offset: 0,
           total: data.metadata.contents.length,
-          items: data.metadata.contents.map((item) => new CloudEntityDTO(item, url, root))
+          items: data.metadata.contents.map((item) => (
+            CloudEntityFactoryDTO.create(item, url, root)
+          ))
         }
       })
       .catch((error: AxiosError) => {
@@ -92,14 +100,16 @@ export class PCloudApi implements Cloud {
 
   async getFile(path: string, fileType: CloudFileTypes, root?: string) {
     this.#digest = await this.#getDigest()
+    const targetFileType = this.#fileTypesMap.get(fileType)
+    const query = this.#qBuilder(`${targetFileType}?path=/${this.#cloudRootPath}/${root || 'Collection/'}${path}`)
+
     return await this.#client
-      .get<PCloudFileResponse | PCloudResponseError>(this.#qBuilder(
-        `${this.#fileTypesMap.get(fileType)}?path=/${this.#cloudRootPath}/${root || 'Collection/'}${path}`
-      ))
+      .get<PCloudFileResponse | PCloudResponseError>(query)
       .then(async ({ data }) => {
         if ('error' in data) {
           throw new Error(`${data.result}: ${data.error}`)
         }
+
         return this.#getFileLink(data)
       })
       .catch((error: AxiosError) => {
