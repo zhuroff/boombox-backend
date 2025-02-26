@@ -51,13 +51,14 @@ export interface UserResponse {
 }
 
 export interface CloudReqPayload {
+  id: string
   path: string
   cloudURL: string
 }
 
 export interface CloudReqPayloadFilter extends CloudReqPayload {
   type?: CloudFileTypes
-  root?: string
+  cluster?: string
   limit?: number
   offset?: number
 }

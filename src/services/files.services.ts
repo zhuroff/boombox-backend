@@ -22,6 +22,7 @@ export default {
       
       throw new Error('File not found')
     } catch (error) {
+      console.error(error)
       throw error
     }
   },

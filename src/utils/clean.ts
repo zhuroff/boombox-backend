@@ -12,6 +12,7 @@ export const cleanEverything = async () => {
     await Collection.updateMany({}, { $set: { albums: [] } })
     await Compilation.updateMany({}, { $set: { tracks: [] } })
   } catch (error) {
+    console.error(error)
     throw error
   }
 }

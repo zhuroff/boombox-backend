@@ -21,6 +21,10 @@ const schema = new Schema({
     type: String,
     required: true
   },
+  cloudId: {
+    type: String,
+    required: true
+  },
   dateCreated: {
     type: Date,
     default: Date.now

@@ -38,6 +38,7 @@ export default {
 
       return new CompilationItemDTO(newCompilation)
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -54,6 +55,7 @@ export default {
 
       return { message: isInList ? 'compilations.removed' : 'compilations.added' }
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -68,6 +70,7 @@ export default {
 
       throw new Error('Incorrect request options')
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -91,6 +94,7 @@ export default {
 
       throw new Error('Incorrect request options')
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -126,6 +130,7 @@ export default {
   
       throw new Error('Incorrect request options')
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -172,6 +177,7 @@ export default {
         })
       )
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -184,6 +190,7 @@ export default {
         )
       )))
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -195,6 +202,7 @@ export default {
       await Compilation.findOneAndUpdate(query, update)
       return { message: 'Compilation title was successfully updated' }
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -213,6 +221,7 @@ export default {
 
       throw new Error('Incorrect request options')
     } catch (error) {
+      console.error(error)
       throw error
     }
   }

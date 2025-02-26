@@ -1,8 +1,9 @@
-import { CloudEntityDTO } from '../dto/cloud.dto'
+import { CloudEntityDTO } from './cloud.types'
 
 export interface AlbumShape {
   title: string
   folderName: string
+  cloudId: string
   cloudURL: string
   artist: string
   genre: string

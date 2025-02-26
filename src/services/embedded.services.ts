@@ -23,6 +23,7 @@ export default {
 
       return createdDoc
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -59,6 +60,7 @@ export default {
 
       throw new Error('Incorrect request options')
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -75,6 +77,7 @@ export default {
 
       throw new Error('Incorrect request options')
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -89,6 +92,7 @@ export default {
 
       return { message: 'deletedEmbeddedMessage' }
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -101,6 +105,7 @@ export default {
     try {
       return await Model.findOneAndUpdate(query, update, options)
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -113,6 +118,7 @@ export default {
     try {
       return await Model.findOneAndUpdate(query, update, options)
     } catch (error) {
+      console.error(error)
       throw error
     }
   }

@@ -29,10 +29,12 @@ export default {
         artist: artistId,
         genre: genreId,
         period: periodId,
+        cloudId: track.id,
         cloudURL
       })
       return await newTrack.save()
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -40,6 +42,7 @@ export default {
     try {
       return await Track.deleteMany({ _id: { $in: tracks } })
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -47,6 +50,7 @@ export default {
     try {
       return await Track.findByIdAndUpdate(id, { $inc: { listened: 1 } })
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -54,6 +58,7 @@ export default {
     try {
       return await Track.findByIdAndUpdate(id, { $set: { duration } })
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -67,6 +72,7 @@ export default {
 
       throw new Error('Incorrect request options')
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -114,10 +120,11 @@ export default {
         const cloudAPI = getCloudApi(track.inAlbum[0].cloudURL)
         return {
           ...track,
-          coverURL: await cloudAPI.getFile(
-            `${utils.sanitizeURL(track.inAlbum[0].folderName)}/cover.webp`,
-            'image'
-          )
+          coverURL: await cloudAPI.getFile({
+            id: track.inAlbum[0].cloudId,
+            path: `${utils.sanitizeURL(track.inAlbum[0].folderName)}/cover.webp`,
+            fileType: 'image'
+          })
         }
       }))
 
@@ -131,6 +138,7 @@ export default {
         })
       ))
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -142,6 +150,7 @@ export default {
         try {
           lyrics = await el.lyrics()
         } catch (error) {
+          console.error(error)
           console.error(error)
         }
 
@@ -155,6 +164,7 @@ export default {
 
       return await Promise.all(resultArray)
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -162,15 +172,22 @@ export default {
     try {
       return await Track.findByIdAndUpdate(id, { $set: { lyrics } })
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
-  async getAudio(path: string, cloudURL: string, root?: string) {
+  async getAudio(id: string, path: string, cloudURL: string, cluster?: string) {
     const cloudAPI = getCloudApi(cloudURL)
     
     try {
-      return await cloudAPI.getFile(path, 'audio', root)
+      return await cloudAPI.getFile({
+        id,
+        path,
+        fileType: 'audio',
+        cluster
+      })
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -178,14 +195,16 @@ export default {
     try {
       return await Promise.all(docs.map(async (track) => {
         const cloudAPI = getCloudApi(track.cloudURL)
-        const cover = await cloudAPI.getFile(
-          `${utils.sanitizeURL(track.inAlbum.folderName)}/cover.webp`,
-          'image'
-        )
+        const cover = await cloudAPI.getFile({
+          id: track.cloudId,
+          path: `${utils.sanitizeURL(track.inAlbum.folderName)}/cover.webp`,
+          fileType: 'image'
+        })
         if (cover) track.coverURL = cover
         return track
       }))
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -201,6 +220,7 @@ export default {
   
       return await Promise.all(cleanProcess)
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -214,6 +234,7 @@ export default {
 
       await Track.findOneAndUpdate(query, update, options)
     } catch (error) {
+      console.error(error)
       throw error
     }
   } 

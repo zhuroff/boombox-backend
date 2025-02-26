@@ -80,8 +80,15 @@ export type CloudFolderContent = {
   items: CloudEntityDTO[]
 }
 
+export interface CLoudQueryPayload {
+  id: string
+  path?: string
+  cluster?: string
+  fileType?: CloudFileTypes
+}
+
 export interface Cloud {
-  getFolders: (path: string, params?: AxiosRequestConfig) => Promise<CloudEntityDTO[] | null>
-  getFolderContent: (path: string, root?: string) => Promise<CloudFolderContent | void>
-  getFile: (path: string, fileType: CloudFileTypes) => Promise<void | any>
+  getFolders: (payload: CLoudQueryPayload, params?: AxiosRequestConfig) => Promise<CloudEntityDTO[] | null>
+  getFolderContent: (payload: CLoudQueryPayload) => Promise<CloudFolderContent | void>
+  getFile: (payload: CLoudQueryPayload) => Promise<void | any>
 }

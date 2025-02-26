@@ -10,22 +10,24 @@ class CloudEntityDTO {
   path: string
   mimeType?: string
 
+  #cluster = process.env['MAIN_CLUSTER']
+
   constructor(
     id: string,
-    root: string,
     title: string,
     requestURL: string,
     created: string,
     modified: string,
     path: string,
     mimeType: string | undefined,
+    root?: string,
   ) {
     this.id = id
     this.title = title
     this.created = new Date(created)
     this.modified = new Date(modified)
     this.cloudURL = new URL(requestURL).origin
-    this.path = utils.sanitizeURL(path, `${process.env['COLLECTION_ROOT']}/${root}`)
+    this.path = utils.sanitizeURL(path, `${process.env['COLLECTION_ROOT']}/${root || this.#cluster}`)
 
     if (mimeType) {
       this.mimeType = mimeType
@@ -46,42 +48,42 @@ export default class CloudEntityFactoryDTO {
     return 'mime_type' in entity && 'resource_id' in entity
   }
 
-  static create(entity: UnionCloudsEntity, requestURL: string, root = 'Collection/') {
+  static create(entity: UnionCloudsEntity, requestURL: string, root?: string) {
     if (this.isPCloudEntity(entity)) {
       return new CloudEntityDTO(
         entity.id,
-        root,
         entity.name,
         requestURL,
         entity.created,
         entity.modified,
         entity.path,
-        entity.contenttype
+        entity.contenttype,
+        root
       )
     }
 
     if (this.isGoogleCloudEntity(entity)) {
       return new CloudEntityDTO(
         entity.id,
-        root,
         entity.name,
         requestURL,
         entity.createdTime,
         entity.modifiedTime,
         entity.id,
-        entity.mimeType
+        entity.mimeType,
+        root
       )
     }
 
     return new CloudEntityDTO(
       entity.resource_id,
-      root,
       entity.name,
       requestURL,
       entity.created,
       entity.modified,
       entity.path,
-      entity.mime_type
+      entity.mime_type,
+      root
     )
   }
 }

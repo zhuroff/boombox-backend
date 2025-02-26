@@ -1,9 +1,15 @@
+import {
+  Cloud,
+  CloudEntityDTO,
+  CloudFolderContent,
+  UnionCloudsEntity,
+  CLoudQueryPayload
+} from '../types/cloud.types'
 import { google, drive_v3 } from 'googleapis'
 import { auth } from 'google-auth-library'
 import { rootDir } from '..'
-import { Cloud, CloudEntityDTO, CloudFileTypes, CloudFolderContent, UnionCloudsEntity } from '../types/cloud.types'
-import path from 'path'
 import utils from '../utils'
+import path from 'path'
 import CloudEntityFactoryDTO from '../dto/cloud.dto'
 
 export default class GoogleCloudApi implements Cloud {
@@ -72,7 +78,13 @@ export default class GoogleCloudApi implements Cloud {
     }
   }
 
-  async getFolderContent(id: string, fileType: string = 'audio'): Promise<CloudFolderContent> {
+  async getFolderContent(payload: CLoudQueryPayload): Promise<CloudFolderContent> {
+    const { id, fileType } = payload
+
+    if (!fileType) {
+      throw new Error('"fileType" is required and should be a string for Google Cloud API')
+    }
+
     try {
       const {
         data: { files },
@@ -105,7 +117,14 @@ export default class GoogleCloudApi implements Cloud {
     }
   }
 
-  async getFile(path: string, fileType: CloudFileTypes, root?: string) {
+  async getFile(payload: CLoudQueryPayload) {
+    const { id, fileType } = payload
+    
+    if (!fileType) {
+      throw new Error('"fileType" is required and should be a string for Google Cloud API')
+    }
+    console.log(id)
+
     try {
       return await Promise.resolve('')
     } catch (error) {

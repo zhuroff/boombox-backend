@@ -1,11 +1,21 @@
+import {
+  Cloud,
+  PCloudEntity,
+  PCloudResponseError,
+  PCloudFileResponse,
+  PCloudResponse,
+  CloudFileTypes,
+  CloudFolderContent,
+  CLoudQueryPayload
+} from '../types/cloud.types'
 import axios, { AxiosError, AxiosInstance } from 'axios'
-import { Cloud, PCloudEntity, PCloudResponseError, PCloudFileResponse, PCloudResponse, CloudFileTypes, CloudFolderContent } from '../types/cloud.types'
 import CloudEntityFactoryDTO from '../dto/cloud.dto'
 import utils from '../utils'
 
 export default class PCloudApi implements Cloud {
   #client: AxiosInstance
   #domain = process.env['PCLOUD_DOMAIN']
+  // #cluster = process.env['MAIN_CLUSTER']
   #login = process.env['PCLOUD_LOGIN']
   #password = process.env['PCLOUD_PASSWORD']
   #fileTypesMap = new Map<CloudFileTypes, string>([
@@ -43,9 +53,16 @@ export default class PCloudApi implements Cloud {
     `).replace(/\s{2,}/g, '')
   }
 
-  async getFolders(path: string) {
+  async getFolders(payload: CLoudQueryPayload) {
+    const { path, cluster } = payload
+
+    if (typeof path !== 'string') {
+      throw new Error('"path" is required and should be a string for PCloud API')
+    }
+
     this.#digest = await this.#getDigest()
-    const query = this.#qBuilder(`listfolder?path=/${this.#cloudRootPath}/Collection${path}`)
+    // remake
+    const query = this.#qBuilder(`listfolder?path=/${this.#cloudRootPath}/${cluster}/${path}`)
 
     return await this.#client
       .get<PCloudResponse<PCloudEntity> | PCloudResponseError>(query)
@@ -68,9 +85,16 @@ export default class PCloudApi implements Cloud {
       })
   }
 
-  async getFolderContent(path: string, root?: string): Promise<CloudFolderContent> {
+  async getFolderContent(payload: CLoudQueryPayload): Promise<CloudFolderContent> {
+    const { path, cluster } = payload
+
+    if (typeof path !== 'string') {
+      throw new Error('"path" is required and should be a string for PCloud API')
+    }
+
     this.#digest = await this.#getDigest()
-    const query = this.#qBuilder(`listfolder?path=/${this.#cloudRootPath}/${root || 'Collection/'}${path}&limit=100`)
+    // remake
+    const query = this.#qBuilder(`listfolder?path=/${this.#cloudRootPath}/${cluster}/${path}`)
 
     return await this.#client
       .get<PCloudResponse<PCloudEntity> | PCloudResponseError>(query)
@@ -88,7 +112,7 @@ export default class PCloudApi implements Cloud {
           offset: 0,
           total: data.metadata.contents.length,
           items: data.metadata.contents.map((item) => (
-            CloudEntityFactoryDTO.create(item, url, root)
+            CloudEntityFactoryDTO.create(item, url, cluster)
           ))
         }
       })
@@ -98,10 +122,21 @@ export default class PCloudApi implements Cloud {
       })
   }
 
-  async getFile(path: string, fileType: CloudFileTypes, root?: string) {
+  async getFile(payload: CLoudQueryPayload) {
+    const { path, fileType, cluster } = payload
+
+    if (typeof path !== 'string') {
+      throw new Error('"path" is required and should be a string for PCloud API')
+    }
+
+    if (!fileType) {
+      throw new Error('"fileType" is required and should be a string for PCloud API')
+    }
+
     this.#digest = await this.#getDigest()
     const targetFileType = this.#fileTypesMap.get(fileType)
-    const query = this.#qBuilder(`${targetFileType}?path=/${this.#cloudRootPath}/${root || 'Collection/'}${path}`)
+    // remake
+    const query = this.#qBuilder(`${targetFileType}?path=/${this.#cloudRootPath}/${cluster}/${path}`)
 
     return await this.#client
       .get<PCloudFileResponse | PCloudResponseError>(query)

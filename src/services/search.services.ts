@@ -122,6 +122,7 @@ export default {
         return acc
       }, [])
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -145,6 +146,7 @@ export default {
         return await this.searchEntry<CategoryDocument[]>(searchParams, config)
       }
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -157,6 +159,7 @@ export default {
         .populate(model.populates)
         .lean()
     } catch (error) {
+      console.error(error)
       throw error
     }
   }

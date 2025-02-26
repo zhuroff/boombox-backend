@@ -19,8 +19,13 @@ import compilationsServices from './compilations.services'
 export default {
   async getAlbumDocs() {
     try {
-      return await Album.find({}, { folderName: true, cloudURL: true })
+      return await Album.find({}, {
+        folderName: true,
+        cloudURL: true,
+        cloudId: true,
+      }).populate({ path: 'tracks', select: ['fileName', 'mimeType'] })
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -28,11 +33,16 @@ export default {
   async createShape(album: CloudEntityDTO): Promise<AlbumShape> {
     try {
       const cloudAPI = getCloudApi(album.cloudURL)
-      const albumContent = await cloudAPI.getFolderContent(album.path, 'audio')
+      const albumContent = await cloudAPI.getFolderContent({
+        id: album.id,
+        path: album.path,
+        fileType: 'audio'
+      })
       
       return {
         folderName: album.title,
         cloudURL: album.cloudURL,
+        cloudId: album.id,
         title: utils.parseAlbumTitle(album.title),
         artist: utils.parseArtistName(album.title),
         genre: utils.parseAlbumGenre(album.title),
@@ -40,6 +50,7 @@ export default {
         tracks: utils.fileFilter(albumContent.items, utils.audioMimeTypes)
       }
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -76,6 +87,7 @@ export default {
 
       return false
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -111,6 +123,7 @@ export default {
 
       return await Album.findByIdAndDelete(_id)
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -125,6 +138,7 @@ export default {
         )
       )))
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -133,13 +147,15 @@ export default {
     try {
       return await Promise.all(docs.map(async (album) => {
         const cloudAPI = getCloudApi(album.cloudURL)
-        const cover = await cloudAPI.getFile(
-          `${utils.sanitizeURL(album.folderName)}/cover.webp`,
-          'image'
-        )
+        const cover = await cloudAPI.getFile({
+          id: album.cloudId,
+          path: `${utils.sanitizeURL(album.folderName)}/cover.webp`,
+          fileType: 'image'
+        })
         return new AlbumItemDTO(album, cover || undefined)
       }))
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -163,7 +179,12 @@ export default {
         sort: req.body.sort,
         populate,
         lean: true,
-        select: { title: true, folderName: true, cloudURL: true }
+        select: {
+          title: true,
+          folderName: true,
+          cloudURL: true,
+          cloudId: true
+        }
       }
   
       const dbList = await Album.paginate({}, options)
@@ -178,6 +199,7 @@ export default {
   
       throw new Error('Incorrect request options')
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -252,6 +274,7 @@ export default {
   
       throw new Error('Incorrect request options')
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -285,13 +308,15 @@ export default {
 
     try {
       const cloudAPI = getCloudApi(singleAlbum.cloudURL)
-      const cover = withCover ? await cloudAPI.getFile(
-        `${utils.sanitizeURL(singleAlbum.folderName)}/cover.webp`,
-        'image'
-      ) : undefined
+      const cover = withCover ? await cloudAPI.getFile({
+        id: singleAlbum.cloudId,
+        path: `${utils.sanitizeURL(singleAlbum.folderName)}/cover.webp`,
+        fileType: 'image'
+      }) : undefined
       
       return new AlbumPageDTO(singleAlbum, cover)
     } catch (error) {
+      console.error(error)
       throw new Error('Incorrect request options or album not found')
     }
   },
@@ -316,10 +341,11 @@ export default {
   
     if (randomAlbum) {
       const cloudAPI = getCloudApi(randomAlbum.cloudURL)
-      const cover = await cloudAPI.getFile(
-        `${utils.sanitizeURL(randomAlbum.folderName)}/cover.webp`,
-        'image'
-      )
+      const cover = await cloudAPI.getFile({
+        id: randomAlbum.cloudId,
+        path: `${utils.sanitizeURL(randomAlbum.folderName)}/cover.webp`,
+        fileType: 'image'
+      })
       return new AlbumPageDTO(randomAlbum, cover)
     }
   

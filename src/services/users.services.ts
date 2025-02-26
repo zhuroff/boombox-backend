@@ -26,6 +26,7 @@ export default {
       const user = await User.create({ login, email, role, password: hashPassword })
       return new UserDTO(user)
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -51,6 +52,7 @@ export default {
 
       return { ...tokens, user: userDTO }
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -65,6 +67,7 @@ export default {
     try {
       return await tokenService.removeToken(refreshToken)
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -78,6 +81,7 @@ export default {
 
       return dbUsers
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -108,6 +112,7 @@ export default {
 
       return { ...tokens, user: userDTO }
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -129,6 +134,7 @@ export default {
 
       return { message: 'success' }
     } catch (error) {
+      console.error(error)
       throw error
     }
   }

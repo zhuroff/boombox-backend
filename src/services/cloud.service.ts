@@ -8,12 +8,21 @@ import utils from '../utils'
 // Возможно, вынести toy в отдельную апишку
 class CloudService {
   private async getRandomAlbumsByGenre({
-    path, cloudURL, root, limit = 5, exclude, value
+    id, path, cloudURL, cluster, limit = 5, exclude, value
   }: CloudReqPayloadFilter & { value: string; exclude: string }) {
-    if (!root) throw new Error('Root property is required')
+    if (!cluster) {
+      throw new Error('"Cluster" property is required for TOY queries')
+    }
 
     try {
-      const response = await this.getFolderContent({ path, cloudURL, root: encodeURIComponent(`${root}/${value}`), offset: 0 })
+      const response = await this.getFolderContent({
+        id,
+        path,
+        cloudURL,
+        cluster: encodeURIComponent(`${cluster}/${value}`), 
+        offset: 0
+      })
+
       const filteredItems = utils.shuffleArray(response.items.filter(({ title, mimeType }) => (
         !mimeType && !title.startsWith('-') && title !== exclude
       )))
@@ -29,24 +38,35 @@ class CloudService {
         genre: { title: value },
         period: { title: folder.title },
         coverURL: await this.getFile({
+          id: folder.id,
           path: `${value}/${folder.title}/cover.webp`,
           type: 'image',
           cloudURL,
-          root
+          cluster
         })
       })))
     } catch (error) {
+      console.error(error)
       throw error
     }
   }
 
   private async getRandomAlbumsByYear({
-    path, cloudURL, root, exclude, limit = 5, value
+    id, path, cloudURL, cluster, exclude, limit = 5, value
   }: CloudReqPayloadFilter & { value: string; exclude: string }) {
-    if (!root) throw new Error('Root property is required')
+    if (!cluster) {
+      throw new Error('Cluster property is required for TOY queries')
+    }
 
     try {
-      const genres = await this.getFolderContent({ path, cloudURL, root, offset: 0 })
+      const genres = await this.getFolderContent({
+        id,
+        path,
+        cloudURL,
+        cluster,
+        offset: 0
+      })
+
       const filteredGenres = utils.shuffleArray(genres.items.filter(({ title, mimeType }) => (
         !mimeType && title !== exclude
       )))
@@ -59,13 +79,15 @@ class CloudService {
             genre: { title: genre.title },
             period: { title: value },
             coverURL: await this.getFile({
+              id: genre.id,
               path: `${genre.title}/${value}/cover.webp`,
               type: 'image',
               cloudURL,
-              root
+              cluster
             })
           }
         } catch (error) {
+          console.error(error)
           return null
         }
       }))
@@ -79,13 +101,18 @@ class CloudService {
 
       return filteredAlbums
     } catch (error) {
+      console.error(error)
       throw error
     }
   }
 
   public async getImages({
-    path, cloudURL, limit, offset, root
+    id, type, path, cloudURL, limit, offset, cluster
   }: Required<CloudReqPayloadFilter>) {
+    if (!cluster) {
+      throw new Error('Cluster property is required for TOY queries')
+    }
+
     if (!path || !cloudURL) {
       throw new Error('Incorrect request options: both "path" and "cloudURL" properties are required')
     }
@@ -97,17 +124,19 @@ class CloudService {
       .slice(0, -1)
 
     try {
-      const content = await cloudApi.getFolderContent(
-        `${satitizedPath}&limit=${limit}&offset=${offset}`,
-        root
-      )
+      const content = await cloudApi.getFolderContent({
+        id,
+        cluster,
+        fileType: type,
+        path: `${satitizedPath}&limit=${limit}&offset=${offset}`
+      })
       
       if (content) {
         const finalContent = {
           ...content,
           items: await Promise.allSettled(
             utils.fileFilter(content.items, utils.imagesMimeTypes)
-              .map(async (item) => await this.getImageWithURL(item, cloudApi, root))
+              .map(async (item) => await this.getImageWithURL(item, cloudApi, cluster))
           ) as PromiseFulfilledResult<Required<CloudEntityDTO>>[]
         }
   
@@ -118,13 +147,18 @@ class CloudService {
   
       throw new Error('Files not found')
     } catch (error) {
+      console.error(error)
       throw error
     }
   }
 
   public async getFile({
-    path, cloudURL, type, root
+    id, path, cloudURL, type, cluster
   }: CloudReqPayloadFilter) {
+    if (!cluster) {
+      throw new Error('Cluster property is required for TOY queries')
+    }
+
     if (!path || !cloudURL || !type) {
       throw new Error('Incorrect request options: both "path" and "cloudURL" properties are required')
     }
@@ -136,7 +170,12 @@ class CloudService {
       .slice(0, -1)
 
     try {
-      const file = await cloudApi.getFile(satitizedPath, type, root)
+      const file = await cloudApi.getFile({
+        id,
+        cluster,
+        fileType: type,
+        path: satitizedPath
+      })
     
       if (file) {
         return file
@@ -144,11 +183,12 @@ class CloudService {
 
       throw new Error('File not found')
     } catch (error) {
+      console.error(error)
       throw error
     }
   }
 
-  public async getTrackDuration({ path, cloudURL }: CloudReqPayload) {
+  public async getTrackDuration({ id, path, cloudURL }: CloudReqPayload) {
     if (!path || !cloudURL) {
       throw new Error('Incorrect request options: both "path" and "cloudURL" properties are required')
     }
@@ -156,23 +196,34 @@ class CloudService {
     const cloudApi = getCloudApi(cloudURL)
     
     try {
-      return await cloudApi.getFile(path, 'file')
+      return await cloudApi.getFile({
+        id,
+        path,
+        fileType: 'file'
+      })
     } catch (error) {
+      console.error(error)
       throw error
     }
   }
 
-  public async getImageWithURL(item: Required<CloudEntityDTO>, cloudApi: CloudApi, root?: string) {
+  public async getImageWithURL(item: Required<CloudEntityDTO>, cloudApi: CloudApi, cluster?: string) {
     try {
-      const fetchedFile = await cloudApi.getFile(item.path, 'image', root)
+      const fetchedFile = await cloudApi.getFile({
+        id: item.id,
+        path: item.path,
+        fileType: 'image',
+        cluster
+      })
       return { ...item, url: fetchedFile }
     } catch (error) {
+      console.error(error)
       throw error
     }
   }
 
   public async getFolderContent({
-    path, cloudURL, root, limit, offset
+    id, path, cloudURL, cluster, limit, offset
   }: CloudReqPayloadFilter) {
     if ([path, cloudURL].some((prop) => typeof prop === 'undefined')) {
       throw new Error('Incorrect request options: both "path" and "cloudURL" properties are required')
@@ -185,10 +236,12 @@ class CloudService {
       .slice(0, -1)
 
     try {
-      const content = await cloudApi.getFolderContent(
-        `${satitizedPath}&limit=${limit || 500}&offset=${offset || 0}`,
-        root
-      )
+      const content = await cloudApi.getFolderContent({
+        id,
+        cluster,
+        fileType: 'file',
+        path: `${satitizedPath}&limit=${limit || 500}&offset=${offset || 0}`
+      })
   
       if (content) {
         return content
@@ -196,16 +249,26 @@ class CloudService {
   
       throw new Error('Content not found')
     } catch (error) {
+      console.error(error)
       throw error
     }
   }
 
   public async getRandomTracks({
-    path, cloudURL, root, limit, years
+    id, path, cloudURL, cluster, limit, years
   }: CloudReqPayloadFilter & { years: string[] }): Promise<any> {
+    if (!cluster) {
+      throw new Error('Cluster property is required for TOY queries')
+    }
+
     try {
       const response = years.map(async (year) => (
-        await this.getFolderContent({ path, cloudURL, root: `${root}/${year}` })
+        await this.getFolderContent({
+          id,
+          path,
+          cloudURL,
+          cluster: `${cluster}/${year}`
+        })
       ))
   
       const content = await Promise.all(response)
@@ -229,23 +292,45 @@ class CloudService {
   
       return utils.shuffleArray(allTracks)
     } catch (error) {
+      console.error(error)
       throw error
     }
   }
 
   public async getRandomAlbums({
-    path, cloudURL, root, limit, criteria, exclude, value
+    id, path, cloudURL, cluster, limit, criteria, exclude, value
   }: CloudReqPayloadFilter & { criteria: string; exclude: string; value: string }): Promise<any> {
+    if (!cluster) {
+      
+    }
+
     try {
       switch(criteria) {
         case 'genre':
-          return await this.getRandomAlbumsByGenre({ path, cloudURL, root, limit, value, exclude })
+          return await this.getRandomAlbumsByGenre({
+            id,
+            path,
+            cloudURL,
+            cluster,
+            limit,
+            value,
+            exclude
+          })
         case 'year':
-          return await this.getRandomAlbumsByYear({ path, cloudURL, root, limit, value, exclude })
+          return await this.getRandomAlbumsByYear({
+            id,
+            path,
+            cloudURL,
+            cluster,
+            limit,
+            value,
+            exclude
+          })
         default:
           throw new Error('Unknown criteria')
       }
     } catch (error) {
+      console.error(error)
       throw error
     }
   }

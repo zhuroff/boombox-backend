@@ -1,13 +1,20 @@
+import {
+  Cloud,
+  CloudFolderContent,
+  YandexCloudEntity,
+  YandexCloudResponse,
+  CLoudQueryPayload
+} from '../types/cloud.types'
 import axios, {AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios'
-import { Cloud, CloudFileTypes, CloudFolderContent, YandexCloudEntity, YandexCloudResponse } from '../types/cloud.types'
 import CloudEntityFactoryDTO from '../dto/cloud.dto'
 
 export default class YandexCloudApi implements Cloud {
   #client: AxiosInstance
   #domain = process.env['YCLOUD_DOMAIN']
+  #cluster = process.env['MAIN_CLUSTER']
   #cloudRootPath: string
-  #qBuilder(path: string, root? :string) {
-    return `${this.#domain}${this.#cloudRootPath}/${root || 'Collection'}/${path}`
+  #qBuilder(path: string, cluster?: string) {
+    return `${this.#domain}${this.#cloudRootPath}/${cluster || this.#cluster}/${path}`
   }
 
   constructor(cloudRootPath: string) {
@@ -17,8 +24,14 @@ export default class YandexCloudApi implements Cloud {
     })
   }
 
-  async getFolders(path: string, params?: AxiosRequestConfig) {
-    const query = this.#qBuilder(path)
+  async getFolders(payload: CLoudQueryPayload, params: AxiosRequestConfig = {}) {
+    const { path, cluster } = payload
+
+    if (typeof path !== 'string') {
+      throw new Error('"path" is required and should be a string for Yandex Cloud API')
+    }
+
+    const query = this.#qBuilder(path, cluster)
 
     return await this.#client
       .get<YandexCloudResponse<YandexCloudEntity>>(query, params)
@@ -37,8 +50,14 @@ export default class YandexCloudApi implements Cloud {
       })
   }
   
-  async getFolderContent(path: string, root?: string): Promise<CloudFolderContent> {
-    const query = this.#qBuilder(`${path}&limit=100`, root)
+  async getFolderContent(payload: CLoudQueryPayload): Promise<CloudFolderContent> {
+    const { path, cluster } = payload
+
+    if (typeof path !== 'string') {
+      throw new Error('"path" is required and should be a string for Yandex Cloud API')
+    }
+
+    const query = this.#qBuilder(`${path}&limit=100`, cluster)
 
     return await this.#client
       .get<YandexCloudResponse<YandexCloudEntity>>(query)
@@ -50,7 +69,7 @@ export default class YandexCloudApi implements Cloud {
         return {
           ...data._embedded,
           items: data._embedded.items.map((item) => (
-            CloudEntityFactoryDTO.create(item, url, root)
+            CloudEntityFactoryDTO.create(item, url, cluster)
           ))
         }
       })
@@ -60,8 +79,14 @@ export default class YandexCloudApi implements Cloud {
       })
   }
 
-  async getFile(path: string, fileType: CloudFileTypes, root?: string) {
-    const query = this.#qBuilder(path, root)
+  async getFile(payload: CLoudQueryPayload) {
+    const { path, cluster } = payload
+
+    if (typeof path !== 'string') {
+      throw new Error('"path" is required and should be a string for Yandex Cloud API')
+    }
+
+    const query = this.#qBuilder(path, cluster)
 
     return await this.#client
       .get<YandexCloudResponse<YandexCloudEntity>>(query)

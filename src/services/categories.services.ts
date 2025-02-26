@@ -7,6 +7,7 @@ import { CategoryItemDTO, CategoryPageDTO } from '../dto/category.dto'
 import { PaginationDTO } from '../dto/pagination.dto'
 import { getCloudApi } from '..'
 import utils from '../utils'
+// import path from 'path'
 
 export default {
   async getList(Model: PaginateModel<CategoryDocument>, req: Request) {
@@ -41,6 +42,7 @@ export default {
 
       throw new Error('Database error')
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -72,10 +74,12 @@ export default {
       }
 
       const coveredAlbumsRes = categorySingle.albums.map(async (album): Promise<AlbumDocument> => {
-        const cover = await getCloudApi(album.cloudURL).getFile(
-          `${utils.sanitizeURL(album.folderName)}/cover.webp`,
-          'image'
-        )
+        const cloudApi = getCloudApi(album.cloudURL)
+        const cover = await cloudApi.getFile({
+          id: album.cloudId,
+          path: `${utils.sanitizeURL(album.folderName)}/cover.webp`,
+          fileType: 'image'
+        })
         return { ...album, cover }
       })
 
@@ -83,6 +87,7 @@ export default {
 
       return new CategoryPageDTO({ ...categorySingle, albums: coveredAlbums })
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -98,6 +103,7 @@ export default {
   
       return await Model.findOneAndUpdate(query, update, options)
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -106,6 +112,7 @@ export default {
       await Model.deleteOne({ _id } as FilterQuery<T>)
       return { message: 'Category successfully deleted' }
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -115,6 +122,7 @@ export default {
       const update = { $pull: { albums: albumId } }
       await Model.findOneAndUpdate(query, update)
     } catch (error) {
+      console.error(error)
       throw error
     }
   }

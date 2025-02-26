@@ -7,6 +7,7 @@ export default {
       const result = await cloudService.getImages(req.body)
       res.json(result)
     } catch (error) {
+      console.error(error)
       if (error instanceof Error) {
         res.status(404).json({ message: error.message })
       } else {
@@ -19,6 +20,7 @@ export default {
       const result = await cloudService.getFile(req.body)
       res.json(result)
     } catch (error) {
+      console.error(error)
       if (error instanceof Error) {
         res.status(404).json({ message: error.message })
       } else {
@@ -31,6 +33,7 @@ export default {
       const result = await cloudService.getTrackDuration(req['body'])
       res.json(result)
     } catch (error) {
+      console.error(error)
       if (error instanceof Error) {
         res.status(404).json({ message: error.message })
       } else {
@@ -43,6 +46,7 @@ export default {
       const result = await cloudService.getRandomTracks(req['body'])
       res.json(result)
     } catch (error) {
+      console.error(error)
       res.status(500).json({ message: 'Internal server error' })
     }
   },
@@ -51,6 +55,7 @@ export default {
       const result = await cloudService.getRandomAlbums(req['body'])
       res.json(result)
     } catch (error) {
+      console.error(error)
       res.status(500).json({ message: 'Internal server error' })
     }
   },
@@ -59,6 +64,7 @@ export default {
       const result = await cloudService.getFolderContent(req['body'])
       res.json(result)
     } catch (error) {
+      console.error(error)
       if (error instanceof Error) {
         res.status(404).json({ message: error.message })
       } else {

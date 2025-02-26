@@ -49,7 +49,7 @@ mongoose.connect(process.env['MONGO_URI'] as string)
   .then(() => {
     console.log('MongoDB connected')
   })
-  .catch((error) => console.log(error))
+  .catch((error) => console.error(error))
 
 app.use(cors(corsConfig))
 app.use(express.urlencoded({ extended: true }))

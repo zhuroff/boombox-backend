@@ -57,6 +57,7 @@ export default {
         deleted: 0
       }
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -67,6 +68,7 @@ export default {
         await albumsServices.removeAlbum(id)
       )))
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -75,6 +77,7 @@ export default {
     try {
       return await albumsServices.updateAlbums(albums)
     } catch (error) {
+      console.error(error)
       throw error
     }
   },

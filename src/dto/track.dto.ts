@@ -7,6 +7,7 @@ export class TrackDTO {
   title: string
   path: string
   cloudURL: string
+  cloudId: string
   duration?: number | null
   listened?: number | null
   period: BasicEntity
@@ -18,6 +19,7 @@ export class TrackDTO {
 
   constructor(track: TrackDocument) {
     this._id = track._id.toString()
+    this.cloudId = track.cloudId
     this.title = track.title
     this.path = track.path
     this.cloudURL = track.cloudURL
