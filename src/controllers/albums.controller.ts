@@ -87,7 +87,7 @@ export default {
       const result = await albumsServices.getList(req)
       res.json(result)
     } catch (error) {
-      console.error(error)
+      // console.error(error)
       res.status(500).json(error)
     }
   },

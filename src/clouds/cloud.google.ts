@@ -8,9 +8,8 @@ import {
 import { google, drive_v3 } from 'googleapis'
 import { auth } from 'google-auth-library'
 import { rootDir } from '..'
-import utils from '../utils'
-import path from 'path'
 import CloudEntityFactoryDTO from '../dto/cloud.dto'
+import path from 'path'
 
 export default class GoogleCloudApi implements Cloud {
   #domain = process.env['GCLOUD_DOMAIN']
@@ -18,13 +17,6 @@ export default class GoogleCloudApi implements Cloud {
   #keyFilePath = path.join(rootDir, './auth-google.json')
   #client: typeof auth
   #drive: drive_v3.Drive
-
-  #typesQuery: Record<string, string> = {
-    audio: [...utils.audioMimeTypes]
-      .map((mimeType) => `mimeType='${mimeType}'`).join(' or '),
-    image: [...utils.imagesMimeTypes]
-      .map((mimeType) => `mimeType='${mimeType}'`).join(' or ')
-  }
 
   #folderAttrs = new Set<keyof drive_v3.Schema$File>([
     'id',
@@ -34,10 +26,22 @@ export default class GoogleCloudApi implements Cloud {
     'modifiedTime'
   ])
 
-  #isFolderAcceptable(folder: drive_v3.Schema$File): folder is UnionCloudsEntity {
+  #fileAttrs = new Map<string, keyof drive_v3.Schema$File>([
+    ['image', 'thumbnailLink']
+  ])
+
+  #isFolderAcceptable(entity: drive_v3.Schema$File): entity is UnionCloudsEntity {
     return (
-      (Object.keys(folder) as Array<keyof drive_v3.Schema$File>)
-        .every((key) => this.#folderAttrs.has(key) && !!folder[key])
+      (Object.keys(entity) as Array<keyof drive_v3.Schema$File>)
+        .every((key) => this.#folderAttrs.has(key) && !!entity[key])
+    )
+  }
+
+  #isFileAcceptable(entity: drive_v3.Schema$File, fileType: string): entity is UnionCloudsEntity {
+    return !!(
+      this.#isFolderAcceptable(entity)
+      && CloudEntityFactoryDTO.isGoogleCloudEntity(entity)
+      && entity.mimeType.startsWith(fileType)
     )
   }
 
@@ -91,25 +95,22 @@ export default class GoogleCloudApi implements Cloud {
         config: { url }
       } = await this.#drive.files.list({
         fields: `nextPageToken, files(${[...this.#folderAttrs].join(',')})`,
-        q: `'${id}' in parents and ${this.#typesQuery[fileType]}`
+        q: `'${id}' in parents`
       })
+
+      const filteredFiles = files?.reduce<CloudEntityDTO[]>((acc, next) => {
+        if (url && this.#isFileAcceptable(next, fileType)) {
+          acc.push(CloudEntityFactoryDTO.create(next, url))
+        }
+
+        return acc
+      }, []) || []
 
       return {
         limit: -1,
         offset: 0,
-        total: files?.length || 0,
-        items: files?.reduce<CloudEntityDTO[]>((acc, next) => {
-          const isValidFile = url
-            && next
-            && this.#isFolderAcceptable(next)
-            && CloudEntityFactoryDTO.isGoogleCloudEntity(next)
-
-          if (isValidFile) {
-            acc.push(CloudEntityFactoryDTO.create(next, url, next.id))
-          }
-
-          return acc
-        }, []) || []
+        total: filteredFiles.length,
+        items: filteredFiles
       }
     } catch (error) {
       console.error(error)
@@ -123,10 +124,30 @@ export default class GoogleCloudApi implements Cloud {
     if (!fileType) {
       throw new Error('"fileType" is required and should be a string for Google Cloud API')
     }
-    console.log(id)
 
     try {
-      return await Promise.resolve('')
+      const {
+        data: { files }
+      } = await this.#drive.files.list({
+        fields: `nextPageToken, files(${[...this.#folderAttrs].join(',')})`,
+        q: `'${id}' in parents`
+      })
+
+      const file = files?.find((entity) => this.#isFileAcceptable(entity, fileType))
+
+      if (!file) return ''
+
+      const fileDTO = CloudEntityFactoryDTO.create(file, String(this.#domain))
+      const fileAttr = this.#fileAttrs.get(fileType)
+
+      const { data } = await this.#drive.files.get({
+        fileId: fileDTO.id,
+        fields: this.#fileAttrs.get(fileType) || ''
+      })
+
+      if (!fileAttr || typeof data[fileAttr] !== 'string') return ''
+
+      return data[fileAttr]
     } catch (error) {
       console.error(error)
       throw error

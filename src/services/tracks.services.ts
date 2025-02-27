@@ -122,7 +122,7 @@ export default {
           ...track,
           coverURL: await cloudAPI.getFile({
             id: track.inAlbum[0].cloudId,
-            path: `${utils.sanitizeURL(track.inAlbum[0].folderName)}/cover.webp`,
+            path: `${track.inAlbum[0].folderName}/cover.webp`,
             fileType: 'image'
           })
         }
@@ -197,7 +197,7 @@ export default {
         const cloudAPI = getCloudApi(track.cloudURL)
         const cover = await cloudAPI.getFile({
           id: track.cloudId,
-          path: `${utils.sanitizeURL(track.inAlbum.folderName)}/cover.webp`,
+          path: `${track.inAlbum.folderName}/cover.webp`,
           fileType: 'image'
         })
         if (cover) track.coverURL = cover

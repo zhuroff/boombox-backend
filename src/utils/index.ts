@@ -16,14 +16,6 @@ export default {
     )
   },
 
-  sanitizeURL: (path: string, subPath = '') => (
-    encodeURIComponent(
-      path
-        .replace(/(disk:\/|\/)/, '')
-        .replace(subPath, '')
-    )
-  ),
-
   sha1: (str?: string) => (
     str ? createHash('sha1').update(str).digest('hex') : ''
   ),
@@ -118,8 +110,7 @@ export default {
     'audio/wav',
     'audio/x-wav',
     'audio/webm',
-    'audio/x-ms-wma',
-    'application/ogg'
+    'audio/x-ms-wma'
   ]),
 
   imagesMimeTypes: new Set([

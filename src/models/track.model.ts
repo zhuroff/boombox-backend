@@ -39,7 +39,7 @@ const schema = new Schema({
   },
   path: {
     type: String,
-    required: true
+    required: false
   },
   mimeType: {
     type: String,

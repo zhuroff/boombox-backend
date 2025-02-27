@@ -20,7 +20,7 @@ export default {
       const result = await cloudService.getFile(req.body)
       res.json(result)
     } catch (error) {
-      console.error(error)
+      // console.error(error)
       if (error instanceof Error) {
         res.status(404).json({ message: error.message })
       } else {

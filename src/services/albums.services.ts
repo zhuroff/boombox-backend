@@ -149,13 +149,13 @@ export default {
         const cloudAPI = getCloudApi(album.cloudURL)
         const cover = await cloudAPI.getFile({
           id: album.cloudId,
-          path: `${utils.sanitizeURL(album.folderName)}/cover.webp`,
+          path: `${album.folderName}/cover.webp`,
           fileType: 'image'
         })
         return new AlbumItemDTO(album, cover || undefined)
       }))
     } catch (error) {
-      console.error(error)
+      // console.error(error)
       throw error
     }
   },
@@ -199,7 +199,7 @@ export default {
   
       throw new Error('Incorrect request options')
     } catch (error) {
-      console.error(error)
+      // console.error(error)
       throw error
     }
   },
@@ -310,7 +310,7 @@ export default {
       const cloudAPI = getCloudApi(singleAlbum.cloudURL)
       const cover = withCover ? await cloudAPI.getFile({
         id: singleAlbum.cloudId,
-        path: `${utils.sanitizeURL(singleAlbum.folderName)}/cover.webp`,
+        path: `${singleAlbum.folderName}/cover.webp`,
         fileType: 'image'
       }) : undefined
       
@@ -343,7 +343,7 @@ export default {
       const cloudAPI = getCloudApi(randomAlbum.cloudURL)
       const cover = await cloudAPI.getFile({
         id: randomAlbum.cloudId,
-        path: `${utils.sanitizeURL(randomAlbum.folderName)}/cover.webp`,
+        path: `${randomAlbum.folderName}/cover.webp`,
         fileType: 'image'
       })
       return new AlbumPageDTO(randomAlbum, cover)

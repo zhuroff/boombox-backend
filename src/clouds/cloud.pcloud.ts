@@ -15,7 +15,7 @@ import utils from '../utils'
 export default class PCloudApi implements Cloud {
   #client: AxiosInstance
   #domain = process.env['PCLOUD_DOMAIN']
-  // #cluster = process.env['MAIN_CLUSTER']
+  #cluster = process.env['MAIN_CLUSTER']
   #login = process.env['PCLOUD_LOGIN']
   #password = process.env['PCLOUD_PASSWORD']
   #fileTypesMap = new Map<CloudFileTypes, string>([
@@ -43,10 +43,19 @@ export default class PCloudApi implements Cloud {
     return `https://${entity.hosts[0]}${entity.path}`.replace('.mp3', '')
   }
 
-  #qBuilder(path: string) {
+  #handlePath(path: string) {
+    if (!path.length) return ''
+    if (path.startsWith('/')) return path
+    return `/${encodeURIComponent(path)}`
+  }
+
+  #qBuilder(path: string, cluster?: string, qMethod?: string) {
     return (`
       ${this.#domain}/
-      ${path}
+      ${qMethod || 'listfolder'}?path=/
+      ${this.#cloudRootPath}/
+      ${cluster || this.#cluster}
+      ${this.#handlePath(path)}
       &username=${this.#login}
       &digest=${this.#digest}
       &passworddigest=${utils.sha1(this.#password + utils.sha1(this.#login) + this.#digest)}
@@ -61,8 +70,7 @@ export default class PCloudApi implements Cloud {
     }
 
     this.#digest = await this.#getDigest()
-    // remake
-    const query = this.#qBuilder(`listfolder?path=/${this.#cloudRootPath}/${cluster}/${path}`)
+    const query = this.#qBuilder(path, cluster)
 
     return await this.#client
       .get<PCloudResponse<PCloudEntity> | PCloudResponseError>(query)
@@ -93,8 +101,7 @@ export default class PCloudApi implements Cloud {
     }
 
     this.#digest = await this.#getDigest()
-    // remake
-    const query = this.#qBuilder(`listfolder?path=/${this.#cloudRootPath}/${cluster}/${path}`)
+    const query = this.#qBuilder(path, cluster)
 
     return await this.#client
       .get<PCloudResponse<PCloudEntity> | PCloudResponseError>(query)
@@ -112,7 +119,7 @@ export default class PCloudApi implements Cloud {
           offset: 0,
           total: data.metadata.contents.length,
           items: data.metadata.contents.map((item) => (
-            CloudEntityFactoryDTO.create(item, url, cluster)
+            CloudEntityFactoryDTO.create(item, url)
           ))
         }
       })
@@ -135,8 +142,7 @@ export default class PCloudApi implements Cloud {
 
     this.#digest = await this.#getDigest()
     const targetFileType = this.#fileTypesMap.get(fileType)
-    // remake
-    const query = this.#qBuilder(`${targetFileType}?path=/${this.#cloudRootPath}/${cluster}/${path}`)
+    const query = this.#qBuilder(path, cluster, targetFileType)
 
     return await this.#client
       .get<PCloudFileResponse | PCloudResponseError>(query)

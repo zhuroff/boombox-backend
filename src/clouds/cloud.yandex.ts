@@ -13,8 +13,15 @@ export default class YandexCloudApi implements Cloud {
   #domain = process.env['YCLOUD_DOMAIN']
   #cluster = process.env['MAIN_CLUSTER']
   #cloudRootPath: string
+
+  #handlePath(path: string) {
+    if (!path.length) return ''
+    if (path.startsWith('/')) return path
+    return `/${encodeURIComponent(path)}`
+  }
+
   #qBuilder(path: string, cluster?: string) {
-    return `${this.#domain}${this.#cloudRootPath}/${cluster || this.#cluster}/${path}`
+    return `${this.#domain}${this.#cloudRootPath}/${cluster || this.#cluster}${this.#handlePath(path)}`
   }
 
   constructor(cloudRootPath: string) {
@@ -57,10 +64,10 @@ export default class YandexCloudApi implements Cloud {
       throw new Error('"path" is required and should be a string for Yandex Cloud API')
     }
 
-    const query = this.#qBuilder(`${path}&limit=100`, cluster)
+    const query = this.#qBuilder(path, cluster)
 
     return await this.#client
-      .get<YandexCloudResponse<YandexCloudEntity>>(query)
+      .get<YandexCloudResponse<YandexCloudEntity>>(`${query}&limit=100`)
       .then(({ config: { url }, data }) => {
         if (!url) {
           throw new Error('"url" property is not found in cloud response')
@@ -69,7 +76,7 @@ export default class YandexCloudApi implements Cloud {
         return {
           ...data._embedded,
           items: data._embedded.items.map((item) => (
-            CloudEntityFactoryDTO.create(item, url, cluster)
+            CloudEntityFactoryDTO.create(item, url)
           ))
         }
       })

@@ -6,8 +6,6 @@ import { CategoryDocument } from '../types/common.types'
 import { CategoryItemDTO, CategoryPageDTO } from '../dto/category.dto'
 import { PaginationDTO } from '../dto/pagination.dto'
 import { getCloudApi } from '..'
-import utils from '../utils'
-// import path from 'path'
 
 export default {
   async getList(Model: PaginateModel<CategoryDocument>, req: Request) {
@@ -77,10 +75,10 @@ export default {
         const cloudApi = getCloudApi(album.cloudURL)
         const cover = await cloudApi.getFile({
           id: album.cloudId,
-          path: `${utils.sanitizeURL(album.folderName)}/cover.webp`,
+          path: `${album.folderName}/cover.webp`,
           fileType: 'image'
         })
-        return { ...album, cover }
+        return { ...album, cover: cover }
       })
 
       const coveredAlbums = await Promise.all(coveredAlbumsRes)

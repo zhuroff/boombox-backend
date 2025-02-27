@@ -120,7 +120,7 @@ class CloudService {
     const cloudApi = getCloudApi(cloudURL)
     const satitizedPath = path
       .split('/')
-      .reduce((acc, next) => acc + utils.sanitizeURL(next) + '/', '')
+      .reduce((acc, next) => acc + next+ '/', '')
       .slice(0, -1)
 
     try {
@@ -166,7 +166,7 @@ class CloudService {
     const cloudApi = getCloudApi(cloudURL)
     const satitizedPath = path
       .split('/')
-      .reduce((acc, next) => acc + utils.sanitizeURL(next) + '/', '')
+      .reduce((acc, next) => acc + next + '/', '')
       .slice(0, -1)
 
     try {
@@ -232,7 +232,7 @@ class CloudService {
     const cloudApi = getCloudApi(cloudURL)
     const satitizedPath = path
       .split('/')
-      .reduce((acc, next) => acc + utils.sanitizeURL(next) + '/', '')
+      .reduce((acc, next) => acc + next + '/', '')
       .slice(0, -1)
 
     try {
