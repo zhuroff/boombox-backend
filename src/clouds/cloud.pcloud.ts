@@ -88,7 +88,6 @@ export default class PCloudApi implements Cloud {
         ))
       })
       .catch((error: AxiosError) => {
-        console.error(error)
         throw error
       })
   }
@@ -124,7 +123,6 @@ export default class PCloudApi implements Cloud {
         }
       })
       .catch((error: AxiosError) => {
-        console.error(error)
         throw error
       })
   }
@@ -154,7 +152,6 @@ export default class PCloudApi implements Cloud {
         return this.#getFileLink(data)
       })
       .catch((error: AxiosError) => {
-        console.error(error)
         throw error
       })
   }

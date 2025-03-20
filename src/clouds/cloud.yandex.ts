@@ -52,7 +52,6 @@ export default class YandexCloudApi implements Cloud {
         ))
       })
       .catch((error: AxiosError) => {
-        console.error(error)
         throw error
       })
   }
@@ -81,7 +80,6 @@ export default class YandexCloudApi implements Cloud {
         }
       })
       .catch((error: AxiosError) => {
-        console.error(error)
         throw error
       })
   }
@@ -99,7 +97,6 @@ export default class YandexCloudApi implements Cloud {
       .get<YandexCloudResponse<YandexCloudEntity>>(query)
       .then(({ data }) => data.file)
       .catch((error: AxiosError) => {
-        console.error(error)
         throw error
       })
   }

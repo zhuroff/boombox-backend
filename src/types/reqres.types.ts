@@ -5,10 +5,31 @@ import { UserDTO } from '../dto/user.dto'
 import { AlbumItemDTO } from '../dto/album.dto'
 import { CloudFileTypes } from './cloud.types'
 
+type SortingValue = Record<string, 1 | -1>
+
+export interface RandomEntityReqFilter {
+  from: string
+  key: string
+  name: string
+  excluded?: Record<string, string>
+}
+
+export interface RelatedAlbumsReqFilter extends RandomEntityReqFilter {
+  value: string
+}
+
 export interface Pagination {
   totalDocs: number
   totalPages: number
   page?: number
+}
+
+export interface ListRequestConfig {
+  limit: number,
+  sort: SortingValue,
+  page: number,
+  isRandom?: true
+  filter?: RandomEntityReqFilter | RelatedAlbumsReqFilter
 }
 
 export interface DiscogsPagination {
@@ -20,13 +41,6 @@ export interface DiscogsPagination {
 export interface SearchPayload {
   query: string
   key?: SearchModelKey
-}
-
-export interface RequestFilter {
-  from: string
-  key: string
-  value: string
-  excluded?: Record<string, string>
 }
 
 export type SearchModelKey = Omit<ModelKeys, 'users' | 'tokens' | 'toys'>

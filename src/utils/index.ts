@@ -47,7 +47,7 @@ export default {
 
   parseTrackTitle: (name: string) => {
     return name
-      .replace(/^[0-9]+(.\s|-)+/, '')
+      .replace(/^[0-9]+[\.\s-]+/, '')
       .replace(/\.[^.]+$/, '')
       .trim()
   },

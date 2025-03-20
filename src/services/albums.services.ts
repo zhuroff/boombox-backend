@@ -5,7 +5,7 @@ import { Album, AlbumDocument } from '../models/album.model'
 import { Artist } from '../models/artist.model'
 import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
-import { RequestFilter } from '../types/reqres.types'
+import { ListRequestConfig } from '../types/reqres.types'
 import { AlbumShape } from '../types/album.types'
 import { AlbumItemDTO, AlbumPageDTO } from '../dto/album.dto'
 import { PaginationDTO } from '../dto/pagination.dto'
@@ -155,56 +155,50 @@ export default {
         return new AlbumItemDTO(album, cover || undefined)
       }))
     } catch (error) {
-      // console.error(error)
       throw error
     }
   },
 
-  async getList(req: Request) {
-    try {
-      if (req.body.isRandom) {
-        return await this.getListRandom(req.body.limit, req.body.filter)
-      }
-  
-      const populate: PopulateOptions[] = [
-        { path: 'artist', select: ['title'] },
-        { path: 'genre', select: ['title'] },
-        { path: 'period', select: ['title'] },
-        { path: 'inCollections', select: ['title'] }
-      ]
-  
-      const options: PaginateOptions = {
-        page: req.body.page,
-        limit: req.body.limit,
-        sort: req.body.sort,
-        populate,
-        lean: true,
-        select: {
-          title: true,
-          folderName: true,
-          cloudURL: true,
-          cloudId: true
-        }
-      }
-  
-      const dbList = await Album.paginate({}, options)
-  
-      if (dbList) {
-        const { totalDocs, totalPages, page } = dbList
-        const pagination = new PaginationDTO({ totalDocs, totalPages, page })
-        const docs = await this.getCoveredAlbums(dbList.docs)
-  
-        return { docs, pagination }
-      }
-  
-      throw new Error('Incorrect request options')
-    } catch (error) {
-      // console.error(error)
-      throw error
+  async getList(req: Request<{}, {}, ListRequestConfig>) {
+    if (req.body.isRandom) {
+      return await this.getListRandom(req.body.limit, req.body.filter)
     }
+
+    const populate: PopulateOptions[] = [
+      { path: 'artist', select: ['title'] },
+      { path: 'genre', select: ['title'] },
+      { path: 'period', select: ['title'] },
+      { path: 'inCollections', select: ['title'] }
+    ]
+
+    const options: PaginateOptions = {
+      page: req.body.page,
+      limit: req.body.limit,
+      sort: req.body.sort,
+      populate,
+      lean: true,
+      select: {
+        title: true,
+        folderName: true,
+        cloudURL: true,
+        cloudId: true
+      }
+    }
+
+    const dbList = await Album.paginate({}, options)
+
+    if (dbList) {
+      const { totalDocs, totalPages, page } = dbList
+      const pagination = new PaginationDTO({ totalDocs, totalPages, page })
+      const docs = await this.getCoveredAlbums(dbList.docs)
+
+      return { docs, pagination }
+    }
+
+    throw new Error('Incorrect request options')
   },
 
-  async getListRandom(size: number, filter?: RequestFilter) {
+  async getListRandom(limit: number, filter?: ListRequestConfig['filter']) {
     const basicConfig: PipelineStage[] = [
       {
         $lookup: {
@@ -230,53 +224,54 @@ export default {
           as: 'period'
         }
       },
-      { $sample: { size } }
+      {
+        $sample: {
+          size: limit
+        }
+      }
     ]
 
     const aggregateConfig: PipelineStage[] = []
 
-    try {
-      for (const stage of basicConfig) {
-        aggregateConfig.push(stage)
-        if (!filter) continue
-        if (filter.from === (stage as PipelineStage.Lookup).$lookup?.from) {
-          aggregateConfig.push({
-            $match: {
-              [String(filter['key'])]: new Types.ObjectId(String(filter['value']))
-            }
-          })
-  
-          if (filter['excluded']) {
-            const lastProp = aggregateConfig.at(-1) as PipelineStage.Match | undefined
-            if (lastProp) {
-              Object.entries(filter['excluded']).forEach(([key, value]) => {
-                lastProp.$match[key] = { $ne: new Types.ObjectId(String(value)) }
-              })
-            }
+    for (const stage of basicConfig) {
+      aggregateConfig.push(stage)
+
+      if (!filter || !('value' in filter)) continue
+
+      if (filter.from === (stage as PipelineStage.Lookup).$lookup?.from) {
+        aggregateConfig.push({
+          $match: {
+            [String(filter['key'])]: new Types.ObjectId(String(filter['value']))
+          }
+        })
+
+        if (filter['excluded']) {
+          const lastProp = aggregateConfig.at(-1) as PipelineStage.Match | undefined
+          if (lastProp) {
+            Object.entries(filter['excluded']).forEach(([key, value]) => {
+              lastProp.$match[key] = { $ne: new Types.ObjectId(String(value)) }
+            })
           }
         }
       }
-  
-      const response = await Album.aggregate<AlbumDocument>(aggregateConfig)
-  
-      if (response) {
-        const coveredAlbums = await this.getCoveredAlbums(
-          response.map((album) => ({
-            ...album,
-            artist: Array.isArray(album.artist) ? album.artist[0] : album.artist,
-            genre: Array.isArray(album.genre) ? album.genre[0] : album.genre,
-            period: Array.isArray(album.period) ? album.period[0] : album.period
-          }))
-        )
-        const albums = await Promise.all(coveredAlbums)
-        return { docs: albums }
-      }
-  
-      throw new Error('Incorrect request options')
-    } catch (error) {
-      console.error(error)
-      throw error
     }
+
+    const response = await Album.aggregate<AlbumDocument>(aggregateConfig)
+
+    if (response) {
+      const coveredAlbums = await this.getCoveredAlbums(
+        response.map((album) => ({
+          ...album,
+          artist: Array.isArray(album.artist) ? album.artist[0] : album.artist,
+          genre: Array.isArray(album.genre) ? album.genre[0] : album.genre,
+          period: Array.isArray(album.period) ? album.period[0] : album.period
+        }))
+      )
+      const albums = await Promise.all(coveredAlbums)
+      return { docs: albums }
+    }
+
+    throw new Error('Incorrect request options')
   },
 
   async getSingle(id: string | Types.ObjectId, withCover = true) {
@@ -316,7 +311,6 @@ export default {
       
       return new AlbumPageDTO(singleAlbum, cover)
     } catch (error) {
-      console.error(error)
       throw new Error('Incorrect request options or album not found')
     }
   },

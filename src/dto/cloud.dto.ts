@@ -1,4 +1,4 @@
-import { GoogleCloudEntity, PCloudEntity, YandexCloudEntity, UnionCloudsEntity } from '../types/cloud.types'
+import { PCloudEntity, YandexCloudEntity, UnionCloudsEntity } from '../types/cloud.types'
 
 class CloudEntityDTO {
   id: string
@@ -39,10 +39,6 @@ export default class CloudEntityFactoryDTO {
     return 'id' in entity && !('createdTime' in entity)
   }
 
-  static isGoogleCloudEntity(entity: UnionCloudsEntity): entity is GoogleCloudEntity {
-    return 'createdTime' in entity && 'mimeType' in entity
-  }
-
   static isYandexCloudEntity(entity: UnionCloudsEntity): entity is YandexCloudEntity {
     return 'mime_type' in entity && 'resource_id' in entity
   }
@@ -57,17 +53,6 @@ export default class CloudEntityFactoryDTO {
         entity.modified,
         entity.contenttype,
         entity.path
-      )
-    }
-
-    if (this.isGoogleCloudEntity(entity)) {
-      return new CloudEntityDTO(
-        entity.id,
-        entity.name,
-        requestURL,
-        entity.createdTime,
-        entity.modifiedTime,
-        entity.mimeType
       )
     }
 

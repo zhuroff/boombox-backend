@@ -152,9 +152,7 @@ class CloudService {
     }
   }
 
-  public async getFile({
-    id, path, cloudURL, type, cluster
-  }: CloudReqPayloadFilter) {
+  public async getFile({ id, path, cloudURL, type, cluster }: CloudReqPayloadFilter) {
     if (!cluster) {
       throw new Error('Cluster property is required for TOY queries')
     }

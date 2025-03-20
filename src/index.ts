@@ -21,7 +21,6 @@ import synchronizeRoutes from './routes/sync.routes'
 import cloudRoutes from './routes/cloud.routes'
 import PCloudApi from './clouds/cloud.pcloud'
 import YandexCloudApi from './clouds/cloud.yandex'
-import GoogleCloudApi from './clouds/cloud.google'
 import { CloudApi } from './types/cloud.types'
 
 dotenv.config()
@@ -39,8 +38,7 @@ export const cloudRootPath = `${process.env['COLLECTION_ROOT']}`
 
 export const cloudsMap = new Map<string, CloudApi>([
   ['https://eapi.pcloud.com', new PCloudApi(cloudRootPath)],
-  ['https://cloud-api.yandex.net', new YandexCloudApi(cloudRootPath)],
-  ['https://www.googleapis.com', new GoogleCloudApi()]
+  ['https://cloud-api.yandex.net', new YandexCloudApi(cloudRootPath)]
 ])
 
 export const getCloudApi = (url: string) => cloudsMap.get(url) as CloudApi

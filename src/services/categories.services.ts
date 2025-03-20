@@ -49,7 +49,7 @@ export default {
       const categorySingle = await Model.findById(req.params['id'])
         .populate({
           path: 'albums',
-          select: ['title', 'folderName', 'cloudURL'],
+          select: ['title', 'folderName', 'cloudURL', 'cloudId'],
           populate: [
             { path: 'artist', select: ['title', '_id'] },
             { path: 'genre', select: ['title', '_id'] },
