@@ -19,10 +19,9 @@ import collectionsRoutes from './routes/collections.routes'
 import backupRoutes from './routes/backup.routes'
 import synchronizeRoutes from './routes/sync.routes'
 import cloudRoutes from './routes/cloud.routes'
+import PCloudApi from './clouds/cloud.pcloud'
+import YandexCloudApi from './clouds/cloud.yandex'
 import { CloudApi } from './types/cloud.types'
-import { PCloudApi } from './clouds/cloud.pcloud'
-import { YandexCloudApi } from './clouds/cloud.yandex'
-// import { cleanEverything } from './utils/clean'
 
 dotenv.config()
 
@@ -47,9 +46,8 @@ export const getCloudApi = (url: string) => cloudsMap.get(url) as CloudApi
 mongoose.connect(process.env['MONGO_URI'] as string)
   .then(() => {
     console.log('MongoDB connected')
-    // cleanEverything().then(() => console.log('Everything cleaned'))
   })
-  .catch((error) => console.log(error))
+  .catch((error) => console.error(error))
 
 app.use(cors(corsConfig))
 app.use(express.urlencoded({ extended: true }))

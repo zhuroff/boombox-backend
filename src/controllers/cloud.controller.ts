@@ -1,12 +1,13 @@
 import { Request, Response } from 'express'
-import cloudServices from '../services/cloud.services'
+import cloudService from '../services/cloud.service'
 
 export default {
   async getImages(req: Request, res: Response) {
     try {
-      const result = await cloudServices.getImages(req.body)
+      const result = await cloudService.getImages(req.body)
       res.json(result)
     } catch (error) {
+      console.error(error)
       if (error instanceof Error) {
         res.status(404).json({ message: error.message })
       } else {
@@ -16,9 +17,10 @@ export default {
   },
   async getImage(req: Request, res: Response) {
     try {
-      const result = await cloudServices.getFile(req.body)
+      const result = await cloudService.getFile(req.body)
       res.json(result)
     } catch (error) {
+      // console.error(error)
       if (error instanceof Error) {
         res.status(404).json({ message: error.message })
       } else {
@@ -28,9 +30,10 @@ export default {
   },
   async getTrackDuration(req: Request, res: Response) {
     try {
-      const result = await cloudServices.getTrackDuration(req['body'])
+      const result = await cloudService.getTrackDuration(req['body'])
       res.json(result)
     } catch (error) {
+      console.error(error)
       if (error instanceof Error) {
         res.status(404).json({ message: error.message })
       } else {
@@ -40,25 +43,28 @@ export default {
   },
   async getRandomTracks(req: Request, res: Response) {
     try {
-      const result = await cloudServices.getRandomTracks(req['body'])
+      const result = await cloudService.getRandomTracks(req['body'])
       res.json(result)
     } catch (error) {
+      console.error(error)
       res.status(500).json({ message: 'Internal server error' })
     }
   },
   async getRandomAlbums(req: Request, res: Response) {
     try {
-      const result = await cloudServices.getRandomAlbums(req['body'])
+      const result = await cloudService.getRandomAlbums(req['body'])
       res.json(result)
     } catch (error) {
+      console.error(error)
       res.status(500).json({ message: 'Internal server error' })
     }
   },
   async getFolderContent(req: Request, res: Response) {
     try {
-      const result = await cloudServices.getFolderContent(req['body'])
+      const result = await cloudService.getFolderContent(req['body'])
       res.json(result)
     } catch (error) {
+      console.error(error)
       if (error instanceof Error) {
         res.status(404).json({ message: error.message })
       } else {

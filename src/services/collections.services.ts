@@ -37,6 +37,7 @@ export default {
 
       return new CollectionItemDTO(newCollection)
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -53,6 +54,7 @@ export default {
 
       return { message: isInList ? 'collections.removed' : 'collections.added' }
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -67,6 +69,7 @@ export default {
 
       throw new Error('Incorrect request options')
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -90,6 +93,7 @@ export default {
 
       throw new Error('Incorrect request options')
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -122,6 +126,7 @@ export default {
 
       throw new Error('Incorrect request options')
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -149,6 +154,7 @@ export default {
 
       return new CollectionPageDTO(singleCollection, coveredAlbums)
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -159,6 +165,7 @@ export default {
         { $pull: { albums: { album: albumId } } }
       )
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -172,6 +179,7 @@ export default {
 
       await Album.findOneAndUpdate(query, update, options)
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -187,6 +195,7 @@ export default {
   
       return await Promise.all(cleanProcess)
     } catch (error) {
+      console.error(error)
       throw error
     }
   }

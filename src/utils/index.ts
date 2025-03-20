@@ -1,6 +1,6 @@
 import { Response } from 'express'
 import { createHash } from 'node:crypto'
-import { CloudEntityDTO } from '../dto/cloud.dto'
+import { CloudEntityDTO } from '../types/cloud.types'
 import { UserResponse } from '../types/reqres.types'
 
 export default {
@@ -15,14 +15,6 @@ export default {
       }
     )
   },
-
-  sanitizeURL: (path: string, subPath = '') => (
-    encodeURIComponent(
-      path
-        .replace(/(disk:\/|\/)/, '')
-        .replace(subPath, '')
-    )
-  ),
 
   sha1: (str?: string) => (
     str ? createHash('sha1').update(str).digest('hex') : ''
@@ -55,7 +47,7 @@ export default {
 
   parseTrackTitle: (name: string) => {
     return name
-      .replace(/^[0-9]+(.\s|-)+/, '')
+      .replace(/^[0-9]+[\.\s-]+/, '')
       .replace(/\.[^.]+$/, '')
       .trim()
   },
@@ -118,8 +110,7 @@ export default {
     'audio/wav',
     'audio/x-wav',
     'audio/webm',
-    'audio/x-ms-wma',
-    'application/ogg'
+    'audio/x-ms-wma'
   ]),
 
   imagesMimeTypes: new Set([

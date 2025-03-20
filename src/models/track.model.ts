@@ -21,6 +21,10 @@ const schema = new Schema({
     type: String,
     required: true
   },
+  cloudId: {
+    type: String,
+    required: true
+  },
   dateCreated: {
     type: Date,
     default: Date.now
@@ -35,7 +39,7 @@ const schema = new Schema({
   },
   path: {
     type: String,
-    required: true
+    required: false
   },
   mimeType: {
     type: String,

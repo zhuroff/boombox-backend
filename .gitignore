@@ -65,3 +65,6 @@ sw.*
 
 # macOS
 .DS_Store
+
+#auth config
+auth-*.json

@@ -1,19 +1,19 @@
 import { AxiosRequestConfig } from 'axios'
-import { CloudEntityDTO } from '../dto/cloud.dto'
-import { PCloudApi } from '../clouds/cloud.pcloud'
-import { YandexCloudApi } from '../clouds/cloud.yandex'
+import PCloudApi from '../clouds/cloud.pcloud'
+import YandexCloudApi from '../clouds/cloud.yandex'
+import CloudEntityFactoryDTO from '../dto/cloud.dto'
 
 export type CloudApi = PCloudApi | YandexCloudApi
 export type CloudFileTypes = 'audio' | 'video' | 'image' | 'file'
 
-export type CloudCommonEntity = {
+export interface CloudCommonEntity {
   name: string
   path: string
   created: string
   modified: string
 }
 
-export type PCloudEntity = CloudCommonEntity & {
+export interface PCloudEntity extends CloudCommonEntity {
   id: string
   isfolder: boolean
   contenttype?: string
@@ -32,15 +32,16 @@ export interface PCloudFileResponse extends Omit<PCloudResponseError, 'error'> {
   hosts: string[]
 }
 
-export type YandexCloudEntity = CloudCommonEntity & {
+export interface YandexCloudEntity extends CloudCommonEntity {
   resource_id: string
   type: 'dir' | 'file'
   mime_type?: string
 }
 
 export type UnionCloudsEntity =
-  PCloudEntity |
-  YandexCloudEntity
+  PCloudEntity | YandexCloudEntity
+
+export type CloudEntityDTO = ReturnType<typeof CloudEntityFactoryDTO['create']>
 
 export type PCloudResponse<T> = {
   file?: string
@@ -61,15 +62,22 @@ export type YandexCloudResponse<T> = {
 }
 
 export type CloudFolderContent = {
-  items: CloudEntityDTO[]
   limit: number
   offset: number
   total: number
   sort?: string
+  items: CloudEntityDTO[]
+}
+
+export interface CLoudQueryPayload {
+  id: string
+  path?: string
+  cluster?: string
+  fileType?: CloudFileTypes
 }
 
 export interface Cloud {
-  getFolders: (path: string, params?: AxiosRequestConfig) => Promise<null | CloudEntityDTO[]>
-  getFolderContent: (path: string, root?: string) => Promise<void | CloudFolderContent>
-  getFile: (path: string, fileType: CloudFileTypes) => Promise<void | any>
+  getFolders: (payload: CLoudQueryPayload, params?: AxiosRequestConfig) => Promise<CloudEntityDTO[] | null>
+  getFolderContent: (payload: CLoudQueryPayload) => Promise<CloudFolderContent | void>
+  getFile: (payload: CLoudQueryPayload) => Promise<void | any>
 }

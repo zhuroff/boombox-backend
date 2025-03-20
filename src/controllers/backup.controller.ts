@@ -7,6 +7,7 @@ export default {
       const response = await backupServices.save()
       res.status(201).json(response)
     } catch (error) {
+      console.error(error)
       res.status(500).json(error)
     }
   },
@@ -15,6 +16,7 @@ export default {
       const response = backupServices.get()
       res.json(response)
     } catch (error) {
+      console.error(error)
       res.status(500).json(error)
     }
   },
@@ -23,6 +25,7 @@ export default {
       const response = await backupServices.recover(String(req.params['date']))
       res.status(201).json(response)
     } catch (error) {
+      console.error(error)
       res.status(500).json(error)
     }
   },
@@ -31,6 +34,7 @@ export default {
       const response = await backupServices.remove(String(req.params['date']))
       res.status(201).json(response)
     } catch (error) {
+      console.error(error)
       res.status(500).json(error)
     }
   }

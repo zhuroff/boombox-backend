@@ -1,41 +1,69 @@
-import { UnionCloudsEntity } from '../types/cloud.types'
-import utils from '../utils'
+import { PCloudEntity, YandexCloudEntity, UnionCloudsEntity } from '../types/cloud.types'
 
-export class CloudEntityDTO {
+class CloudEntityDTO {
   id: string
-  path: string
   title: string
   cloudURL: string
   created: Date = new Date()
   modified: Date = new Date()
   mimeType?: string
+  path?: string
 
-  #idSetter(item: UnionCloudsEntity) {
-    if ('id' in item) return item.id
-    return item.resource_id
-  }
+  constructor(
+    id: string,
+    title: string,
+    requestURL: string,
+    created: string,
+    modified: string,
+    mimeType: string | undefined,
+    path?: string
+  ) {
+    this.id = id
+    this.title = title
+    this.created = new Date(created)
+    this.modified = new Date(modified)
+    this.cloudURL = new URL(requestURL).origin
 
-  #mimeTypeSetter(item: UnionCloudsEntity) {
-    if ('contenttype' in item) {
-      return item.contenttype
+    if (mimeType) {
+      this.mimeType = mimeType
     }
 
-    if ('mime_type' in item) {
-      return item.mime_type
+    if (path) {
+      this.path = path.replace(/.*\//, '')
     }
+  }
+}
 
-    return
+export default class CloudEntityFactoryDTO {
+  static isPCloudEntity(entity: UnionCloudsEntity): entity is PCloudEntity {
+    return 'id' in entity && !('createdTime' in entity)
   }
 
-  constructor(item: UnionCloudsEntity, cloudURL: string, root = 'Collection/') {
-    this.id = this.#idSetter(item)
-    this.path = utils.sanitizeURL(item.path, `${process.env['COLLECTION_ROOT']}/${root}`)
-    this.title = item.name
-    this.cloudURL = new URL(cloudURL).origin
-    this.created = new Date(item.created)
-    this.modified = new Date(item.modified)
+  static isYandexCloudEntity(entity: UnionCloudsEntity): entity is YandexCloudEntity {
+    return 'mime_type' in entity && 'resource_id' in entity
+  }
 
-    const mimeType = this.#mimeTypeSetter(item)
-    if (mimeType) this.mimeType = mimeType
+  static create(entity: UnionCloudsEntity, requestURL: string) {
+    if (this.isPCloudEntity(entity)) {
+      return new CloudEntityDTO(
+        entity.id,
+        entity.name,
+        requestURL,
+        entity.created,
+        entity.modified,
+        entity.contenttype,
+        entity.path
+      )
+    }
+
+    return new CloudEntityDTO(
+      entity.resource_id,
+      entity.name,
+      requestURL,
+      entity.created,
+      entity.modified,
+      entity.mime_type,
+      entity.path
+    )
   }
 }

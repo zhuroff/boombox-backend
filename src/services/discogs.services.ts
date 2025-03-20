@@ -17,6 +17,7 @@ export default {
       const response = await axios.get<DiscogsResponse>(this.buildDiscogsLink(query))
       return response.data
     } catch (error: unknown | AxiosError) {
+      console.error(error)
       if (axios.isAxiosError(error)) {
         throw new Error(error.message)
       }
@@ -51,6 +52,7 @@ export default {
         return results
       }
     } catch (error) {
+      console.error(error)
       throw error
     }
   }

@@ -6,7 +6,7 @@ import { TrackDTO } from '../dto/track.dto'
 import { TrackDocument } from '../models/track.model'
 import { Compilation, CompilationDocument } from '../models/compilation.model'
 import { GatheringCreatePayload, GatheringUpdatePayload, GatheringReorder } from '../types/common.types'
-import { RequestFilter } from '../types/reqres.types'
+import { ListRequestConfig } from '../types/reqres.types'
 import tracksServices from './tracks.services'
 
 export default {
@@ -38,6 +38,7 @@ export default {
 
       return new CompilationItemDTO(newCompilation)
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -54,6 +55,7 @@ export default {
 
       return { message: isInList ? 'compilations.removed' : 'compilations.added' }
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -68,6 +70,7 @@ export default {
 
       throw new Error('Incorrect request options')
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -91,6 +94,7 @@ export default {
 
       throw new Error('Incorrect request options')
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -126,6 +130,7 @@ export default {
   
       throw new Error('Incorrect request options')
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -172,6 +177,7 @@ export default {
         })
       )
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -184,6 +190,7 @@ export default {
         )
       )))
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -195,10 +202,13 @@ export default {
       await Compilation.findOneAndUpdate(query, update)
       return { message: 'Compilation title was successfully updated' }
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
-  async getListRandom(size: number, filter: RequestFilter) {
+  async getListRandom(size: number, filter: ListRequestConfig['filter']) {
+    if (!filter) return
+
     const basicConfig: PipelineStage[] = [
       { $sample: { size } },
       { $match: { _id: { $ne: new Types.ObjectId(filter.excluded?.['_id']) } } }
@@ -213,6 +223,7 @@ export default {
 
       throw new Error('Incorrect request options')
     } catch (error) {
+      console.error(error)
       throw error
     }
   }

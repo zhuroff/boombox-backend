@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { authChecker } from '../middleware/auth.checker'
-import { syncController as controller } from '../controllers/sync.controller'
+import { controller } from '../controllers/sync.controller'
 
 const router = Router()
 

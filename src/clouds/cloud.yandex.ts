@@ -1,13 +1,27 @@
-import axios, {AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios';
-import { CloudEntityDTO } from '../dto/cloud.dto';
-import { Cloud, CloudFileTypes, YandexCloudEntity, YandexCloudResponse } from '../types/cloud.types';
+import {
+  Cloud,
+  CloudFolderContent,
+  YandexCloudEntity,
+  YandexCloudResponse,
+  CLoudQueryPayload
+} from '../types/cloud.types'
+import axios, {AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios'
+import CloudEntityFactoryDTO from '../dto/cloud.dto'
 
-export class YandexCloudApi implements Cloud {
+export default class YandexCloudApi implements Cloud {
   #client: AxiosInstance
   #domain = process.env['YCLOUD_DOMAIN']
+  #cluster = process.env['MAIN_CLUSTER']
   #cloudRootPath: string
-  #qBuilder(path: string, root? :string) {
-    return `${this.#domain}${this.#cloudRootPath}/${root || 'Collection'}/${path}`
+
+  #handlePath(path: string) {
+    if (!path.length) return ''
+    if (path.startsWith('/')) return path
+    return `/${encodeURIComponent(path)}`
+  }
+
+  #qBuilder(path: string, cluster?: string) {
+    return `${this.#domain}${this.#cloudRootPath}/${cluster || this.#cluster}${this.#handlePath(path)}`
   }
 
   constructor(cloudRootPath: string) {
@@ -17,45 +31,72 @@ export class YandexCloudApi implements Cloud {
     })
   }
 
-  async getFolders(path: string, params?: AxiosRequestConfig) {
+  async getFolders(payload: CLoudQueryPayload, params: AxiosRequestConfig = {}) {
+    const { path, cluster } = payload
+
+    if (typeof path !== 'string') {
+      throw new Error('"path" is required and should be a string for Yandex Cloud API')
+    }
+
+    const query = this.#qBuilder(path, cluster)
+
     return await this.#client
-      .get<YandexCloudResponse<YandexCloudEntity>>(this.#qBuilder(path), params)
+      .get<YandexCloudResponse<YandexCloudEntity>>(query, params)
       .then(({ config: { url }, data }) => {
         if (!url) {
           throw new Error('"url" property is not found in cloud response')
         }
-        return data._embedded.items.map((item) => new CloudEntityDTO(item, url))
+
+        return data._embedded.items.map((item) => (
+          CloudEntityFactoryDTO.create(item, url)
+        ))
       })
       .catch((error: AxiosError) => {
-        console.error(error)
         throw error
       })
   }
   
-  async getFolderContent(path: string, root?: string) {
+  async getFolderContent(payload: CLoudQueryPayload): Promise<CloudFolderContent> {
+    const { path, cluster } = payload
+
+    if (typeof path !== 'string') {
+      throw new Error('"path" is required and should be a string for Yandex Cloud API')
+    }
+
+    const query = this.#qBuilder(path, cluster)
+
     return await this.#client
-      .get<YandexCloudResponse<YandexCloudEntity>>(this.#qBuilder(path, root))
+      .get<YandexCloudResponse<YandexCloudEntity>>(`${query}&limit=100`)
       .then(({ config: { url }, data }) => {
         if (!url) {
           throw new Error('"url" property is not found in cloud response')
         }
+
         return {
           ...data._embedded,
-          items: data._embedded.items.map((item) => new CloudEntityDTO(item, url, root))
+          items: data._embedded.items.map((item) => (
+            CloudEntityFactoryDTO.create(item, url)
+          ))
         }
       })
       .catch((error: AxiosError) => {
-        console.error(error)
         throw error
       })
   }
 
-  async getFile(path: string, fileType: CloudFileTypes, root?: string) {
+  async getFile(payload: CLoudQueryPayload) {
+    const { path, cluster } = payload
+
+    if (typeof path !== 'string') {
+      throw new Error('"path" is required and should be a string for Yandex Cloud API')
+    }
+
+    const query = this.#qBuilder(path, cluster)
+
     return await this.#client
-      .get<YandexCloudResponse<YandexCloudEntity>>(this.#qBuilder(path, root))
+      .get<YandexCloudResponse<YandexCloudEntity>>(query)
       .then(({ data }) => data.file)
       .catch((error: AxiosError) => {
-        console.error(error)
         throw error
       })
   }

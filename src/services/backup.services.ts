@@ -37,6 +37,7 @@ export default {
       await Promise.all(backuping)
       return { message: 'Data backup completed successfully' }
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -54,6 +55,7 @@ export default {
       }))
       return { message: 'Data restore completed successfully' }
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -69,6 +71,7 @@ export default {
         )
       })
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -83,6 +86,7 @@ export default {
         )
       })
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -98,6 +102,7 @@ export default {
         )
       })
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -113,6 +118,7 @@ export default {
         )
       })
     } catch (error) {
+      console.error(error)
       throw error
     }
   }

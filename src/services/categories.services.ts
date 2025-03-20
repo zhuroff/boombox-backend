@@ -6,7 +6,6 @@ import { CategoryDocument } from '../types/common.types'
 import { CategoryItemDTO, CategoryPageDTO } from '../dto/category.dto'
 import { PaginationDTO } from '../dto/pagination.dto'
 import { getCloudApi } from '..'
-import utils from '../utils'
 
 export default {
   async getList(Model: PaginateModel<CategoryDocument>, req: Request) {
@@ -41,6 +40,7 @@ export default {
 
       throw new Error('Database error')
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -49,7 +49,7 @@ export default {
       const categorySingle = await Model.findById(req.params['id'])
         .populate({
           path: 'albums',
-          select: ['title', 'folderName', 'cloudURL'],
+          select: ['title', 'folderName', 'cloudURL', 'cloudId'],
           populate: [
             { path: 'artist', select: ['title', '_id'] },
             { path: 'genre', select: ['title', '_id'] },
@@ -72,17 +72,20 @@ export default {
       }
 
       const coveredAlbumsRes = categorySingle.albums.map(async (album): Promise<AlbumDocument> => {
-        const cover = await getCloudApi(album.cloudURL).getFile(
-          `${utils.sanitizeURL(album.folderName)}/cover.webp`,
-          'image'
-        )
-        return { ...album, cover }
+        const cloudApi = getCloudApi(album.cloudURL)
+        const cover = await cloudApi.getFile({
+          id: album.cloudId,
+          path: `${album.folderName}/cover.webp`,
+          fileType: 'image'
+        })
+        return { ...album, cover: cover }
       })
 
       const coveredAlbums = await Promise.all(coveredAlbumsRes)
 
       return new CategoryPageDTO({ ...categorySingle, albums: coveredAlbums })
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -98,6 +101,7 @@ export default {
   
       return await Model.findOneAndUpdate(query, update, options)
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -106,6 +110,7 @@ export default {
       await Model.deleteOne({ _id } as FilterQuery<T>)
       return { message: 'Category successfully deleted' }
     } catch (error) {
+      console.error(error)
       throw error
     }
   },
@@ -115,6 +120,7 @@ export default {
       const update = { $pull: { albums: albumId } }
       await Model.findOneAndUpdate(query, update)
     } catch (error) {
+      console.error(error)
       throw error
     }
   }
