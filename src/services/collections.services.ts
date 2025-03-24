@@ -6,7 +6,7 @@ import { CollectionItemDTO, CollectionPageDTO } from '../dto/collection.dto'
 import { Album, AlbumDocument } from '../models/album.model'
 import { AlbumItemDTO } from '../dto/album.dto'
 import { PaginationDTO } from '../dto/pagination.dto'
-import albumsServices from './albums.services'
+import albumsServices from './AlbumService'
 
 export default {
   async create({ title, entityID }: GatheringCreatePayload) {

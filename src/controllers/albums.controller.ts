@@ -1,90 +1,18 @@
 import { Request, Response } from 'express'
-import { Types } from 'mongoose'
-import { AlbumDocument } from '../models/album.model'
-import { AlbumShape } from '../types/album.types'
-import { CloudEntityDTO } from '../types/cloud.types'
-import albumsServices from '../services/albums.services'
-import utils from '../utils'
+import AlbumRepositoryContract from '../repositories/AlbumRepository'
+import CategoryRepositoryContract from '../repositories/CategoryRepository'
+import AlbumService from '../services/AlbumService'
+import CategoryService from '../services/CategoryService'
 
 export default {
-  async create(albums: CloudEntityDTO[]) {
-    const invalidFolders: Record<string, string>[] = []
+  async getAlbums(req: Request, res: Response) {
+    const albumRepository = new AlbumRepositoryContract()
+    const categoryRepository = new CategoryRepositoryContract()
+    const categoryService = new CategoryService(categoryRepository)
+    const albumService = new AlbumService(albumRepository, categoryService)
 
     try {
-      const albumShapes = await Promise.all(albums.map(async (album) => {
-        if (!utils.isAlbumFolderNameValid(album.title)) {
-          invalidFolders.push({
-            album: album.title,
-            cloud: album.cloudURL,
-            reason: 'invalid_folder_name'
-          })
-          return Promise.resolve(null)
-        } else {
-          return await albumsServices.createShape(album)
-        }
-      }))
-
-      const validShapes = albumShapes.reduce<AlbumShape[]>((acc, next) => {
-        if (next)  {
-          if (!next.tracks?.length) {
-            invalidFolders.push({
-              album: next.title,
-              cloud: next.cloudURL,
-              reason: 'no_tracks'
-            })
-          } else if (!next.tracks.every(({ title }) => utils.isTrackFilenameValid(title))) {
-            invalidFolders.push({
-              album: next.title,
-              cloud: next.cloudURL,
-              reason: 'invalid_tracks_names'
-            })
-          } else {
-            acc.push(next)
-          }
-        }
-
-        return acc
-      }, [])
-
-      const savedAlbums = await Promise.all(validShapes.map(async (shape) => (
-        await albumsServices.createAlbum(shape)
-      )))
-
-      return {
-        added: savedAlbums.length,
-        invalid: invalidFolders.length > 0 ? invalidFolders : 0,
-        updated: 0,
-        deleted: 0
-      }
-    } catch (error) {
-      console.error(error)
-      throw error
-    }
-  },
-
-  async remove(albums: Types.ObjectId[]) {
-    try {
-      return await Promise.all(albums.map(async (id) => (
-        await albumsServices.removeAlbum(id)
-      )))
-    } catch (error) {
-      console.error(error)
-      throw error
-    }
-  },
-
-  async update(albums: AlbumDocument[]) {
-    try {
-      return await albumsServices.updateAlbums(albums)
-    } catch (error) {
-      console.error(error)
-      throw error
-    }
-  },
-
-  async getList(req: Request, res: Response) {
-    try {
-      const result = await albumsServices.getList(req)
+      const result = await albumService.getAlbums(req)
       res.json(result)
     } catch (error) {
       console.error(error)
@@ -92,22 +20,34 @@ export default {
     }
   },
 
-  async getSingle(req: Request<{ id: string }>, res: Response) {
-    try {
-      const result = await albumsServices.getSingle(req.params['id'])
-      res.json(result)
-    } catch (error) {
-      console.error(error)
-      res.status(500).json(error)
-    }
-  },
-
-  async getListRandom(req: Request, res: Response) {
+  async getAlbumsRandom(req: Request, res: Response) {
     if (Array.isArray(req.query)) {
       throw new Error('Query should be a string in this request')
     }
+
+    const albumRepository = new AlbumRepositoryContract()
+    const categoryRepository = new CategoryRepositoryContract()
+    const categoryService = new CategoryService(categoryRepository)
+    const albumService = new AlbumService(albumRepository, categoryService)
+
     try {
-      const result = await albumsServices.getListRandom(parseInt(String(req.query?.['quantity'] || 8)))
+      const quantity = parseInt(String(req.query?.['quantity'] || 8))
+      const result = await albumService.getAlbumsRandom(quantity)
+      res.json(result)
+    } catch (error) {
+      console.error(error)
+      res.status(500).json(error)
+    }
+  },
+
+  async getAlbum(req: Request<{ id: string }>, res: Response) {
+    const albumRepository = new AlbumRepositoryContract()
+    const categoryRepository = new CategoryRepositoryContract()
+    const categoryService = new CategoryService(categoryRepository)
+    const albumService = new AlbumService(albumRepository, categoryService)
+
+    try {
+      const result = await albumService.getAlbum(req.params['id'])
       res.json(result)
     } catch (error) {
       console.error(error)

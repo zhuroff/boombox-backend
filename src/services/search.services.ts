@@ -9,7 +9,7 @@ import { Collection } from '../models/collection.model'
 import { Compilation } from '../models/compilation.model'
 import { Track, TrackDocument } from '../models/track.model'
 import { CategoryDocument } from '../types/common.types'
-import albumsServices from './albums.services'
+import albumsServices from './AlbumService'
 import tracksServices from './tracks.services'
 import { AlbumItemDTO } from 'src/dto/album.dto'
 

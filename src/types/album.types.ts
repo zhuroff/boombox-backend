@@ -1,4 +1,7 @@
 import { CloudEntityDTO } from './cloud.types'
+import { AlbumDocument } from '../models/album.model'
+import { Document, PaginateResult, Types } from 'mongoose'
+import { ListRequestConfig } from './reqres.types'
 
 export interface AlbumShape {
   title: string
@@ -9,4 +12,21 @@ export interface AlbumShape {
   genre: string
   period: string
   tracks: Array<Required<CloudEntityDTO>>
+}
+
+export interface AlbumRepository {
+  fetchAlbumDocs(): Promise<AlbumDocument[]>
+  saveNewAlbum(newAlbum: Document, attrs: AlbumAttrs): Promise<Document<AlbumDocument>>
+  updateAlbums(albums: AlbumDocument[]): Promise<Array<AlbumDocument | null>>
+  getAlbum(id: string | Types.ObjectId): Promise<AlbumDocument>
+  deleteAlbum(id: Types.ObjectId | string): Promise<AlbumDocument | null>
+  getAlbums(body: ListRequestConfig): Promise<PaginateResult<AlbumDocument | null>>
+  getAlbumsRandom(limit: number, filter?: ListRequestConfig['filter']): Promise<Array<AlbumDocument | null>>
+}
+
+export interface AlbumAttrs {
+  artist: Types.ObjectId
+  genre: Types.ObjectId
+  period: Types.ObjectId
+  tracks: Types.ObjectId[]
 }

@@ -89,22 +89,22 @@ export default {
       throw error
     }
   },
-  async create(Model: PaginateModel<CategoryDocument>, title: string, _id?: Types.ObjectId) {
-    try {
-      if (!title) {
-        throw new Error('Title is required')
-      }
+  // async create(Model: PaginateModel<CategoryDocument>, title: string, _id?: Types.ObjectId) {
+  //   try {
+  //     if (!title) {
+  //       throw new Error('Title is required')
+  //     }
 
-      const query = { title }
-      const update = { $push: { albums: _id } }
-      const options = { upsert: true, new: true, setDefaultsOnInsert: true }
+  //     const query = { title }
+  //     const update = { $push: { albums: _id } }
+  //     const options = { upsert: true, new: true, setDefaultsOnInsert: true }
   
-      return await Model.findOneAndUpdate(query, update, options)
-    } catch (error) {
-      console.error(error)
-      throw error
-    }
-  },
+  //     return await Model.findOneAndUpdate(query, update, options)
+  //   } catch (error) {
+  //     console.error(error)
+  //     throw error
+  //   }
+  // },
   async remove<T>(Model: PaginateModel<T>, _id: string) {
     try {
       await Model.deleteOne({ _id } as FilterQuery<T>)
@@ -114,14 +114,14 @@ export default {
       throw error
     }
   },
-  async cleanAlbums(Model: PaginateModel<CategoryDocument>, categoryId: Types.ObjectId, albumId: Types.ObjectId | string) {
-    try {
-      const query = { _id: categoryId }
-      const update = { $pull: { albums: albumId } }
-      await Model.findOneAndUpdate(query, update)
-    } catch (error) {
-      console.error(error)
-      throw error
-    }
-  }
+  // async cleanAlbums(Model: PaginateModel<CategoryDocument>, categoryId: Types.ObjectId, albumId: Types.ObjectId | string) {
+  //   try {
+  //     const query = { _id: categoryId }
+  //     const update = { $pull: { albums: albumId } }
+  //     await Model.findOneAndUpdate(query, update)
+  //   } catch (error) {
+  //     console.error(error)
+  //     throw error
+  //   }
+  // }
 }
