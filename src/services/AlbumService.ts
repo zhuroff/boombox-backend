@@ -11,15 +11,16 @@ import { PaginationDTO } from '../dto/pagination.dto'
 import { CloudEntityDTO } from '../types/cloud.types'
 import { getCloudApi } from '..'
 import utils from '../utils'
-import collectionsServices from './collections.services'
 import compilationsServices from './compilations.services'
 import CategoryService from './CategoryService'
 import TrackService from './TrackService'
+import CollectionService from './CollectionService'
 
 export default class AlbumService {
   constructor(
     private albumRepository: AlbumRepository,
     private categoryService: CategoryService,
+    private collectionService: CollectionService,
     private trackService: TrackService
   ) {}
 
@@ -166,7 +167,7 @@ export default class AlbumService {
     await this.trackService.removeTracks(album.tracks.map(({ _id }) => _id))
 
     if (collections?.length) {
-      await collectionsServices.cleanCollection(collections, _id)
+      await this.collectionService.cleanCollection(collections, _id)
     }
     
     if (compilations.size > 0) {
@@ -206,9 +207,12 @@ export default class AlbumService {
 
     const { totalDocs, totalPages, page, docs } = dbList
     const pagination = new PaginationDTO({ totalDocs, totalPages, page })
-    const albums = await this.getCoveredAlbums(docs.filter((album) => !!album))
+    const albums = await this.albumRepository.getCoveredAlbums(docs.filter((album) => !!album))
 
-    return { docs: albums, pagination }
+    return {
+      pagination,
+      docs: albums.map(({ album, cover }) => new AlbumItemDTO(album, cover))
+    }
   }
 
   async getAlbumsRandom(limit: number, filter?: ListRequestConfig['filter']) {
@@ -218,7 +222,7 @@ export default class AlbumService {
       throw new Error('Incorrect request options')
     }
 
-    const coveredAlbums = await this.getCoveredAlbums(
+    const coveredAlbums = await this.albumRepository.getCoveredAlbums(
       dbList.reduce<AlbumDocument[]>((acc, next) => {
         if (!next) return acc
         acc.push({
@@ -232,18 +236,6 @@ export default class AlbumService {
     )
 
     const albums = await Promise.all(coveredAlbums)
-    return { docs: albums }
-  }
-
-  async getCoveredAlbums(docs: AlbumDocument[]) {
-    return await Promise.all(docs.map(async (album) => {
-      const cloudAPI = getCloudApi(album.cloudURL)
-      const cover = await cloudAPI.getFile({
-        id: album.cloudId,
-        path: `${album.folderName}/cover.webp`,
-        fileType: 'image'
-      })
-      return new AlbumItemDTO(album, cover || undefined)
-    }))
+    return { docs: albums.map(({ album, cover }) => new AlbumItemDTO(album, cover)) }
   }
 }

@@ -1,4 +1,4 @@
-import { Model, PaginateModel, PopulateOptions, ProjectionType } from 'mongoose'
+import { Model, PaginateModel, PopulateOptions, ProjectionType, Types } from 'mongoose'
 import { TrackDocument } from '../models/track.model'
 import { CategoryDocument, ModelKeys } from './common.types'
 import { UserDTO } from '../dto/user.dto'
@@ -75,4 +75,12 @@ export interface CloudReqPayloadFilter extends CloudReqPayload {
   cluster?: string
   limit?: number
   offset?: number
+}
+
+export interface NewCollectionPayload {
+  title: string
+  albums: {
+    album: Types.ObjectId
+    order: number
+  }[]
 }

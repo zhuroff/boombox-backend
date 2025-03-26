@@ -1,7 +1,10 @@
-import { Document, PaginateOptions, PipelineStage, PopulateOptions, Types } from 'mongoose'
+import { Document, PaginateOptions, PipelineStage, PopulateOptions, FilterQuery, Types } from 'mongoose'
 import { Album, AlbumDocument } from '../models/album.model'
+import { CollectionDocumentAlbum } from '../models/collection.model'
 import { AlbumAttrs, AlbumRepository } from '../types/album.types'
 import { ListRequestConfig } from '../types/reqres.types'
+import { GatheringUpdateProps } from '../types/common.types'
+import { getCloudApi } from '..'
 
 export default class AlbumRepositoryContract implements AlbumRepository {
   getAlbumRandom(): Promise<AlbumDocument> {
@@ -43,6 +46,28 @@ export default class AlbumRepositoryContract implements AlbumRepository {
         { new: true }
       )
     )))
+  }
+
+  async updateCollectionsInAlbum({ listID, itemID, inList }: GatheringUpdateProps) {
+    const query = { _id: itemID }
+    const update = inList
+      ? { $pull: { inCollections: listID } }
+      : { $push: { inCollections: listID } }
+    const options = { new: true }
+
+    await Album.findOneAndUpdate(query, update, options)
+  }
+
+  async cleanAlbumCollections(albums: CollectionDocumentAlbum[], listID: string | Types.ObjectId) {
+    const cleanProcess = albums.map(async (album) => {
+      const query: FilterQuery<AlbumDocument> = { _id: new Types.ObjectId(album.album.toString()) }
+      const update = { $pull: { inCollections: listID } }
+      const options = { new: true }
+
+      return await Album.findOneAndUpdate(query, update, options)
+    })
+
+    return await Promise.all(cleanProcess)
   }
 
   async getAlbum(id: Types.ObjectId | 'random') {
@@ -167,6 +192,19 @@ export default class AlbumRepositoryContract implements AlbumRepository {
 
   async deleteAlbum(id: Types.ObjectId | string) {
     return await Album.findByIdAndDelete(id)
+  }
+
+  async getCoveredAlbums(docs: AlbumDocument[]) {
+    return await Promise.all(docs.map(async (album) => {
+      const cloudAPI = getCloudApi(album.cloudURL)
+      const cover = await cloudAPI.getFile({
+        id: album.cloudId,
+        path: `${album.folderName}/cover.webp`,
+        fileType: 'image'
+      })
+
+      return { album, cover }
+    }))
   }
 
   // async getAlbumRandom() {

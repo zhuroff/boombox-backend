@@ -1,0 +1,86 @@
+import { Request, Response } from 'express'
+import { Collection, CollectionDocument } from 'src/models/collection.model'
+import { PaginateModel } from 'mongoose'
+import CollectionService from '../services/CollectionService'
+import FileService from '../services/FileService'
+
+export default class CollectionController {
+  constructor(
+    private collectionService: CollectionService,
+    private fileService: FileService
+  ) {}
+
+  async createCollection(req: Request, res: Response) {
+    try {
+      const response = await this.collectionService.createCollection(req.body)
+      res.status(201).json(response)
+    } catch (error) {
+      console.error(error)
+      res.status(409).json({ message: (error as Error).message })
+    }
+  }
+
+  async getCollections(req: Request, res: Response) {
+    try {
+      const response = await this.collectionService.getCollections(req)
+      res.json(response)
+    } catch (error) {
+      console.error(error)
+      res.status(500).json(error)
+    }
+  }
+
+  async getCollection(req: Request, res: Response) {
+    try {
+      const response = await this.collectionService.getCollection(String(req.params['id']))
+      res.json(response)
+    } catch (error) {
+      console.error(error)
+      res.status(500).json(error)
+    }
+  }
+
+  async updateCollection(req: Request, res: Response) {
+    try {
+      const response = await this.collectionService.updateCollection(req.body)
+      res.status(201).json(response)
+    } catch (error) {
+      console.error(error)
+      res.status(500).json(error)
+    }
+  }
+
+  async removeCollection(req: Request, res: Response) {
+    try {
+      const response = await this.collectionService.removeCollection(String(req.params['id']))
+      res.status(201).json(response)
+    } catch (error) {
+      console.error(error)
+      res.status(500).json(error)
+    }
+  }
+
+  async reorderCollections(req: Request, res: Response) {
+    try {
+      const response = await this.collectionService.reorderCollections(req.body, String(req.params['id']))
+      res.status(201).json(response)
+    } catch (error) {
+      console.error(error)
+      res.status(500).json(error)
+    }
+  }
+
+  async updateModelFileLink(req: Request, res: Response) {
+    try {
+      const response = await this.fileService.updateModelFileLink<
+        CollectionDocument,
+        PaginateModel<CollectionDocument>
+      >(Collection, req)
+
+      res.json(response)
+    } catch (error) {
+      console.error(error)
+      res.status(500).json(error)
+    }
+  }
+}
