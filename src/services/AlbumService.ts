@@ -11,15 +11,16 @@ import { PaginationDTO } from '../dto/pagination.dto'
 import { CloudEntityDTO } from '../types/cloud.types'
 import { getCloudApi } from '..'
 import utils from '../utils'
-import tracksServices from './tracks.services'
 import collectionsServices from './collections.services'
 import compilationsServices from './compilations.services'
 import CategoryService from './CategoryService'
+import TrackService from './TrackService'
 
 export default class AlbumService {
   constructor(
     private albumRepository: AlbumRepository,
-    private categoryService: CategoryService
+    private categoryService: CategoryService,
+    private trackService: TrackService
   ) {}
 
   async createAlbums(albums: CloudEntityDTO[]) {
@@ -112,14 +113,14 @@ export default class AlbumService {
 
     if (newArtist && newGenre && newPeriod) {
       const albumTracks = await Promise.all(shape.tracks.map(async (track) => (
-        await tracksServices.create(
+        await this.trackService.createTrack({
           track,
-          newAlbum._id,
-          newArtist._id,
-          newGenre._id,
-          newPeriod._id,
-          shape.cloudURL
-        )
+          albumId: newAlbum._id,
+          artistId: newArtist._id,
+          genreId: newGenre._id,
+          periodId: newPeriod._id,
+          cloudURL: shape.cloudURL
+        })
       )))
 
       return await this.albumRepository.saveNewAlbum(newAlbum, {
@@ -162,7 +163,7 @@ export default class AlbumService {
     await this.categoryService.cleanAlbums(Artist, album.artist._id, _id)
     await this.categoryService.cleanAlbums(Genre, album.genre._id, _id)
     await this.categoryService.cleanAlbums(Period, album.period._id, _id)
-    await tracksServices.remove(album.tracks.map(({ _id }) => _id))
+    await this.trackService.removeTracks(album.tracks.map(({ _id }) => _id))
 
     if (collections?.length) {
       await collectionsServices.cleanCollection(collections, _id)

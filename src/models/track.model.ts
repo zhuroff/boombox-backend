@@ -102,4 +102,16 @@ export interface TrackDocument extends Omit<
   period: PeriodDocument
 }
 
+export interface AggregatedTrackDocument extends Omit<
+  InferSchemaType<typeof schema> & { _id: Types.ObjectId },
+  TrackObjectIdKeys
+> {
+  coverURL?: string
+  inAlbum: AlbumDocument[]
+  inCompilations: CompilationDocument[]
+  artist: ArtistDocument[]
+  genre: GenreDocument[]
+  period: PeriodDocument[]
+}
+
 export const Track = model<TrackDocument, PaginateModel<TrackDocument>>('tracks', schema)
