@@ -41,9 +41,10 @@ export default class CategoryService {
 
     const coveredCategoryAlbums = await this.albumRepository.getCoveredAlbums(targetCategory.albums)
     const albumsResponse = await Promise.all(coveredCategoryAlbums)
+
     return new CategoryPageDTO({
       ...targetCategory,
-      albums: albumsResponse.map(({ album }) => album)
+      albums: albumsResponse.map(({ album, cover }) => ({ ...album, cover }))
     })
   }
 

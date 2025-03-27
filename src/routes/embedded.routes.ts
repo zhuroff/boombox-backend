@@ -1,12 +1,21 @@
 import { Router } from 'express'
 import { authChecker } from '../middleware/auth.checker'
-import controller from '../controllers/embedded.controller'
+import EmbeddedRepositoryContract from '../repositories/EmbeddedRepository'
+import CategoryRepositoryContract from '../repositories/CategoryRepository'
+import EmbeddedService from '../services/EmbeddedService'
+import EmbeddedController from '../controllers/EmbeddedController'
 
+const embeddedRepository = new EmbeddedRepositoryContract()
+const categoryRepository = new CategoryRepositoryContract()
+
+const embeddedService = new EmbeddedService(embeddedRepository, categoryRepository)
+
+const embeddedController = new EmbeddedController(embeddedService)
 const router = Router()
 
-router.get('/:id', authChecker, controller.single)
-router.post('/create', authChecker, controller.create)
-router.post('/', authChecker, controller.getAllEmbedded)
-router.delete('/:id', authChecker, controller.remove)
+router.get('/:id', authChecker, embeddedController.getPopulatedEmbedded)
+router.post('/create', authChecker, embeddedController.createEmbedded)
+router.post('/', authChecker, embeddedController.getPopulatedEmbeddedList)
+router.delete('/:id', authChecker, embeddedController.removeEmbedded)
 
 export default router

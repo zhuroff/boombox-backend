@@ -1,5 +1,5 @@
 import { Request } from 'express'
-import { Types, PaginateModel, FilterQuery, PaginateOptions } from 'mongoose'
+import { Types, PaginateModel, FilterQuery, PaginateOptions, UpdateQuery, QueryOptions } from 'mongoose'
 import { Embedded } from '../models/embedded.model'
 import { CategoryDocument, CategoryRepository } from '../types/common.types'
 
@@ -68,5 +68,14 @@ export default class CategoryRepositoryContract implements CategoryRepository {
     }
 
     return await Model.paginate({}, options)
+  }
+
+  async updateCategory(
+    Model: PaginateModel<CategoryDocument>,
+    filter: FilterQuery<CategoryDocument>,
+    update: UpdateQuery<CategoryDocument>,
+    options: QueryOptions = {}
+  ) {
+    return await Model.findOneAndUpdate(filter, update, { new: true, ...options })
   }
 }

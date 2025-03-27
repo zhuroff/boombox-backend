@@ -53,7 +53,7 @@ export default class UserController {
       res.status(200).json(response)
     } catch (error) {
       console.error(error)
-      res.status(400).json(error)
+      res.status(401).json(error)
     }
   }
 

@@ -10,6 +10,7 @@ export default class AlbumRepositoryContract implements AlbumRepository {
   getAlbumRandom(): Promise<AlbumDocument> {
     throw new Error('Method not implemented.')
   }
+
   async fetchAlbumDocs(): Promise<AlbumDocument[]> {
     return await (
       Album.find({}, {
@@ -71,9 +72,6 @@ export default class AlbumRepositoryContract implements AlbumRepository {
   }
 
   async getAlbum(id: Types.ObjectId | 'random') {
-    // const count = await Album.countDocuments()
-    // const randomIndex = Math.floor(Math.random() * count)
-
     const album = await (
       id === 'random'
         ? Album.findOne<AlbumDocument>().skip(Math.floor(Math.random() * await Album.countDocuments()))
@@ -206,31 +204,4 @@ export default class AlbumRepositoryContract implements AlbumRepository {
       return { album, cover }
     }))
   }
-
-  // async getAlbumRandom() {
-  //   const count = await Album.countDocuments()
-  //   const randomIndex = Math.floor(Math.random() * count)
-  //   const randomAlbum = await Album.findOne<AlbumDocument>().skip(randomIndex)
-  //     .populate({ path: 'artist', select: ['title'] })
-  //     .populate({ path: 'genre', select: ['title'] })
-  //     .populate({ path: 'period', select: ['title'] })
-  //     .populate({ path: 'inCollections', select: ['title'] })
-  //     .populate({
-  //       path: 'tracks',
-  //       populate: [
-  //         { path: 'artist', select: ['title'] },
-  //         { path: 'genre', select: ['title'] },
-  //         { path: 'period', select: ['title'] },
-  //         { path: 'inAlbum', select: ['title'] },
-  //         { path: 'inCompilations', select: ['title'] }
-  //       ]
-  //     })
-  //     .lean()
-
-  //   if (!randomAlbum) {
-  //     throw new Error('Incorrect request options')
-  //   }
-    
-  //   return randomAlbum
-  // }
 }
