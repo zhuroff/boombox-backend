@@ -3,9 +3,11 @@ import { Document, Default__v, IfAny, PaginateModel, Require_id, Types, Paginate
 import { ArtistDocument } from '../models/artist.model'
 import { GenreDocument } from '../models/genre.model'
 import { PeriodDocument } from '../models/period.model'
+import { TrackDocument } from '../models/track.model'
 import { CollectionDocument, CollectionDocumentAlbum } from '../models/collection.model'
 import { CompilationDocument, CompilationDocumentTrack } from '../models/compilation.model'
-import { ListRequestConfig, NewCollectionPayload, NewCompilationPayload } from './reqres.types'
+import { ListRequestConfig, NewCollectionPayload, NewCompilationPayload, SearchConfig, SearchParams, SearchPayload } from './reqres.types'
+import { AlbumItemDTO } from '../dto/album.dto'
 
 export type ModelKeys =
   | 'albums'
@@ -103,4 +105,9 @@ export interface CompilationRepository {
   cleanCompilation(compilations: Map<string, string[]>): Promise<void>
   renameCompilation(query: { _id: string }, update: { title: string }): Promise<void>
   getRandomCompilations(size: number, filter: NonNullable<ListRequestConfig['filter']>): Promise<CompilationDocument[]>
+}
+
+export interface SearchRepository {
+  splitSearch(payload: SearchPayload, config?: SearchConfig): Promise<TrackDocument[] | CategoryDocument[] | AlbumItemDTO[]>
+  searchEntry<T>(params: SearchParams, Model: SearchConfig): Promise<T>
 }

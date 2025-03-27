@@ -1,12 +1,14 @@
 import { Request, Response } from 'express'
-import searchServices from '../services/search.services'
+import SearchService from '../services/SearchService'
 
-export default {
+export default class SearchController {
+  constructor(private readonly searchService: SearchService) {}
+
   async search(req: Request, res: Response) {
     const { query, key } = req.body
 
     try {
-      const response = await searchServices.search({ query, key })
+      const response = await this.searchService.search({ query, key })
       res.json(response)
     } catch (error) {
       console.error(error)

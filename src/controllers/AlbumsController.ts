@@ -4,7 +4,7 @@ import AlbumService from '../services/AlbumService'
 export default class AlbumsController {
   constructor(private albumService: AlbumService) {}
 
-  async getAlbums(req: Request, res: Response) {
+  getAlbums = async (req: Request, res: Response) => {
     try {
       const result = await this.albumService.getAlbums(req)
       res.json(result)
@@ -14,7 +14,7 @@ export default class AlbumsController {
     }
   }
 
-  async getAlbumsRandom(req: Request, res: Response) {
+  getAlbumsRandom = async (req: Request, res: Response) => {
     if (Array.isArray(req.query)) {
       throw new Error('Query should be a string in this request')
     }
@@ -29,7 +29,7 @@ export default class AlbumsController {
     }
   }
 
-  async getAlbum(req: Request<{ id: string }>, res: Response) {
+  getAlbum = async (req: Request<{ id: string }>, res: Response) => {
     try {
       const result = await this.albumService.getAlbum(req.params['id'])
       res.json(result)

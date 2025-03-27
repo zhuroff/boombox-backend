@@ -21,7 +21,7 @@ const collectionRepository = new CollectionRepositoryContract()
 const compilationRepository = new CompilationRepositoryContract()
 const trackRepository = new TrackRepositoryContract()
 
-const categoryService = new CategoryService(categoryRepository)
+const categoryService = new CategoryService(categoryRepository, albumRepository)
 const collectionService = new CollectionService(collectionRepository, albumRepository)
 const compilationService = new CompilationService(compilationRepository, trackRepository)
 const trackService = new TrackService(trackRepository)

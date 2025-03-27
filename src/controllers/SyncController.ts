@@ -1,7 +1,8 @@
 import { Request, Response } from 'express'
+import SyncService from '../services/SyncService'
 
 export default class SyncController {
-  constructor(private readonly syncService: any) {}
+  constructor(private readonly syncService: SyncService) {}
 
   async sync(_: Request, res: Response) {   
     try {

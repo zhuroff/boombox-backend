@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
-import { Collection, CollectionDocument } from 'src/models/collection.model'
 import { PaginateModel } from 'mongoose'
+import { Collection, CollectionDocument } from '../models/collection.model'
 import CollectionService from '../services/CollectionService'
 import FileService from '../services/FileService'
 
