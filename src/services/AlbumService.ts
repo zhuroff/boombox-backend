@@ -11,16 +11,17 @@ import { PaginationDTO } from '../dto/pagination.dto'
 import { CloudEntityDTO } from '../types/cloud.types'
 import { getCloudApi } from '..'
 import utils from '../utils'
-import compilationsServices from './compilations.services'
-import CategoryService from './CategoryService'
 import TrackService from './TrackService'
+import CategoryService from './CategoryService'
 import CollectionService from './CollectionService'
+import CompilationService from './CompilationService'
 
 export default class AlbumService {
   constructor(
     private albumRepository: AlbumRepository,
     private categoryService: CategoryService,
     private collectionService: CollectionService,
+    private compilationService: CompilationService,
     private trackService: TrackService
   ) {}
 
@@ -171,7 +172,7 @@ export default class AlbumService {
     }
     
     if (compilations.size > 0) {
-      await compilationsServices.cleanCompilation(compilations)
+      await this.compilationService.cleanCompilation(compilations)
     }
 
     return await this.albumRepository.deleteAlbum(_id)

@@ -10,9 +10,11 @@ import CollectionController from '../controllers/CollectionController'
 
 const collectionRepository = new CollectionRepositoryContract()
 const fileRepository = new FileRepositoryContract()
-const fileService  = new FileService(fileRepository)
 const albumRepository = new AlbumRepositoryContract()
+
+const fileService  = new FileService(fileRepository)
 const collectionService = new CollectionService(collectionRepository, albumRepository)
+
 const collectionController = new CollectionController(collectionService, fileService)
 const router = Router()
 

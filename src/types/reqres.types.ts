@@ -84,3 +84,11 @@ export interface NewCollectionPayload {
     order: number
   }[]
 }
+
+export interface NewCompilationPayload {
+  title: string
+  tracks: {
+    track: Types.ObjectId
+    order: number
+  }[]
+}

@@ -4,7 +4,8 @@ import { ArtistDocument } from '../models/artist.model'
 import { GenreDocument } from '../models/genre.model'
 import { PeriodDocument } from '../models/period.model'
 import { CollectionDocument, CollectionDocumentAlbum } from '../models/collection.model'
-import { NewCollectionPayload } from './reqres.types'
+import { CompilationDocument, CompilationDocumentTrack } from '../models/compilation.model'
+import { ListRequestConfig, NewCollectionPayload, NewCompilationPayload } from './reqres.types'
 
 export type ModelKeys =
   | 'albums'
@@ -85,4 +86,18 @@ export interface FileRepository {
     _id: Types.ObjectId | string,
     Model: U
   ): Promise<IfAny<T, any, Document<unknown, {}, T> & Default__v<Require_id<T>>> | null>
+}
+
+export interface CompilationRepository {
+  getRawCompilations(): Promise<CompilationDocument[]>
+  getRawCompilation(id: Types.ObjectId | string): Promise<CompilationDocument | null>
+  createCompilation(payload: NewCompilationPayload): Promise<CompilationDocument>
+  updateCompilation(payload: GatheringUpdatePayload): Promise<void>
+  removeCompilation(id: string): Promise<CompilationDocument | null>
+  updateCompilationOrder(_id: Types.ObjectId | string, tracks: CompilationDocumentTrack[]): Promise<void>
+  getPaginatedCompilations(req: Request): Promise<PaginateResult<CompilationDocument | null>>
+  getPopulatedCompilation(id: string | Types.ObjectId): Promise<CompilationDocument | null>
+  cleanCompilation(compilations: Map<string, string[]>): Promise<void>
+  renameCompilation(query: { _id: string }, update: { title: string }): Promise<void>
+  getRandomCompilations(size: number, filter: NonNullable<ListRequestConfig['filter']>): Promise<CompilationDocument[]>
 }
