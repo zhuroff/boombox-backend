@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { authChecker } from '../middleware/auth.checker'
 import CompilationRepositoryContract from '../repositories/CompilationRepository'
-import FileRepositoryContract from 'src/repositories/FileRepository'
+import FileRepositoryContract from '../repositories/FileRepository'
 import TrackRepositoryContract from '../repositories/TrackRepository'
 import CompilationService from '../services/CompilationService'
 import FileService from '../services/FileService'

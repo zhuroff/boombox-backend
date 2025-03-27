@@ -66,6 +66,9 @@ export interface CategoryRepository {
     categoryId: Types.ObjectId,
     albumId: Types.ObjectId | string
   ): Promise<void>
+  removeCategory<T>(Model: PaginateModel<T>, _id: string): Promise<void>
+  getPopulatedCategory(Model: PaginateModel<CategoryDocument>, req: Request): Promise<CategoryDocument | null>
+  getPopulatedCategories(Model: PaginateModel<CategoryDocument>, req: Request): Promise<PaginateResult<CategoryDocument | null>>
 }
 
 export interface CollectionRepository {
