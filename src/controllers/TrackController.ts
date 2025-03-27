@@ -4,7 +4,7 @@ import TrackService from '../services/TrackService'
 export default class TrackController {
   constructor(private trackService: TrackService) {}
 
-  async incrementListeningCounter(req: Request, res: Response) {
+  incrementListeningCounter = async (req: Request, res: Response) => {
     try {
       await this.trackService.incrementListeningCounter(String(req.params['id']))
       res.json({ message: 'success' })
@@ -14,7 +14,7 @@ export default class TrackController {
     }
   }
 
-  async saveTrackDuration(req: Request, res: Response) {
+  saveTrackDuration = async (req: Request, res: Response) => {
     try {
       await this.trackService.saveTrackDuration(String(req.params['id']), req.body.duration)
       res.json({ message: 'success' })
@@ -24,7 +24,7 @@ export default class TrackController {
     }
   }
 
-  async getTrackLyrics(req: Request, res: Response) {
+  getTrackLyrics = async (req: Request, res: Response) => {
     try {
       const response = await this.trackService.getTrackLyrics(String(req.params['id']))
       res.json(response)
@@ -34,7 +34,7 @@ export default class TrackController {
     }
   }
 
-  async getWave(req: Request, res: Response) {
+  getWave = async (req: Request, res: Response) => {
     try {
       const response = await this.trackService.getWave(req)
       res.json(response)
@@ -44,7 +44,7 @@ export default class TrackController {
     }
   }
 
-  async getTrackExternalLyrics(req: Request, res: Response): Promise<void | ReturnType<typeof setTimeout>> {
+  getTrackExternalLyrics = async (req: Request, res: Response) => {
     try {
       const response = await this.trackService.getTrackExternalLyrics(req.body.query)
       res.json(response)
@@ -54,7 +54,7 @@ export default class TrackController {
     }
   }
 
-  async saveTrackLyrics(req: Request, res: Response) {
+  saveTrackLyrics = async (req: Request, res: Response) => {
     try {
       await this.trackService.saveTrackLyrics(String(req.params['id']), req.body.lyrics)
       res.json({ message: 'Lyrics successfully added to track' })
@@ -64,7 +64,7 @@ export default class TrackController {
     }
   }
 
-  async getAudio(req: Request, res: Response) {
+  getAudio = async (req: Request, res: Response) => {
     try {
       const response = await this.trackService.getAudio({
         id: req.body['path'] || req.body['cloudId'],

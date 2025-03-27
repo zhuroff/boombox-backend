@@ -1,58 +1,65 @@
 import { Request, Response } from 'express'
-import userServices from '../services/users.services'
+import UserService from '../services/UserService'
 import utils from '../utils'
 
-export default {
-  async registration(req: Request, res: Response) {
+export default class UserController {
+  constructor(private userService: UserService) {}
+
+  registration = async (req: Request, res: Response) => {
     try {
-      const response = await userServices.registration(req)
+      const response = await this.userService.registration(req)
       res.status(201).json(response)
     } catch (error) {
       console.error(error)
       res.status(400).json(error)
     }
-  },
-  async login(req: Request, res: Response) {
+  }
+
+  login = async (req: Request, res: Response) => {
     try {
-      const response = await userServices.login(req)
+      const response = await this.userService.login(req)
       utils.cookieSetter(res, response)
       res.status(200).json(response)
     } catch (error) {
       console.error(error)
       res.status(400).json(error)
     }
-  },
-  async logout(req: Request, res: Response) {
+  }
+
+  logout = async (req: Request, res: Response) => {
     try {
-      const response = await userServices.logout(req, res)
+      const response = await this.userService.logout(req, res)
       res.status(200).json(response)
     } catch (error) {
       console.error(error)
       res.status(500).json(error)
     }
-  },
-  async getList(req: Request, res: Response) {
+  }
+
+  getRawUsers = async (_: Request, res: Response) => {
     try {
-      const response = await userServices.getList()
+      const response = await this.userService.getRawUsers()
       res.status(200).json(response)
     } catch (error) {
       console.error(error)
       res.status(404).json(error)
     }
-  },
-  async refresh(req: Request, res: Response) {
+  }
+
+  refreshToken = async (req: Request, res: Response) => {
     try {
-      const response = await userServices.refresh(req)
+      const response = await this.userService.refreshToken(req)
       utils.cookieSetter(res, response)
       res.status(200).json(response)
     } catch (error) {
       console.error(error)
       res.status(400).json(error)
     }
-  },
-  async remove(req: Request, res: Response) {
+  }
+
+  removeUser = async (req: Request, res: Response) => {
     try {
-      await userServices.remove(req, res)
+      await this.userService.removeUser(req, res)
       res.status(200).json({ message: 'success' })
     } catch (error) {
       console.error(error)

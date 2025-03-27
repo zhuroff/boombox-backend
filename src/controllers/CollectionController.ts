@@ -10,7 +10,7 @@ export default class CollectionController {
     private fileService: FileService
   ) {}
 
-  async createCollection(req: Request, res: Response) {
+  createCollection = async (req: Request, res: Response) => {
     try {
       const response = await this.collectionService.createCollection(req.body)
       res.status(201).json(response)
@@ -20,7 +20,7 @@ export default class CollectionController {
     }
   }
 
-  async getCollections(req: Request, res: Response) {
+  getCollections = async (req: Request, res: Response) => {
     try {
       const response = await this.collectionService.getCollections(req)
       res.json(response)
@@ -30,7 +30,7 @@ export default class CollectionController {
     }
   }
 
-  async getCollection(req: Request, res: Response) {
+  getCollection = async (req: Request, res: Response) => {
     try {
       const response = await this.collectionService.getCollection(String(req.params['id']))
       res.json(response)
@@ -40,7 +40,7 @@ export default class CollectionController {
     }
   }
 
-  async updateCollection(req: Request, res: Response) {
+  updateCollection = async (req: Request, res: Response) => {
     try {
       const response = await this.collectionService.updateCollection(req.body)
       res.status(201).json(response)
@@ -50,7 +50,7 @@ export default class CollectionController {
     }
   }
 
-  async removeCollection(req: Request, res: Response) {
+  removeCollection = async (req: Request, res: Response) => {
     try {
       const response = await this.collectionService.removeCollection(String(req.params['id']))
       res.status(201).json(response)
@@ -60,7 +60,7 @@ export default class CollectionController {
     }
   }
 
-  async reorderCollections(req: Request, res: Response) {
+  reorderCollections = async (req: Request, res: Response) => {
     try {
       const response = await this.collectionService.reorderCollections(req.body, String(req.params['id']))
       res.status(201).json(response)
@@ -70,7 +70,7 @@ export default class CollectionController {
     }
   }
 
-  async updateModelFileLink(req: Request, res: Response) {
+  updateModelFileLink = async (req: Request, res: Response) => {
     try {
       const response = await this.fileService.updateModelFileLink<
         CollectionDocument,

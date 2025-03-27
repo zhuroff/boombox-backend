@@ -4,7 +4,7 @@ import SearchService from '../services/SearchService'
 export default class SearchController {
   constructor(private readonly searchService: SearchService) {}
 
-  async search(req: Request, res: Response) {
+  search = async (req: Request, res: Response) => {
     const { query, key } = req.body
 
     try {

@@ -10,7 +10,7 @@ export default class CompilationController {
     private fileService: FileService
   ) {}
 
-  async createCompilation(req: Request, res: Response) {
+  createCompilation = async (req: Request, res: Response) => {
     try {
       const response = await this.compilationService.createCompilation(req.body)
       res.status(201).json(response)
@@ -20,7 +20,7 @@ export default class CompilationController {
     }
   }
 
-  async updateCompilation(req: Request, res: Response) {
+  updateCompilation = async (req: Request, res: Response) => {
     try {
       const response = await this.compilationService.updateCompilation(req.body)
       res.status(201).json(response)
@@ -30,7 +30,7 @@ export default class CompilationController {
     }
   }
 
-  async getCompilations(req: Request, res: Response) {
+  getCompilations = async (req: Request, res: Response) => {
     try {
       const response = await this.compilationService.getCompilations(req)
       res.json(response)
@@ -40,7 +40,7 @@ export default class CompilationController {
     }
   }
 
-  async getCompilation(req: Request, res: Response) {
+  getCompilation = async (req: Request, res: Response) => {
     try {
       const response = await this.compilationService.getCompilation(String(req.params['id']))
       res.json(response)
@@ -50,7 +50,7 @@ export default class CompilationController {
     }
   }
 
-  async removeCompilation(req: Request, res: Response) {
+  removeCompilation = async (req: Request, res: Response) => {
     try {
       const response = await this.compilationService.removeCompilation(String(req.params['id']))
       res.status(201).json(response)
@@ -60,7 +60,7 @@ export default class CompilationController {
     }
   }
 
-  async reorderCompilationTracks(req: Request, res: Response) {
+  reorderCompilationTracks = async (req: Request, res: Response) => {
     try {
       const response = await this.compilationService.reorderCompilationTracks(req.body, String(req.params['id']))
       res.status(201).json(response)
@@ -70,7 +70,7 @@ export default class CompilationController {
     }
   }
 
-  async renameCompilation(req: Request, res: Response) {
+  renameCompilation = async (req: Request, res: Response) => {
     try {
       const response = await this.compilationService.renameCompilation(String(req.params['id']), req.body['title'])
       res.status(201).json(response)
@@ -80,7 +80,7 @@ export default class CompilationController {
     }
   }
 
-  async updateModelFileLink(req: Request, res: Response) {
+  updateModelFileLink = async (req: Request, res: Response) => {
     try {
       const response = await this.fileService.updateModelFileLink<CompilationDocument, Model<CompilationDocument>>(Compilation, req)
       res.json(response)

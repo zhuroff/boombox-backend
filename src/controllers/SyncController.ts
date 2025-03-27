@@ -4,7 +4,7 @@ import SyncService from '../services/SyncService'
 export default class SyncController {
   constructor(private readonly syncService: SyncService) {}
 
-  async sync(_: Request, res: Response) {   
+  sync = async (_: Request, res: Response) => {
     try {
       const result = await this.syncService.synchronize()
       res.status(200).json(result)
