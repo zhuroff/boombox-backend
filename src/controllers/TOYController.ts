@@ -1,10 +1,12 @@
 import { Request, Response } from 'express'
-import cloudService from '../services/cloud.service'
+import TOYService from '../services/TOYService'
 
-export default {
-  async getImages(req: Request, res: Response) {
+export default class TOYController {
+  constructor(private toyService: TOYService) {}
+
+  getCloudImages = async (req: Request, res: Response) => {
     try {
-      const result = await cloudService.getImages(req.body)
+      const result = await this.toyService.getCloudImages(req.body)
       res.json(result)
     } catch (error) {
       console.error(error)
@@ -14,23 +16,11 @@ export default {
         res.status(500).json({ message: 'Internal server error' })
       }
     }
-  },
-  async getImage(req: Request, res: Response) {
+  }
+
+  getCloudImage = async (req: Request, res: Response) => {
     try {
-      const result = await cloudService.getFile(req.body)
-      res.json(result)
-    } catch (error) {
-      // console.error(error)
-      if (error instanceof Error) {
-        res.status(404).json({ message: error.message })
-      } else {
-        res.status(500).json({ message: 'Internal server error' })
-      }
-    }
-  },
-  async getTrackDuration(req: Request, res: Response) {
-    try {
-      const result = await cloudService.getTrackDuration(req['body'])
+      const result = await this.toyService.getCloudFile(req.body)
       res.json(result)
     } catch (error) {
       console.error(error)
@@ -40,28 +30,45 @@ export default {
         res.status(500).json({ message: 'Internal server error' })
       }
     }
-  },
-  async getRandomTracks(req: Request, res: Response) {
+  }
+
+  getTrackDuration = async (req: Request, res: Response) => {
     try {
-      const result = await cloudService.getRandomTracks(req['body'])
+      const result = await this.toyService.getTrackDuration(req.body)
+      res.json(result)
+    } catch (error) {
+      console.error(error)
+      if (error instanceof Error) {
+        res.status(404).json({ message: error.message })
+      } else {
+        res.status(500).json({ message: 'Internal server error' })
+      }
+    }
+  }
+
+  getRandomTracks = async (req: Request, res: Response) => {
+    try {
+      const result = await this.toyService.getRandomTracks(req.body)
       res.json(result)
     } catch (error) {
       console.error(error)
       res.status(500).json({ message: 'Internal server error' })
     }
-  },
-  async getRandomAlbums(req: Request, res: Response) {
+  }
+
+  getRandomAlbums = async (req: Request, res: Response) => {
     try {
-      const result = await cloudService.getRandomAlbums(req['body'])
+      const result = await this.toyService.getRandomAlbums(req.body)
       res.json(result)
     } catch (error) {
       console.error(error)
       res.status(500).json({ message: 'Internal server error' })
     }
-  },
-  async getFolderContent(req: Request, res: Response) {
+  }
+
+  getFolderContent = async (req: Request, res: Response) => {
     try {
-      const result = await cloudService.getFolderContent(req['body'])
+      const result = await this.toyService.getCloudContent(req.body)
       res.json(result)
     } catch (error) {
       console.error(error)

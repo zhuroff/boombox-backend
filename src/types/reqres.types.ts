@@ -71,8 +71,10 @@ export interface CloudReqPayload {
 }
 
 export interface CloudReqPayloadFilter extends CloudReqPayload {
+  value: string
+  exclude: string
+  cluster: string
   type?: CloudFileTypes
-  cluster?: string
   limit?: number
   offset?: number
 }

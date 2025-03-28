@@ -8,8 +8,9 @@ import { UserDocument } from '../models/user.model'
 import { TokenDocument } from '../models/token.model'
 import { CollectionDocument, CollectionDocumentAlbum } from '../models/collection.model'
 import { CompilationDocument, CompilationDocumentTrack } from '../models/compilation.model'
-import { ListRequestConfig, NewCollectionPayload, NewCompilationPayload, SearchConfig, SearchParams, SearchPayload } from './reqres.types'
+import { CloudReqPayloadFilter, ListRequestConfig, NewCollectionPayload, NewCompilationPayload, SearchConfig, SearchParams, SearchPayload } from './reqres.types'
 import { AlbumItemDTO } from '../dto/album.dto'
+import { CloudEntityDTO, CloudFolderContent } from './cloud.types'
 
 export type ModelKeys =
   | 'albums'
@@ -144,4 +145,10 @@ export interface TokenRepository {
         user?: Types.ObjectId | null | undefined
       }
   ) | null>
+}
+
+export interface TOYRepository {
+  getFolderContent(filter: Omit<CloudReqPayloadFilter, 'value' | 'exclude'>): Promise<CloudFolderContent>
+  getCloudFile(filter: Omit<CloudReqPayloadFilter, 'value' | 'exclude'>): Promise<string | undefined>
+  getImageWithURL(item: Required<CloudEntityDTO>, cluster: string): Promise<CloudEntityDTO>
 }
