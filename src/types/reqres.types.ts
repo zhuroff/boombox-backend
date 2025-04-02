@@ -1,9 +1,9 @@
 import { Model, PaginateModel, PopulateOptions, ProjectionType, Types } from 'mongoose'
 import { TrackDocument } from '../models/track.model'
 import { CategoryDocument, ModelKeys } from './common.types'
-import { UserDTO } from '../dto/user.dto'
-import { AlbumItemDTO } from '../dto/album.dto'
 import { CloudFileTypes } from './cloud.types'
+import UserView from '../views/UserView'
+import AlbumViewFactory from '../views/AlbumViewFactory'
 
 type SortingValue = Record<string, 1 | -1>
 
@@ -49,7 +49,7 @@ export type SearchParams = Record<'$text', { '$search': string }>
 
 export interface SearchResult {
   key: SearchModelKey
-  data: Partial<AlbumItemDTO | CategoryDocument | TrackDocument>[]
+  data: Partial<CategoryDocument | TrackDocument | ReturnType<typeof AlbumViewFactory.createAlbumItemView>>[]
 }
 
 export interface SearchConfig {
@@ -59,7 +59,7 @@ export interface SearchConfig {
 }
 
 export interface UserResponse {
-  user: UserDTO
+  user: UserView
   accessToken: string
   refreshToken: string
 }

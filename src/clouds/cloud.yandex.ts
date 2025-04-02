@@ -6,7 +6,7 @@ import {
   CLoudQueryPayload
 } from '../types/cloud.types'
 import axios, {AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios'
-import CloudEntityFactoryDTO from '../dto/cloud.dto'
+import CloudEntityViewFactory from '../views/CloudEntityViewFactory'
 
 export default class YandexCloudApi implements Cloud {
   #client: AxiosInstance
@@ -48,7 +48,7 @@ export default class YandexCloudApi implements Cloud {
         }
 
         return data._embedded.items.map((item) => (
-          CloudEntityFactoryDTO.create(item, url)
+          CloudEntityViewFactory.create(item, url)
         ))
       })
       .catch((error: AxiosError) => {
@@ -75,7 +75,7 @@ export default class YandexCloudApi implements Cloud {
         return {
           ...data._embedded,
           items: data._embedded.items.map((item) => (
-            CloudEntityFactoryDTO.create(item, url)
+            CloudEntityViewFactory.create(item, url)
           ))
         }
       })

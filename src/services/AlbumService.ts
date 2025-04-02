@@ -6,8 +6,6 @@ import { Genre, GenreDocument } from '../models/genre.model'
 import { Period, PeriodDocument } from '../models/period.model'
 import { ListRequestConfig } from '../types/reqres.types'
 import { AlbumRepository, AlbumShape } from '../types/album.types'
-import { AlbumItemDTO, AlbumPageDTO } from '../dto/album.dto'
-import { PaginationDTO } from '../dto/pagination.dto'
 import { CloudEntityDTO } from '../types/cloud.types'
 import { getCloudApi } from '..'
 import utils from '../utils'
@@ -15,6 +13,8 @@ import TrackService from './TrackService'
 import CategoryService from './CategoryService'
 import CollectionService from './CollectionService'
 import CompilationService from './CompilationService'
+import AlbumViewFactory from '../views/AlbumViewFactory'
+import PaginationViewFactory from '../views/PaginationViewFactory'
 
 export default class AlbumService {
   constructor(
@@ -148,7 +148,7 @@ export default class AlbumService {
 
   async removeAlbum(_id: Types.ObjectId | string) {
     const album = await this.albumRepository.getAlbum(_id)
-    const preparedAlbum = new AlbumPageDTO(album)
+    const preparedAlbum = AlbumViewFactory.createAlbumPageView(album)
     const collections = preparedAlbum.inCollections?.map(({ _id }) => _id)
     const compilations = preparedAlbum.tracks.reduce<Map<string, string[]>>((acc, next) => {
       const compilationsIds = next.inCompilations?.map(({ _id }) => _id)
@@ -192,7 +192,7 @@ export default class AlbumService {
       fileType: 'image'
     }) : undefined
     
-    return new AlbumPageDTO(album, cover)
+    return AlbumViewFactory.createAlbumPageView(album, cover)
   }
 
   async getAlbums(req: Request<{}, {}, ListRequestConfig>) {
@@ -207,12 +207,12 @@ export default class AlbumService {
     }
 
     const { totalDocs, totalPages, page, docs } = dbList
-    const pagination = new PaginationDTO({ totalDocs, totalPages, page })
+    const pagination = PaginationViewFactory.create({ totalDocs, totalPages, page })
     const albums = await this.albumRepository.getCoveredAlbums(docs.filter((album) => !!album))
 
     return {
       pagination,
-      docs: albums.map(({ album, cover }) => new AlbumItemDTO(album, cover))
+      docs: albums.map(({ album, cover }) => AlbumViewFactory.createAlbumItemView(album, cover))
     }
   }
 
@@ -237,6 +237,10 @@ export default class AlbumService {
     )
 
     const albums = await Promise.all(coveredAlbums)
-    return { docs: albums.map(({ album, cover }) => new AlbumItemDTO(album, cover)) }
+    return {
+      docs: albums.map(({ album, cover }) => (
+        AlbumViewFactory.createAlbumItemView(album, cover)
+      ))
+    }
   }
 }

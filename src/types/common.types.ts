@@ -9,8 +9,8 @@ import { TokenDocument } from '../models/token.model'
 import { CollectionDocument, CollectionDocumentAlbum } from '../models/collection.model'
 import { CompilationDocument, CompilationDocumentTrack } from '../models/compilation.model'
 import { CloudReqPayloadFilter, ListRequestConfig, NewCollectionPayload, NewCompilationPayload, SearchConfig, SearchParams, SearchPayload } from './reqres.types'
-import { AlbumItemDTO } from '../dto/album.dto'
 import { CloudEntityDTO, CloudFolderContent } from './cloud.types'
+import AlbumViewFactory from '../views/AlbumViewFactory'
 
 export type ModelKeys =
   | 'albums'
@@ -23,11 +23,6 @@ export type ModelKeys =
   | 'tracks'
   | 'users'
   | 'tokens'
-
-export interface BasicEntity {
-  _id: Types.ObjectId
-  title: string
-}
 
 export interface GatheringCreatePayload {
   entityID: string
@@ -124,7 +119,7 @@ export interface CompilationRepository {
 }
 
 export interface SearchRepository {
-  splitSearch(payload: SearchPayload, config?: SearchConfig): Promise<TrackDocument[] | CategoryDocument[] | AlbumItemDTO[]>
+  splitSearch(payload: SearchPayload, config?: SearchConfig): Promise<TrackDocument[] | CategoryDocument[] | ReturnType<typeof AlbumViewFactory.createAlbumItemView>[]>
   searchEntry<T>(params: SearchParams, Model: SearchConfig): Promise<T>
 }
 

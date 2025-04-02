@@ -1,7 +1,7 @@
 import { TrackDocument } from '../models/track.model'
 import { CategoryDocument, SearchRepository } from '../types/common.types'
 import { SearchConfig, SearchModelKey, SearchPayload, SearchResult } from '../types/reqres.types'
-import { AlbumItemDTO } from '../dto/album.dto'
+import AlbumViewFactory from '../views/AlbumViewFactory'
 
 export default class SearchService {
   constructor(
@@ -10,7 +10,10 @@ export default class SearchService {
   ) {}
 
   async search(payload: SearchPayload) {
-    const mappedResult = new Map<SearchModelKey, Partial<AlbumItemDTO | TrackDocument | CategoryDocument>[]>()
+    const mappedResult = new Map<
+      SearchModelKey,
+      Partial<TrackDocument | CategoryDocument | ReturnType<typeof AlbumViewFactory.createAlbumItemView>>[]
+    >()
 
     if (payload.key) {
       const response = await this.searchRepository.splitSearch(payload, this.searchMap.get(payload.key))

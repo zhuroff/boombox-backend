@@ -4,7 +4,7 @@ import { CategoryDocument, SearchRepository } from '../types/common.types'
 import { SearchConfig, SearchParams, SearchPayload } from '../types/reqres.types'
 import { TrackRepository } from '../types/track.types'
 import { AlbumRepository } from '../types/album.types'
-import { AlbumItemDTO } from '../dto/album.dto'
+import AlbumViewFactory from '../views/AlbumViewFactory'
 
 export default class SearchRepositoryContract implements SearchRepository {
   constructor(
@@ -22,7 +22,9 @@ export default class SearchRepositoryContract implements SearchRepository {
     if (key === 'albums') {
       const albumRes = await this.searchEntry<AlbumDocument[]>(searchParams, config)
       const coveredAlbums = await this.albumRepository.getCoveredAlbums(albumRes)
-      return await Promise.all(coveredAlbums.map(({ album }) => new AlbumItemDTO(album)))
+      return await Promise.all(coveredAlbums.map(({ album }) => (
+        AlbumViewFactory.createAlbumItemView(album)
+      )))
     } else if (key === 'tracks') {
       const trackRes = await this.searchEntry<TrackDocument[]>(searchParams, config)
       const coveredTracks = await this.trackRepository.getCoveredTracks(trackRes)

@@ -2,8 +2,8 @@ import { Request } from 'express'
 import { Types, PaginateModel } from 'mongoose'
 import { AlbumRepository } from '../types/album.types'
 import { CategoryDocument, CategoryRepository } from '../types/common.types'
-import { CategoryItemDTO, CategoryPageDTO } from '../dto/category.dto'
-import { PaginationDTO } from '../dto/pagination.dto'
+import CategoryViewFactory from '../views/CategoryViewFactory'
+import PaginationViewFactory from '../views/PaginationViewFactory'
 
 export default class CategoryService {
   constructor(
@@ -42,7 +42,7 @@ export default class CategoryService {
     const coveredCategoryAlbums = await this.albumRepository.getCoveredAlbums(targetCategory.albums)
     const albumsResponse = await Promise.all(coveredCategoryAlbums)
 
-    return new CategoryPageDTO({
+    return CategoryViewFactory.createCategoryPageView({
       ...targetCategory,
       albums: albumsResponse.map(({ album, cover }) => ({ ...album, cover }))
     })
@@ -56,8 +56,10 @@ export default class CategoryService {
     }
 
     const { totalDocs, totalPages, page } = categories
-    const pagination = new PaginationDTO({ totalDocs, totalPages, page })
-    const docs = categories.docs.map((category) => new CategoryItemDTO(category))
+    const pagination = PaginationViewFactory.create({ totalDocs, totalPages, page })
+    const docs = categories.docs.map((category) => (
+      CategoryViewFactory.createCategoryItemView(category)
+    ))
 
     return { docs, pagination }
   }

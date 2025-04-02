@@ -2,8 +2,8 @@ import { Request, Response } from 'express'
 import { Types } from 'mongoose'
 import { validationResult } from 'express-validator'
 import { UserDataPayload, UserRepository } from '../types/common.types'
-import { UserDTO } from '../dto/user.dto'
 import TokenService from './TokenService'
+import UserView from '../views/UserView'
 import bcrypt from 'bcrypt'
 
 export default class UserService {
@@ -36,7 +36,7 @@ export default class UserService {
       password: hashPassword
     })
 
-    return new UserDTO(createdUser)
+    return new UserView(createdUser)
   }
 
   async login(req: Request<{}, {}, UserDataPayload>) {
@@ -54,7 +54,7 @@ export default class UserService {
       throw { message: 'password.incorrect' }
     }
 
-    const user = new UserDTO(userByEmail)
+    const user = new UserView(userByEmail)
     const tokens = this.tokenService.generateTokens({ ...user })
 
     await this.tokenService.saveToken(user._id, tokens.refreshToken)
@@ -107,7 +107,7 @@ export default class UserService {
       throw { message: 'user.unexist' }
     }
 
-    const userDTO = new UserDTO(user)
+    const userDTO = new UserView(user)
     const tokens = this.tokenService.generateTokens({ ...userDTO })
 
     await this.tokenService.saveToken(userDTO._id, tokens.refreshToken)

@@ -1,6 +1,6 @@
 import { DiscorsResponseItem } from '../types/discogs.types'
 
-export class DiscogsDTO {
+export default class DiscogsView {
   id: number
   country: string
   cover: string

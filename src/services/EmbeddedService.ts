@@ -5,7 +5,7 @@ import { Period } from '../models/period.model'
 import { CategoryRepository } from '../types/common.types'
 import { EmbeddedPayload, EmbeddedRepository } from '../types/embedded.types'
 import { ListRequestConfig } from '../types/reqres.types'
-import { PaginationDTO } from '../dto/pagination.dto'
+import PaginationViewFactory from '../views/PaginationViewFactory'
 
 export default class EmbeddedService {
   constructor(
@@ -54,7 +54,7 @@ export default class EmbeddedService {
     }
 
     const { totalDocs, totalPages, page } = response
-    const pagination = new PaginationDTO({ totalDocs, totalPages, page })
+    const pagination = PaginationViewFactory.create({ totalDocs, totalPages, page })
     const docs = response.docs
 
     return { docs, pagination }

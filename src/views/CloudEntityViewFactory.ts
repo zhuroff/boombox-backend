@@ -1,6 +1,6 @@
 import { PCloudEntity, YandexCloudEntity, UnionCloudsEntity } from '../types/cloud.types'
 
-class CloudEntityDTO {
+class CloudEntityView {
   id: string
   title: string
   cloudURL: string
@@ -34,7 +34,7 @@ class CloudEntityDTO {
   }
 }
 
-export default class CloudEntityFactoryDTO {
+export default class CloudEntityViewFactory {
   static isPCloudEntity(entity: UnionCloudsEntity): entity is PCloudEntity {
     return 'id' in entity && !('createdTime' in entity)
   }
@@ -45,7 +45,7 @@ export default class CloudEntityFactoryDTO {
 
   static create(entity: UnionCloudsEntity, requestURL: string) {
     if (this.isPCloudEntity(entity)) {
-      return new CloudEntityDTO(
+      return new CloudEntityView(
         entity.id,
         entity.name,
         requestURL,
@@ -56,7 +56,7 @@ export default class CloudEntityFactoryDTO {
       )
     }
 
-    return new CloudEntityDTO(
+    return new CloudEntityView(
       entity.resource_id,
       entity.name,
       requestURL,

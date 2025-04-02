@@ -1,7 +1,9 @@
 import { Response } from 'express'
+import { Types } from 'mongoose'
 import { createHash } from 'node:crypto'
 import { CloudEntityDTO } from '../types/cloud.types'
 import { UserResponse } from '../types/reqres.types'
+import EntityBasicView from '../views/BasicEntityView'
 
 export default {
   cookieSetter: (res: Response, payload: UserResponse) => {
@@ -90,6 +92,10 @@ export default {
     }
   
     return array
+  },
+
+  createBasicView(entity: { _id: Types.ObjectId; title: string; cloudURL?: string }) {
+    return new EntityBasicView(entity._id, entity.title, entity.cloudURL)
   },
 
   audioMimeTypes: new Set([

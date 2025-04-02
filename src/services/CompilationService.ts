@@ -5,8 +5,8 @@ import { CompilationRepository, GatheringCreatePayload, GatheringReorder, Gather
 import { ListRequestConfig, NewCompilationPayload } from '../types/reqres.types'
 import { TrackRepository } from '../types/track.types'
 import { CompilationItemDTO, CompilationPageDTO } from '../dto/compilation.dto'
-import { PaginationDTO } from '../dto/pagination.dto'
-import { TrackDTO } from '../dto/track.dto'
+import PaginationViewFactory from '../views/PaginationViewFactory'
+import TrackView from '../views/TrackView'
 
 export default class CompilationService {
   constructor(
@@ -98,7 +98,7 @@ export default class CompilationService {
     }
 
     const { totalDocs, totalPages, page } = compilations
-    const pagination = new PaginationDTO({ totalDocs, totalPages, page })
+    const pagination = PaginationViewFactory.create({ totalDocs, totalPages, page })
     const docs = compilations.docs.map((compilation) => new CompilationItemDTO(compilation))
 
     return { docs, pagination }
@@ -115,7 +115,7 @@ export default class CompilationService {
       compilation,
       compilation.tracks.map(({ track }) => {
         const trackDoc = track as TrackDocument
-        return new TrackDTO(trackDoc)
+        return new TrackView(trackDoc)
       })
     )
   }

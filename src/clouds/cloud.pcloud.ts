@@ -9,7 +9,7 @@ import {
   CLoudQueryPayload
 } from '../types/cloud.types'
 import axios, { AxiosError, AxiosInstance } from 'axios'
-import CloudEntityFactoryDTO from '../dto/cloud.dto'
+import CloudEntityViewFactory from '../views/CloudEntityViewFactory'
 import utils from '../utils'
 
 export default class PCloudApi implements Cloud {
@@ -84,7 +84,7 @@ export default class PCloudApi implements Cloud {
         }
 
         return data.metadata.contents.map((item) => (
-          CloudEntityFactoryDTO.create(item, url)
+          CloudEntityViewFactory.create(item, url)
         ))
       })
       .catch((error: AxiosError) => {
@@ -118,7 +118,7 @@ export default class PCloudApi implements Cloud {
           offset: 0,
           total: data.metadata.contents.length,
           items: data.metadata.contents.map((item) => (
-            CloudEntityFactoryDTO.create(item, url)
+            CloudEntityViewFactory.create(item, url)
           ))
         }
       })

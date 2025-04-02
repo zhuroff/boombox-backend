@@ -1,25 +1,24 @@
 import { AlbumDocument } from '../models/album.model'
 import { CollectionDocument } from '../models/collection.model'
-import { AlbumItemDTO } from './album.dto'
-import { EntityBasicDTO } from './basic.dto'
+import EntityBasicView from '../views/BasicEntityView'
 import GatheringEntity from './gathering.dto'
 
 export class CollectionItemDTO extends GatheringEntity {
-  albums: EntityBasicDTO[]
+  albums: EntityBasicView[]
 
   constructor(collection: CollectionDocument) {
     super(collection)
     this.albums = collection.albums.map(({ album }) => {
       const { _id, title, cloudURL } = album as AlbumDocument
-      return new EntityBasicDTO(_id, title, cloudURL)
+      return new EntityBasicView(_id, title, cloudURL)
     })
   }
 }
 
 export class CollectionPageDTO extends GatheringEntity {
-  albums: Array<AlbumItemDTO & { order: number }>
+  albums: Array<any & { order: number }>
 
-  constructor(collection: CollectionDocument, albums: AlbumItemDTO[]) {
+  constructor(collection: CollectionDocument, albums: any[]) {
     super(collection)
     this.albums = albums.map((album) => ({
       ...album,

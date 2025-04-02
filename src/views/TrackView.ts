@@ -1,8 +1,8 @@
-import { BasicEntity } from '../types/common.types'
 import { TrackDocument } from '../models/track.model'
 import { AlbumDocument } from '../models/album.model'
+import EntityBasicView from '../views/BasicEntityView'
 
-export class TrackDTO {
+export default class TrackView {
   _id: string
   title: string
   path?: string
@@ -10,11 +10,11 @@ export class TrackDTO {
   cloudId: string
   duration?: number | null
   listened?: number | null
-  period: BasicEntity
-  genre: BasicEntity
-  artist: BasicEntity
+  period: EntityBasicView
+  genre: EntityBasicView
+  artist: EntityBasicView
   inAlbum: AlbumDocument
-  inCompilations?: BasicEntity[]
+  inCompilations?: EntityBasicView[]
   coverURL?: string
 
   constructor(track: TrackDocument) {

@@ -3,7 +3,7 @@ import { Types } from 'mongoose'
 import { TrackDocument } from '../models/track.model'
 import { CompilationDocumentTrack } from '../models/compilation.model'
 import { AudioRequestPayload, NewTrackPayload, TrackRepository } from '../types/track.types'
-import { TrackDTO } from '../dto/track.dto'
+import TrackView from '../views/TrackView'
 
 export default class TrackService {
   constructor(private trackRepository: TrackRepository) {}
@@ -65,7 +65,7 @@ export default class TrackService {
         throw new Error('Incorrect request options')
       }
 
-      return new TrackDTO({
+      return new TrackView({
         ...track,
         artist: artist[0],
         genre: genre[0],

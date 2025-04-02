@@ -5,8 +5,8 @@ import { CollectionRepository, GatheringCreatePayload, GatheringReorder, Gatheri
 import { NewCollectionPayload } from '../types/reqres.types'
 import { AlbumRepository } from '../types/album.types'
 import { CollectionItemDTO, CollectionPageDTO } from '../dto/collection.dto'
-import { PaginationDTO } from '../dto/pagination.dto'
-import { AlbumItemDTO } from '../dto/album.dto'
+import AlbumViewFactory from '../views/AlbumViewFactory'
+import PaginationViewFactory from '../views/PaginationViewFactory'
 
 export default class CollectionService {
   constructor(
@@ -53,7 +53,7 @@ export default class CollectionService {
     }
 
     const { totalDocs, totalPages, page } = collections
-    const pagination = new PaginationDTO({ totalDocs, totalPages, page })
+    const pagination = PaginationViewFactory.create({ totalDocs, totalPages, page })
     const docs = collections.docs.map((collection) => new CollectionItemDTO(collection))
 
     return { docs, pagination }
@@ -72,7 +72,7 @@ export default class CollectionService {
 
     return new CollectionPageDTO(
       collection,
-      coveredAlbums.map(({ album }) => new AlbumItemDTO(album))
+      coveredAlbums.map(({ album }) => AlbumViewFactory.createAlbumItemView(album))
     )
   }
 

@@ -1,5 +1,5 @@
 import { DiscogsPayload, DiscogsRepository } from '../types/discogs.types'
-import { DiscogsDTO } from '../dto/discogs.dto'
+import DiscogsView from '../views/DiscogsView'
 
 export default class DiscogsService {
   constructor(private discogsRepository: DiscogsRepository) {}
@@ -13,7 +13,7 @@ export default class DiscogsService {
     )
   }
 
-  async getDiscogsData({ artist, album, page }: DiscogsPayload, results: DiscogsDTO[] = []): Promise<DiscogsDTO[]> {
+  async getDiscogsData({ artist, album, page }: DiscogsPayload, results: DiscogsView[] = []): Promise<DiscogsView[]> {
     const query = String(
       'type=release' +
       '&artist=' + artist +
@@ -24,12 +24,12 @@ export default class DiscogsService {
 
     const response = await this.discogsRepository.getDiscogsList(this.buildDiscogsLink(query))
 
-    results.push(...response.results.reduce<DiscogsDTO[]>((acc, next) => {
+    results.push(...response.results.reduce<DiscogsView[]>((acc, next) => {
       const releaseAlbum = next.title.slice(next.title.indexOf(' - ') + 3)?.trim()
       if (
         releaseAlbum?.toLowerCase() === album.toLowerCase()
         && !next.format.includes('Unofficial Release')
-      ) acc.push(new DiscogsDTO(next))
+      ) acc.push(new DiscogsView(next))
       return acc
     }, []))
     

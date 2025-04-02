@@ -1,8 +1,8 @@
 import { CollectionDocument } from '../models/collection.model'
 import { CompilationDocument } from '../models/compilation.model'
-import { EntityBasicDTO } from './basic.dto'
+import EntityBasicView from '../views/BasicEntityView'
 
-export default abstract class GatheringEntity extends EntityBasicDTO {
+export default abstract class GatheringEntity extends EntityBasicView {
   readonly dateCreated: Date
   poster?: string | null
   avatar?: string | null

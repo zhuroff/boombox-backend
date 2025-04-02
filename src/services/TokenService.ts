@@ -1,12 +1,12 @@
 import { Types } from 'mongoose'
 import { TokenRepository } from '../types/common.types'
-import { UserDTO } from '../dto/user.dto'
+import UserView from '../views/UserView'
 import jwt from 'jsonwebtoken'
 
 export default class TokenService {
   constructor(private tokenRepository: TokenRepository) {}
 
-  generateTokens(payload: UserDTO) {
+  generateTokens(payload: UserView) {
     const accessToken = jwt.sign(
       payload,
       process.env['JWT_SECRET_TOKEN'] as string,

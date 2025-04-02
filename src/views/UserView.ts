@@ -1,7 +1,7 @@
 import { Types } from 'mongoose'
 import { UserDocument } from '../models/user.model'
 
-export class UserDTO {
+export default class UserView {
   _id: Types.ObjectId
   email: string
   role: string

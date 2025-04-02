@@ -1,7 +1,7 @@
 import { AxiosRequestConfig } from 'axios'
 import PCloudApi from '../clouds/cloud.pcloud'
 import YandexCloudApi from '../clouds/cloud.yandex'
-import CloudEntityFactoryDTO from '../dto/cloud.dto'
+import CloudEntityViewFactory from '../views/CloudEntityViewFactory'
 
 export type CloudApi = PCloudApi | YandexCloudApi
 export type CloudFileTypes = 'audio' | 'video' | 'image' | 'file'
@@ -41,7 +41,7 @@ export interface YandexCloudEntity extends CloudCommonEntity {
 export type UnionCloudsEntity =
   PCloudEntity | YandexCloudEntity
 
-export type CloudEntityDTO = ReturnType<typeof CloudEntityFactoryDTO['create']>
+export type CloudEntityDTO = ReturnType<typeof CloudEntityViewFactory.create>
 
 export type PCloudResponse<T> = {
   file?: string
