@@ -11,16 +11,16 @@ const filenameSlugify = (filename: string) => {
 }
 
 const storage = multer.diskStorage({
-  destination (req: Request, file: Express.Multer.File, callback: MulterCallback) {
+  destination (_: Request, __: Express.Multer.File, callback: MulterCallback) {
     callback(null, path.resolve(__dirname, '../../', 'uploads'))
   },
 
-  filename (req: Request, file: Express.Multer.File, callback: MulterCallback) {
+  filename (_: Request, file: Express.Multer.File, callback: MulterCallback) {
     callback(null, `${new Date().getTime()}-${filenameSlugify(file.originalname)}`)
   }
 })
 
-const fileFilter = (req: Request, file: Express.Multer.File, callback: FileFilterCallback) => {
+const fileFilter = (_: Request, file: Express.Multer.File, callback: FileFilterCallback) => {
   if (file.mimetype === 'image/webp') {
     callback(null, true)
   } else {

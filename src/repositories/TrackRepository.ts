@@ -5,7 +5,7 @@ import { AggregatedTrackDocument, Track, TrackDocument } from '../models/track.m
 import { AudioRequestPayload, NewTrackPayload, TrackRepository } from '../types/track.types'
 import { GatheringUpdateProps } from '../types/gathering.types'
 import { getCloudApi } from '..'
-import utils from '../utils'
+import Parser from '../utils/Parser'
 
 export default class TrackRepositoryContract implements TrackRepository {
   private GClient = new Client(process.env['GENIUS_SECRET'])
@@ -13,7 +13,7 @@ export default class TrackRepositoryContract implements TrackRepository {
   async createTrack(trackPayload: NewTrackPayload) {
     const newTrack = new Track({
       ...trackPayload.track,
-      title: utils.parseTrackTitle(trackPayload.track.title),
+      title: Parser.parseTrackTitle(trackPayload.track.title),
       fileName: trackPayload.track.title,
       inAlbum: trackPayload.albumId,
       artist: trackPayload.artistId,

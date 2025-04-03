@@ -2,7 +2,6 @@ import { Types } from 'mongoose'
 import { AlbumDocument } from '../models/album.model'
 import EntityBasicView from './BasicEntityView'
 import TrackView from './TrackView'
-import utils from '../utils'
 
 class AlbumItemView extends EntityBasicView {
   folderName: string
@@ -60,16 +59,20 @@ class AlbumPageView extends AlbumItemView {
 }
 
 export default class AlbumViewFactory {
+  static createBasicView(entity: { _id: Types.ObjectId; title: string; cloudURL?: string }) {
+    return new EntityBasicView(entity._id, entity.title, entity.cloudURL)
+  }
+
   static createAlbumItemView(album: AlbumDocument, albumCover?: string, order?: number) {
     return new AlbumItemView(
       album._id,
       album.title,
       album.cloudURL,
       album.folderName,
-      utils.createBasicView(album.artist),
-      utils.createBasicView(album.genre),
-      utils.createBasicView(album.period),
-      album.inCollections.map(utils.createBasicView).filter(Boolean),
+      this.createBasicView(album.artist),
+      this.createBasicView(album.genre),
+      this.createBasicView(album.period),
+      album.inCollections.map(this.createBasicView).filter(Boolean),
       albumCover || album.cover,
       order
     )

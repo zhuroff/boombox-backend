@@ -8,9 +8,9 @@ import {
   CloudFolderContent,
   CLoudQueryPayload
 } from '../types/cloud.types'
+import { createHash } from 'node:crypto'
 import axios, { AxiosError, AxiosInstance } from 'axios'
 import CloudEntityViewFactory from '../views/CloudEntityViewFactory'
-import utils from '../utils'
 
 export default class PCloudApi implements Cloud {
   #client: AxiosInstance
@@ -18,14 +18,17 @@ export default class PCloudApi implements Cloud {
   #cluster = process.env['MAIN_CLUSTER']
   #login = process.env['PCLOUD_LOGIN']
   #password = process.env['PCLOUD_PASSWORD']
+  #digest = ''
+  #cloudRootPath: string
   #fileTypesMap = new Map<CloudFileTypes, string>([
     ['audio', 'getaudiolink'],
     ['video', 'getvideolink'],
     ['image', 'getfilelink'],
     ['file', 'getfilelink'],
   ])
-  #digest = ''
-  #cloudRootPath: string
+  #sha1 = (str?: string) => {
+    return str ? createHash('sha1').update(str).digest('hex') : ''
+  }
 
   constructor(cloudRootPath: string) {
     this.#cloudRootPath = cloudRootPath
@@ -58,7 +61,7 @@ export default class PCloudApi implements Cloud {
       ${this.#handlePath(path)}
       &username=${this.#login}
       &digest=${this.#digest}
-      &passworddigest=${utils.sha1(this.#password + utils.sha1(this.#login) + this.#digest)}
+      &passworddigest=${this.#sha1(this.#password + this.#sha1(this.#login) + this.#digest)}
     `).replace(/\s{2,}/g, '')
   }
 

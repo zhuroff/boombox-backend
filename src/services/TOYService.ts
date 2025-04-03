@@ -1,8 +1,23 @@
 import { TOYRepository } from '../types/toy.types'
 import { CloudEntity, CloudReqPayloadFilter } from '../types/cloud.types'
-import utils from '../utils'
+import FileFilter from '../utils/FileFilter'
 
 export default class TOYService {
+  #shuffleArray<T>(array: T[]) {
+    let length = array.length
+    let index: number
+    let temp: T
+  
+    while (length) {
+      index = Math.floor(Math.random() * length--)
+      temp = array[length]!
+      array[length] = array[index]!
+      array[index] = temp
+    }
+  
+    return array
+  }
+
   constructor(private toyRepository: TOYRepository) {}
 
   async getCloudFile(filter: CloudReqPayloadFilter) {
@@ -39,7 +54,7 @@ export default class TOYService {
     const finalContent = {
       ...response,
       items: await Promise.allSettled(
-        utils.fileFilter(response.items, utils.imagesMimeTypes)
+        FileFilter.fileFilter(response.items, 'imagesMimeTypes')
           .map(async (item) => await this.toyRepository.getImageWithURL(item, cluster))
       ) as PromiseFulfilledResult<Required<CloudEntity>>[]
     }
@@ -73,7 +88,7 @@ export default class TOYService {
       offset: 0
     })
 
-    const filteredItems = utils.shuffleArray(response.items.filter(({ title, mimeType }) => (
+    const filteredItems = this.#shuffleArray(response.items.filter(({ title, mimeType }) => (
       !mimeType && !title.startsWith('-') && title !== exclude
     )))
 
@@ -117,14 +132,14 @@ export default class TOYService {
 
     const allTracks =  content.reduce<CloudEntity[]>((acc, next) => {
       acc.push(...next.items.filter((item) => (
-        item.mimeType && utils.audioMimeTypes.has(item.mimeType)
+        item.mimeType && FileFilter.typesMap.audioMimeTypes.has(item.mimeType)
       )))
 
       return acc
     }, [])
 
     if (!limit || allTracks.length <= limit) {
-      return utils.shuffleArray(allTracks)
+      return this.#shuffleArray(allTracks)
     }
 
     let overLimit = allTracks.length - limit
@@ -135,6 +150,6 @@ export default class TOYService {
       overLimit--
     }
 
-    return utils.shuffleArray(allTracks)
+    return this.#shuffleArray(allTracks)
   }
 }
