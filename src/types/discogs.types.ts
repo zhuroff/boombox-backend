@@ -4,7 +4,7 @@ export interface DiscogsPayload {
   page: number
 }
 
-export type DiscorsResponseItem = {
+export interface DiscorsResponseItem {
   barcode: string[]
   catno: string
   country: string
@@ -26,14 +26,18 @@ export type DiscorsResponseItem = {
   format_quantity: number
 }
 
-export type DiscogsResponsePagination = {
+export interface DiscogsResponsePagination {
   items: number
   page: number
   pages: number
   per_page: number
 }
 
-export type DiscogsResponse = {
+export interface DiscogsResponse {
   pagination: DiscogsResponsePagination
   results: DiscorsResponseItem[]
+}
+
+export interface DiscogsRepository {
+  getDiscogsList(query: string): Promise<DiscogsResponse>
 }

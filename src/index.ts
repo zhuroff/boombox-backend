@@ -18,7 +18,7 @@ import searchRoutes from './routes/search.routes'
 import collectionsRoutes from './routes/collections.routes'
 import backupRoutes from './routes/backup.routes'
 import synchronizeRoutes from './routes/sync.routes'
-import cloudRoutes from './routes/cloud.routes'
+import toyRoutes from './routes/toy.routes'
 import PCloudApi from './clouds/cloud.pcloud'
 import YandexCloudApi from './clouds/cloud.yandex'
 import { CloudApi } from './types/cloud.types'
@@ -67,7 +67,7 @@ app.use('/api/compilations', compilationsRoutes)
 app.use('/api/collections', collectionsRoutes)
 app.use('/api/backup', backupRoutes)
 app.use('/api/sync', synchronizeRoutes)
-app.use('/api/cloud', cloudRoutes)
+app.use('/api/toy', toyRoutes)
 app.use('/api/search', searchRoutes)
 app.use('/backups', express.static(rootDir + '/backups'))
 app.use('/uploads', express.static(rootDir + '/uploads'))
