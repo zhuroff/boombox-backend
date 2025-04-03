@@ -1,5 +1,5 @@
-import { CloudEntityDTO } from '../types/cloud.types'
+import { CloudEntity } from '../types/cloud.types'
 
 export interface SyncRepository {
-  fetchCloudFolders(): Promise<CloudEntityDTO[][]>
+  fetchCloudFolders(): Promise<CloudEntity[][]>
 }

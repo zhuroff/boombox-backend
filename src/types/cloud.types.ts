@@ -38,19 +38,18 @@ export interface YandexCloudEntity extends CloudCommonEntity {
   mime_type?: string
 }
 
-export type UnionCloudsEntity =
-  PCloudEntity | YandexCloudEntity
+export type UnionCloudsEntity = PCloudEntity | YandexCloudEntity
 
-export type CloudEntityDTO = ReturnType<typeof CloudEntityViewFactory.create>
+export type CloudEntity = ReturnType<typeof CloudEntityViewFactory.create>
 
-export type PCloudResponse<T> = {
+export interface PCloudResponse<T> {
   file?: string
   metadata: {
     contents: T[]
   }
 }
 
-export type YandexCloudResponse<T> = {
+export interface YandexCloudResponse<T> {
   file?: string
   _embedded: {
     items: T[]
@@ -61,12 +60,12 @@ export type YandexCloudResponse<T> = {
   }
 }
 
-export type CloudFolderContent = {
+export interface CloudFolderContent {
   limit: number
   offset: number
   total: number
   sort?: string
-  items: CloudEntityDTO[]
+  items: CloudEntity[]
 }
 
 export interface CLoudQueryPayload {
@@ -76,8 +75,23 @@ export interface CLoudQueryPayload {
   fileType?: CloudFileTypes
 }
 
+export interface CloudReqPayload {
+  id: string
+  path: string
+  cloudURL: string
+}
+
+export interface CloudReqPayloadFilter extends CloudReqPayload {
+  value: string
+  exclude: string
+  cluster: string
+  type?: CloudFileTypes
+  limit?: number
+  offset?: number
+}
+
 export interface Cloud {
-  getFolders: (payload: CLoudQueryPayload, params?: AxiosRequestConfig) => Promise<CloudEntityDTO[] | null>
+  getFolders: (payload: CLoudQueryPayload, params?: AxiosRequestConfig) => Promise<CloudEntity[] | null>
   getFolderContent: (payload: CLoudQueryPayload) => Promise<CloudFolderContent | void>
   getFile: (payload: CLoudQueryPayload) => Promise<void | any>
 }

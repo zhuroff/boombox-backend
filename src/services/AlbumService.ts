@@ -4,9 +4,9 @@ import { Album, AlbumDocument } from '../models/album.model'
 import { Artist, ArtistDocument } from '../models/artist.model'
 import { Genre, GenreDocument } from '../models/genre.model'
 import { Period, PeriodDocument } from '../models/period.model'
-import { ListRequestConfig } from '../types/reqres.types'
+import { ListRequestConfig } from '../types/pagination.types'
 import { AlbumRepository, AlbumShape } from '../types/album.types'
-import { CloudEntityDTO } from '../types/cloud.types'
+import { CloudEntity } from '../types/cloud.types'
 import { getCloudApi } from '..'
 import utils from '../utils'
 import TrackService from './TrackService'
@@ -25,7 +25,7 @@ export default class AlbumService {
     private trackService: TrackService
   ) {}
 
-  async createAlbums(albums: CloudEntityDTO[]) {
+  async createAlbums(albums: CloudEntity[]) {
     const invalidFolders: Record<string, string>[] = []
 
     const albumShapes = await Promise.all(albums.map(async (album) => {
@@ -61,7 +61,7 @@ export default class AlbumService {
     return await this.albumRepository.updateAlbums(albums)
   }
 
-  async createAlbumShape(album: CloudEntityDTO): Promise<AlbumShape> {
+  async createAlbumShape(album: CloudEntity): Promise<AlbumShape> {
     const cloudAPI = getCloudApi(album.cloudURL)
     const albumContent = await cloudAPI.getFolderContent({
       id: album.id,

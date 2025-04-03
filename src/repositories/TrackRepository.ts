@@ -2,9 +2,9 @@ import { Request } from 'express'
 import { PipelineStage, Types } from 'mongoose'
 import { Client } from 'genius-lyrics'
 import { AggregatedTrackDocument, Track, TrackDocument } from '../models/track.model'
-import { getCloudApi } from '..'
 import { AudioRequestPayload, NewTrackPayload, TrackRepository } from '../types/track.types'
-import { GatheringUpdateProps } from '../types/common.types'
+import { GatheringUpdateProps } from '../types/gathering.types'
+import { getCloudApi } from '..'
 import utils from '../utils'
 
 export default class TrackRepositoryContract implements TrackRepository {

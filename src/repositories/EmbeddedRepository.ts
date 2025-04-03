@@ -1,7 +1,7 @@
 import { PaginateOptions, PopulateOptions, Types } from 'mongoose'
 import { Embedded } from '../models/embedded.model'
 import { EmbeddedPayload, EmbeddedRepository } from '../types/embedded.types'
-import { ListRequestConfig } from '../types/reqres.types'
+import { ListRequestConfig } from '../types/pagination.types'
 
 export default class EmbeddedRepositoryContract implements EmbeddedRepository {
   async createEmbedded(payload: EmbeddedPayload) {

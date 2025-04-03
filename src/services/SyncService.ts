@@ -1,6 +1,6 @@
 import { AlbumDocument } from '../models/album.model'
 import { SyncRepository } from '../types/sync.types'
-import { CloudEntityDTO } from '../types/cloud.types'
+import { CloudEntity } from '../types/cloud.types'
 import AlbumService from './AlbumService'
 
 export default class SyncService {
@@ -16,7 +16,7 @@ export default class SyncService {
     return await this.dbUpdateSplitter(cloudFolders, dbFolders)
   }
 
-  async dbUpdateSplitter(cloudFolders: CloudEntityDTO[], dbFolders: AlbumDocument[]) {
+  async dbUpdateSplitter(cloudFolders: CloudEntity[], dbFolders: AlbumDocument[]) {
     if (!dbFolders.length && !cloudFolders.length) {
       return Promise.resolve({
         added: 0,
@@ -41,7 +41,7 @@ export default class SyncService {
     }
 
     const dbFoldersMap = new Map(dbFolders.map((folder) => [folder.folderName, folder]))
-    const albumsToAdd: CloudEntityDTO[] = []
+    const albumsToAdd: CloudEntity[] = []
     const albumsToFix: AlbumDocument[] = []
 
     cloudFolders.forEach((folder) => {

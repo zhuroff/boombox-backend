@@ -2,9 +2,9 @@ import { Types } from 'mongoose'
 import { Artist } from '../models/artist.model'
 import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
-import { CategoryRepository } from '../types/common.types'
+import { CategoryRepository } from '../types/category.types'
 import { EmbeddedPayload, EmbeddedRepository } from '../types/embedded.types'
-import { ListRequestConfig } from '../types/reqres.types'
+import { ListRequestConfig } from '../types/pagination.types'
 import PaginationViewFactory from '../views/PaginationViewFactory'
 
 export default class EmbeddedService {

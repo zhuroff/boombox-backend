@@ -1,6 +1,6 @@
 import { RootFilterQuery, Types } from 'mongoose'
 import { Token } from '../models/token.model'
-import { TokenRepository } from '../types/common.types'
+import { TokenRepository } from '../types/token.types'
 
 export default class TokenRepositoryContract implements TokenRepository {
   async getToken(payload: RootFilterQuery<{ user: string | Types.ObjectId }>) {
