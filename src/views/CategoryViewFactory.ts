@@ -2,6 +2,7 @@ import { Types } from 'mongoose'
 import { AlbumDocument } from '../models/album.model'
 import { EmbeddedDocument } from '../models/embedded.model'
 import { CategoryDocument } from '../types/common.types'
+import { AlbumItem } from '../types/album.types'
 import EntityBasicView from '../views/BasicEntityView'
 import AlbumViewFactory from '../views/AlbumViewFactory'
 
@@ -25,13 +26,13 @@ class CategoryItemView extends EntityBasicView {
 class CategoryPageView extends EntityBasicView {
   poster?: string | null
   avatar?: string | null
-  albums: ReturnType<typeof AlbumViewFactory.createAlbumItemView>[]
+  albums: AlbumItem[]
   embeddedAlbums?: EmbeddedDocument[]
 
   constructor(
     _id: Types.ObjectId,
     title: string,
-    albums: ReturnType<typeof AlbumViewFactory.createAlbumItemView>[],
+    albums: AlbumItem[],
     embeddedAlbums: EmbeddedDocument[],
     poster?: string | null,
     avatar?: string | null

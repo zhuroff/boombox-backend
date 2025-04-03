@@ -4,6 +4,7 @@ import { AlbumDocument } from '../models/album.model'
 import { CollectionDocumentAlbum } from '../models/collection.model'
 import { ListRequestConfig } from './reqres.types'
 import { GatheringUpdateProps } from './common.types'
+import AlbumViewFactory from '../views/AlbumViewFactory'
 
 export interface AlbumShape {
   title: string
@@ -31,6 +32,7 @@ export interface AlbumRepository {
   getAlbumsRandom(limit: number, filter?: ListRequestConfig['filter']): Promise<Array<AlbumDocument | null>>
   updateCollectionsInAlbum(payload: GatheringUpdateProps): Promise<void>
   getCoveredAlbums(docs: AlbumDocument[]): Promise<CoveredAlbum[]>
+  fetchAlbumCover(album: AlbumDocument): Promise<string | undefined>
   cleanAlbumCollections(albums: CollectionDocumentAlbum[], listID: string | Types.ObjectId): Promise<Array<AlbumDocument | null>>
 }
 
@@ -40,3 +42,6 @@ export interface AlbumAttrs {
   period: Types.ObjectId
   tracks: Types.ObjectId[]
 }
+
+export type AlbumItem = ReturnType<typeof AlbumViewFactory.createAlbumItemView>
+export type AlbumPage = ReturnType<typeof AlbumViewFactory.createAlbumPageView>

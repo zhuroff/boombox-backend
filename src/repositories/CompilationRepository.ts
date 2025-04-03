@@ -42,9 +42,6 @@ export default class CompilationRepositoryContract implements CompilationReposit
       limit: req.body.limit,
       sort: req.body.sort,
       lean: true,
-      populate: [
-        { path: 'tracks', select: ['_id'] }
-      ],
       select: {
         title: true,
         avatar: true

@@ -11,6 +11,7 @@ class AlbumItemView extends EntityBasicView {
   genre: EntityBasicView
   period: EntityBasicView
   coverURL?: string
+  order?: number
 
   constructor(
     _id: Types.ObjectId,
@@ -21,7 +22,8 @@ class AlbumItemView extends EntityBasicView {
     genre: EntityBasicView,
     period: EntityBasicView,
     inCollections: EntityBasicView[],
-    coverURL?: string
+    coverURL?: string,
+    order?: number
   ) {
     super(_id, title, cloudURL)
     this.folderName = folderName
@@ -30,6 +32,10 @@ class AlbumItemView extends EntityBasicView {
     this.period = period
     this.inCollections = inCollections
     this.coverURL = coverURL
+
+    if (order) {
+      this.order = order
+    }
   }
 }
 
@@ -46,14 +52,15 @@ class AlbumPageView extends AlbumItemView {
       album.genre,
       album.period,
       album.inCollections,
-      album.coverURL
+      album.coverURL,
+      album.order
     )
     this.tracks = tracks
   }
 }
 
 export default class AlbumViewFactory {
-  static createAlbumItemView(album: AlbumDocument, albumCover?: string) {
+  static createAlbumItemView(album: AlbumDocument, albumCover?: string, order?: number) {
     return new AlbumItemView(
       album._id,
       album.title,
@@ -63,7 +70,8 @@ export default class AlbumViewFactory {
       utils.createBasicView(album.genre),
       utils.createBasicView(album.period),
       album.inCollections.map(utils.createBasicView).filter(Boolean),
-      albumCover || album.cover
+      albumCover || album.cover,
+      order
     )
   }
 

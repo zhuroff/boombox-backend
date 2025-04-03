@@ -4,9 +4,9 @@ import { TrackDocument } from '../models/track.model'
 import { CompilationRepository, GatheringCreatePayload, GatheringReorder, GatheringUpdatePayload } from '../types/common.types'
 import { ListRequestConfig, NewCompilationPayload } from '../types/reqres.types'
 import { TrackRepository } from '../types/track.types'
-import { CompilationItemDTO, CompilationPageDTO } from '../dto/compilation.dto'
-import PaginationViewFactory from '../views/PaginationViewFactory'
 import TrackView from '../views/TrackView'
+import GatheringViewFactory from '../views/GatheringViewFactory'
+import PaginationViewFactory from '../views/PaginationViewFactory'
 
 export default class CompilationService {
   constructor(
@@ -38,7 +38,7 @@ export default class CompilationService {
       inList: false
     })
 
-    return new CompilationItemDTO(newCompilation)
+    return GatheringViewFactory.createGatheringItemView(newCompilation)
   }
 
   async updateCompilation(payload: GatheringUpdatePayload) {
@@ -99,7 +99,9 @@ export default class CompilationService {
 
     const { totalDocs, totalPages, page } = compilations
     const pagination = PaginationViewFactory.create({ totalDocs, totalPages, page })
-    const docs = compilations.docs.map((compilation) => new CompilationItemDTO(compilation))
+    const docs = compilations.docs.map((compilation) => (
+      GatheringViewFactory.createGatheringItemView(compilation)
+    ))
 
     return { docs, pagination }
   }
@@ -111,11 +113,11 @@ export default class CompilationService {
       throw new Error('Incorrect request options or compilation not found')
     }
 
-    return new CompilationPageDTO(
+    return GatheringViewFactory.createCompilationPageView(
       compilation,
-      compilation.tracks.map(({ track }) => {
+      compilation.tracks.map(({ track, order }) => {
         const trackDoc = track as TrackDocument
-        return new TrackView(trackDoc)
+        return new TrackView(trackDoc, order)
       })
     )
   }

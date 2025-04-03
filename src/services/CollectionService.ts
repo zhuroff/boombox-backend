@@ -4,8 +4,8 @@ import { AlbumDocument } from '../models/album.model'
 import { CollectionRepository, GatheringCreatePayload, GatheringReorder, GatheringUpdatePayload } from '../types/common.types'
 import { NewCollectionPayload } from '../types/reqres.types'
 import { AlbumRepository } from '../types/album.types'
-import { CollectionItemDTO, CollectionPageDTO } from '../dto/collection.dto'
 import AlbumViewFactory from '../views/AlbumViewFactory'
+import GatheringViewFactory from '../views/GatheringViewFactory'
 import PaginationViewFactory from '../views/PaginationViewFactory'
 
 export default class CollectionService {
@@ -38,7 +38,7 @@ export default class CollectionService {
       inList: false
     })
 
-    return new CollectionItemDTO(newCollection)
+    return GatheringViewFactory.createGatheringItemView(newCollection)
   }
 
   async getCollections(req: Request, isTitlesOnly = false) {
@@ -54,7 +54,9 @@ export default class CollectionService {
 
     const { totalDocs, totalPages, page } = collections
     const pagination = PaginationViewFactory.create({ totalDocs, totalPages, page })
-    const docs = collections.docs.map((collection) => new CollectionItemDTO(collection))
+    const docs = collections.docs.map((collection) => (
+      GatheringViewFactory.createGatheringItemView(collection)
+    ))
 
     return { docs, pagination }
   }
@@ -66,13 +68,17 @@ export default class CollectionService {
       throw new Error('Incorrect request options or collection not found')
     }
 
-    const coveredAlbums = await this.albumRepository.getCoveredAlbums(
-      collection.albums.map(({ album }) => album as AlbumDocument)
-    )
+    const coveredAlbums = await Promise.all(collection.albums.map(async ({ album, order }) => {
+      const item = album as AlbumDocument
+      const cover = await this.albumRepository.fetchAlbumCover(item)
+      return { album: item, cover, order }
+    }))
 
-    return new CollectionPageDTO(
+    return GatheringViewFactory.createCollectionPageView(
       collection,
-      coveredAlbums.map(({ album }) => AlbumViewFactory.createAlbumItemView(album))
+      coveredAlbums.map(({ album, cover, order }) => (
+        AlbumViewFactory.createAlbumItemView(album, cover, order)
+      ))
     )
   }
 

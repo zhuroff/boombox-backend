@@ -10,7 +10,7 @@ import { CollectionDocument, CollectionDocumentAlbum } from '../models/collectio
 import { CompilationDocument, CompilationDocumentTrack } from '../models/compilation.model'
 import { CloudReqPayloadFilter, ListRequestConfig, NewCollectionPayload, NewCompilationPayload, SearchConfig, SearchParams, SearchPayload } from './reqres.types'
 import { CloudEntityDTO, CloudFolderContent } from './cloud.types'
-import AlbumViewFactory from '../views/AlbumViewFactory'
+import { AlbumItem } from './album.types'
 
 export type ModelKeys =
   | 'albums'
@@ -119,7 +119,7 @@ export interface CompilationRepository {
 }
 
 export interface SearchRepository {
-  splitSearch(payload: SearchPayload, config?: SearchConfig): Promise<TrackDocument[] | CategoryDocument[] | ReturnType<typeof AlbumViewFactory.createAlbumItemView>[]>
+  splitSearch(payload: SearchPayload, config?: SearchConfig): Promise<TrackDocument[] | CategoryDocument[] | AlbumItem[]>
   searchEntry<T>(params: SearchParams, Model: SearchConfig): Promise<T>
 }
 

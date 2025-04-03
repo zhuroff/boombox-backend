@@ -16,8 +16,9 @@ export default class TrackView {
   inAlbum: AlbumDocument
   inCompilations?: EntityBasicView[]
   coverURL?: string
+  order?: number
 
-  constructor(track: TrackDocument) {
+  constructor(track: TrackDocument, order?: number) {
     this._id = track._id.toString()
     this.cloudId = track.cloudId
     this.title = track.title
@@ -33,6 +34,10 @@ export default class TrackView {
 
     if (track.path) {
       this.path = track.path
+    }
+
+    if (order) {
+      this.order = order
     }
   }
 }

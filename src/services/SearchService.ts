@@ -1,7 +1,7 @@
 import { TrackDocument } from '../models/track.model'
+import { AlbumItem } from '../types/album.types'
 import { CategoryDocument, SearchRepository } from '../types/common.types'
 import { SearchConfig, SearchModelKey, SearchPayload, SearchResult } from '../types/reqres.types'
-import AlbumViewFactory from '../views/AlbumViewFactory'
 
 export default class SearchService {
   constructor(
@@ -12,7 +12,7 @@ export default class SearchService {
   async search(payload: SearchPayload) {
     const mappedResult = new Map<
       SearchModelKey,
-      Partial<TrackDocument | CategoryDocument | ReturnType<typeof AlbumViewFactory.createAlbumItemView>>[]
+      Partial<TrackDocument | CategoryDocument | AlbumItem>[]
     >()
 
     if (payload.key) {

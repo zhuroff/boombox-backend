@@ -194,14 +194,17 @@ export default class AlbumRepositoryContract implements AlbumRepository {
 
   async getCoveredAlbums(docs: AlbumDocument[]) {
     return await Promise.all(docs.map(async (album) => {
-      const cloudAPI = getCloudApi(album.cloudURL)
-      const cover = await cloudAPI.getFile({
-        id: album.cloudId,
-        path: `${album.folderName}/cover.webp`,
-        fileType: 'image'
-      })
-
+      const cover = await this.fetchAlbumCover(album)
       return { album, cover }
     }))
+  }
+
+  async fetchAlbumCover(album: AlbumDocument) {
+    const cloudAPI = getCloudApi(album.cloudURL)
+    return await cloudAPI.getFile({
+      id: album.cloudId,
+      path: `${album.folderName}/cover.webp`,
+      fileType: 'image'
+    })
   }
 }

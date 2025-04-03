@@ -2,8 +2,8 @@ import { Model, PaginateModel, PopulateOptions, ProjectionType, Types } from 'mo
 import { TrackDocument } from '../models/track.model'
 import { CategoryDocument, ModelKeys } from './common.types'
 import { CloudFileTypes } from './cloud.types'
+import { AlbumItem } from './album.types'
 import UserView from '../views/UserView'
-import AlbumViewFactory from '../views/AlbumViewFactory'
 
 type SortingValue = Record<string, 1 | -1>
 
@@ -49,7 +49,7 @@ export type SearchParams = Record<'$text', { '$search': string }>
 
 export interface SearchResult {
   key: SearchModelKey
-  data: Partial<CategoryDocument | TrackDocument | ReturnType<typeof AlbumViewFactory.createAlbumItemView>>[]
+  data: Partial<CategoryDocument | TrackDocument | AlbumItem>[]
 }
 
 export interface SearchConfig {

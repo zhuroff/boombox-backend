@@ -34,7 +34,8 @@ export default class CategoryRepositoryContract implements CategoryRepository {
         populate: [
           { path: 'artist', select: ['title', '_id'] },
           { path: 'genre', select: ['title', '_id'] },
-          { path: 'period', select: ['title', '_id'] }
+          { path: 'period', select: ['title', '_id'] },
+          { path: 'inCollections', select: ['title', '_id'] }
         ]
       })
       .populate({

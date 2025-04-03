@@ -15,9 +15,6 @@ export default class CollectionRepositoryContract implements CollectionRepositor
       limit: req.body.limit,
       sort: req.body.sort,
       lean: true,
-      populate: [
-        { path: 'albums', select: ['_id'] }
-      ],
       select: {
         title: true,
         avatar: true
@@ -39,7 +36,8 @@ export default class CollectionRepositoryContract implements CollectionRepositor
         populate: [
           { path: 'artist', select: ['title'] },
           { path: 'genre', select: ['title'] },
-          { path: 'period', select: ['title'] }
+          { path: 'period', select: ['title'] },
+          { path: 'inCollections', select: ['title'] }
         ]
       })
       .lean()
