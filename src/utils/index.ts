@@ -1,8 +1,8 @@
 import { Response } from 'express'
 import { Types } from 'mongoose'
 import { createHash } from 'node:crypto'
-import { CloudEntityDTO } from '../types/cloud.types'
-import { UserResponse } from '../types/reqres.types'
+import { CloudEntity } from '../types/cloud.types'
+import { UserResponse } from '../types/user.types'
 import EntityBasicView from '../views/BasicEntityView'
 
 export default {
@@ -38,10 +38,10 @@ export default {
     return pattern.test(name)
   },
 
-  fileFilter: (data: CloudEntityDTO[], types: Set<string>): Required<CloudEntityDTO>[] => (
-    data.reduce<Required<CloudEntityDTO>[]>((acc, next) => {
+  fileFilter: (data: CloudEntity[], types: Set<string>): Required<CloudEntity>[] => (
+    data.reduce<Required<CloudEntity>[]>((acc, next) => {
       if (next.mimeType && types.has(next.mimeType)) {
-        acc.push(next as Required<CloudEntityDTO>)
+        acc.push(next as Required<CloudEntity>)
       }
       return acc
     }, [])

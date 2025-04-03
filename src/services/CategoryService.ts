@@ -1,7 +1,7 @@
 import { Request } from 'express'
 import { Types, PaginateModel } from 'mongoose'
 import { AlbumRepository } from '../types/album.types'
-import { CategoryDocument, CategoryRepository } from '../types/common.types'
+import { CategoryDocument, CategoryRepository } from '../types/category.types'
 import CategoryViewFactory from '../views/CategoryViewFactory'
 import PaginationViewFactory from '../views/PaginationViewFactory'
 

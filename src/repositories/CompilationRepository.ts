@@ -1,8 +1,8 @@
 import { Request } from 'express'
 import { PaginateOptions, PipelineStage, Types } from 'mongoose'
 import { Compilation, CompilationDocument, CompilationDocumentTrack } from '../models/compilation.model'
-import { CompilationRepository, GatheringUpdatePayload } from '../types/common.types'
-import { ListRequestConfig, NewCompilationPayload } from '../types/reqres.types'
+import { CompilationRepository, GatheringUpdatePayload, NewCompilationPayload } from '../types/gathering.types'
+import { ListRequestConfig } from '../types/pagination.types'
 
 export default class CompilationRepositoryContract implements CompilationRepository {
   async getRawCompilations() {

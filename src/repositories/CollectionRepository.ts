@@ -1,8 +1,7 @@
 import { Request } from 'express'
 import { PaginateOptions, Types } from 'mongoose'
 import { Collection, CollectionDocumentAlbum } from '../models/collection.model'
-import { CollectionRepository, GatheringUpdatePayload } from '../types/common.types'
-import { NewCollectionPayload } from '../types/reqres.types'
+import { CollectionRepository, GatheringUpdatePayload, NewCollectionPayload } from '../types/gathering.types'
 
 export default class CollectionRepositoryContract implements CollectionRepository {
   async getRawCollections() {

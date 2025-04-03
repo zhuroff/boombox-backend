@@ -1,6 +1,5 @@
-import { CloudReqPayloadFilter } from '../types/reqres.types'
-import { TOYRepository } from '../types/common.types'
-import { CloudEntityDTO } from '../types/cloud.types'
+import { TOYRepository } from '../types/toy.types'
+import { CloudEntity, CloudReqPayloadFilter } from '../types/cloud.types'
 import utils from '../utils'
 
 export default class TOYService {
@@ -42,7 +41,7 @@ export default class TOYService {
       items: await Promise.allSettled(
         utils.fileFilter(response.items, utils.imagesMimeTypes)
           .map(async (item) => await this.toyRepository.getImageWithURL(item, cluster))
-      ) as PromiseFulfilledResult<Required<CloudEntityDTO>>[]
+      ) as PromiseFulfilledResult<Required<CloudEntity>>[]
     }
 
     return {
@@ -116,7 +115,7 @@ export default class TOYService {
 
     const content = await Promise.all(response)
 
-    const allTracks =  content.reduce<CloudEntityDTO[]>((acc, next) => {
+    const allTracks =  content.reduce<CloudEntity[]>((acc, next) => {
       acc.push(...next.items.filter((item) => (
         item.mimeType && utils.audioMimeTypes.has(item.mimeType)
       )))

@@ -1,11 +1,13 @@
 import { Request } from 'express'
 import { DeleteResult, Document, Types } from 'mongoose'
-import { CloudEntityDTO } from '../types/cloud.types'
+import { CloudEntity } from '../types/cloud.types'
 import { AggregatedTrackDocument, TrackDocument } from '../models/track.model'
-import { GatheringUpdateProps } from './common.types'
+import { GatheringUpdateProps } from './gathering.types'
+
+export type TrackDocumentNullable = Document<unknown, {}, TrackDocument> | null
 
 export interface NewTrackPayload {
-  track: Required<CloudEntityDTO>,
+  track: Required<CloudEntity>,
   albumId: Types.ObjectId,
   artistId: Types.ObjectId,
   genreId: Types.ObjectId,
@@ -26,8 +28,6 @@ export interface AudioRequestPayload {
   cloudURL: string
   cluster?: string
 }
-
-export type TrackDocumentNullable = Document<unknown, {}, TrackDocument> | null
 
 export interface TrackRepository {
   createTrack(trackPayload: NewTrackPayload): Promise<TrackDocument>

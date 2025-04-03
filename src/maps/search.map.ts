@@ -1,4 +1,3 @@
-import { SearchConfig, SearchModelKey } from '../types/reqres.types'
 import { Album } from '../models/album.model'
 import { Embedded } from '../models/embedded.model'
 import { Artist } from '../models/artist.model'
@@ -7,6 +6,7 @@ import { Period } from '../models/period.model'
 import { Collection } from '../models/collection.model'
 import { Compilation } from '../models/compilation.model'
 import { Track } from '../models/track.model'
+import { SearchConfig, SearchModelKey } from '../types/search.types'
 
 const searchMap = new Map<SearchModelKey, SearchConfig>([
   [

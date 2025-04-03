@@ -1,6 +1,5 @@
-import { CloudReqPayloadFilter } from '../types/reqres.types'
-import { TOYRepository } from '../types/common.types'
-import { CloudEntityDTO } from '../types/cloud.types'
+import { TOYRepository } from '../types/toy.types'
+import { CloudEntity, CloudReqPayloadFilter } from '../types/cloud.types'
 import { getCloudApi } from '..'
 
 export default class TOYRepositoryContracts implements TOYRepository {
@@ -36,7 +35,7 @@ export default class TOYRepositoryContracts implements TOYRepository {
     })
   }
 
-  async getImageWithURL(item: Required<CloudEntityDTO>, cluster: string) {
+  async getImageWithURL(item: Required<CloudEntity>, cluster: string) {
     const fetchedFile = await this.getCloudFile({
       id: item.id,
       path: item.path,

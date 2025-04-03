@@ -1,6 +1,6 @@
 import { PaginateResult, Types } from 'mongoose'
 import { EmbeddedDocument } from '../models/embedded.model'
-import { ListRequestConfig } from './reqres.types'
+import { ListRequestConfig } from './pagination.types'
 
 export interface EmbeddedPayload {
   artist: string

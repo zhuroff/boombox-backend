@@ -2,8 +2,8 @@ import { Document, PaginateOptions, PipelineStage, PopulateOptions, FilterQuery,
 import { Album, AlbumDocument } from '../models/album.model'
 import { CollectionDocumentAlbum } from '../models/collection.model'
 import { AlbumAttrs, AlbumRepository } from '../types/album.types'
-import { ListRequestConfig } from '../types/reqres.types'
-import { GatheringUpdateProps } from '../types/common.types'
+import { ListRequestConfig } from '../types/pagination.types'
+import { GatheringUpdateProps } from '../types/gathering.types'
 import { getCloudApi } from '..'
 
 export default class AlbumRepositoryContract implements AlbumRepository {

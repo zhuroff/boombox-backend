@@ -1,6 +1,6 @@
 import { Request } from 'express'
 import { Model } from 'mongoose'
-import { FileRepository } from '../types/common.types'
+import { FileRepository } from '../types/file.types'
 import fs from 'fs'
 import path from 'path'
 

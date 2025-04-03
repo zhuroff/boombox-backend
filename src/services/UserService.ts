@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { Types } from 'mongoose'
 import { validationResult } from 'express-validator'
-import { UserDataPayload, UserRepository } from '../types/common.types'
+import { UserDataPayload, UserRepository } from '../types/user.types'
 import TokenService from './TokenService'
 import UserView from '../views/UserView'
 import bcrypt from 'bcrypt'

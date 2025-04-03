@@ -1,7 +1,7 @@
 import { Types } from 'mongoose'
 import { AlbumDocument } from '../models/album.model'
 import { EmbeddedDocument } from '../models/embedded.model'
-import { CategoryDocument } from '../types/common.types'
+import { CategoryDocument } from '../types/category.types'
 import { AlbumItem } from '../types/album.types'
 import EntityBasicView from '../views/BasicEntityView'
 import AlbumViewFactory from '../views/AlbumViewFactory'
