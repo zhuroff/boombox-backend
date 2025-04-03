@@ -8,7 +8,9 @@ import { ListRequestConfig } from '../types/pagination.types'
 import { AlbumRepository, AlbumShape } from '../types/album.types'
 import { CloudEntity } from '../types/cloud.types'
 import { getCloudApi } from '..'
-import utils from '../utils'
+import Parser from '../utils/Parser'
+import Validator from '../utils/Validator'
+import FileFilter from '../utils/FileFilter'
 import TrackService from './TrackService'
 import CategoryService from './CategoryService'
 import CollectionService from './CollectionService'
@@ -29,7 +31,7 @@ export default class AlbumService {
     const invalidFolders: Record<string, string>[] = []
 
     const albumShapes = await Promise.all(albums.map(async (album) => {
-      if (!utils.isAlbumFolderNameValid(album.title)) {
+      if (!Validator.isAlbumFolderNameValid(album.title)) {
         invalidFolders.push({
           album: album.title,
           cloud: album.cloudURL,
@@ -73,11 +75,11 @@ export default class AlbumService {
       folderName: album.title,
       cloudURL: album.cloudURL,
       cloudId: album.id,
-      title: utils.parseAlbumTitle(album.title),
-      artist: utils.parseArtistName(album.title),
-      genre: utils.parseAlbumGenre(album.title),
-      period: utils.getAlbumReleaseYear(album.title),
-      tracks: utils.fileFilter(albumContent.items, utils.audioMimeTypes)
+      title: Parser.parseAlbumTitle(album.title),
+      artist: Parser.parseArtistName(album.title),
+      genre: Parser.parseAlbumGenre(album.title),
+      period: Parser.getAlbumReleaseYear(album.title),
+      tracks: FileFilter.fileFilter(albumContent.items, 'audioMimeTypes')
     }
   }
 
@@ -94,7 +96,7 @@ export default class AlbumService {
           cloud: next.cloudURL,
           reason: 'no_tracks'
         })
-      } else if (!next.tracks.every(({ title }) => utils.isTrackFilenameValid(title))) {
+      } else if (!next.tracks.every(({ title }) => Validator.isTrackFilenameValid(title))) {
         acc.invalidShapes.push({
           album: next.title,
           cloud: next.cloudURL,

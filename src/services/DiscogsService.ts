@@ -4,7 +4,7 @@ import DiscogsView from '../views/DiscogsView'
 export default class DiscogsService {
   constructor(private discogsRepository: DiscogsRepository) {}
 
-  private buildDiscogsLink(param: string) {
+  #buildDiscogsLink(param: string) {
     return encodeURI(
       process.env['DISCOGS_DOMAIN'] +
       '/database/search?' + param +
@@ -22,7 +22,7 @@ export default class DiscogsService {
       '&page=' + page
     )
 
-    const response = await this.discogsRepository.getDiscogsList(this.buildDiscogsLink(query))
+    const response = await this.discogsRepository.getDiscogsList(this.#buildDiscogsLink(query))
 
     results.push(...response.results.reduce<DiscogsView[]>((acc, next) => {
       const releaseAlbum = next.title.slice(next.title.indexOf(' - ') + 3)?.trim()
