@@ -69,8 +69,7 @@ export default class TrackController {
       const response = await this.trackService.getAudio({
         id: req.body['path'] || req.body['cloudId'],
         path: '',
-        cloudURL: req.body['cloudURL'],
-        cluster: req.body['root']
+        cloudURL: req.body['cloudURL']
       })
       res.json(response)
     } catch (error) {

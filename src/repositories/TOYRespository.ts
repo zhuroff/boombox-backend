@@ -11,37 +11,34 @@ export default class TOYRepositoryContracts implements TOYRepository {
   }
 
   async getFolderContent(filter: Omit<CloudReqPayloadFilter, 'value' | 'exclude'>) {
-    const { id, path, cloudURL, cluster, limit, offset } = filter
+    const { id, path, cloudURL, limit, offset } = filter
 
     const cloudApi = getCloudApi(cloudURL)
 
     return await cloudApi.getFolderContent({
       id,
-      cluster,
       fileType: 'file',
       path: `${this.satitizePath(path)}&limit=${limit || 500}&offset=${offset || 0}`
     })
   }
 
   async getCloudFile(filter: Omit<CloudReqPayloadFilter, 'value' | 'exclude'>) {
-    const { id, type, path, cloudURL, cluster } = filter
+    const { id, type, path, cloudURL } = filter
     const cloudApi = getCloudApi(cloudURL)
 
     return await cloudApi.getFile({
       id,
-      cluster,
       fileType: type,
       path: this.satitizePath(path)
     })
   }
 
-  async getImageWithURL(item: Required<CloudEntity>, cluster: string) {
+  async getImageWithURL(item: Required<CloudEntity>) {
     const fetchedFile = await this.getCloudFile({
       id: item.id,
       path: item.path,
       type: 'image',
-      cloudURL: item.cloudURL,
-      cluster
+      cloudURL: item.cloudURL
     })
 
     return { ...item, url: fetchedFile }

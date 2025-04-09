@@ -1,8 +1,20 @@
 import { Request } from 'express'
-import { Types, Document, Require_id, Default__v, IfAny, PaginateModel, PaginateResult, FilterQuery, UpdateQuery, QueryOptions } from 'mongoose'
+import {
+  Types,
+  Document,
+  Require_id,
+  Default__v,
+  IfAny,
+  PaginateModel,
+  PaginateResult,
+  FilterQuery,
+  UpdateQuery,
+  QueryOptions
+} from 'mongoose'
 import { ArtistDocument } from '../models/artist.model'
 import { GenreDocument } from '../models/genre.model'
 import { PeriodDocument } from '../models/period.model'
+import { ListRequestConfig } from './pagination.types'
 
 export type CategoryDocument = ArtistDocument | GenreDocument | PeriodDocument
 
@@ -23,7 +35,13 @@ export interface CategoryRepository {
     update: UpdateQuery<CategoryDocument>,
     options?: QueryOptions
   ): Promise<CategoryDocument | null>
+  getPopulatedCategory(
+    Model: PaginateModel<CategoryDocument>,
+    req: Request
+  ): Promise<CategoryDocument | null>
+  getPopulatedCategories(
+    Model: PaginateModel<CategoryDocument>,
+    body: ListRequestConfig
+  ): Promise<PaginateResult<CategoryDocument | null>>
   removeCategory<T>(Model: PaginateModel<T>, _id: string): Promise<void>
-  getPopulatedCategory(Model: PaginateModel<CategoryDocument>, req: Request): Promise<CategoryDocument | null>
-  getPopulatedCategories(Model: PaginateModel<CategoryDocument>, req: Request): Promise<PaginateResult<CategoryDocument | null>>
 }

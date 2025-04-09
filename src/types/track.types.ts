@@ -26,7 +26,6 @@ export interface AudioRequestPayload {
   id: string
   path: string
   cloudURL: string
-  cluster?: string
 }
 
 export interface TrackRepository {

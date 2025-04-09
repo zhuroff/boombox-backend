@@ -21,6 +21,10 @@ const schema = new Schema({
     type: String,
     required: true
   },
+  path: {
+    type: String,
+    required: true
+  },
   cloudURL: {
     type: String,
     required: true

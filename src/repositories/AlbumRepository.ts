@@ -118,6 +118,7 @@ export default class AlbumRepositoryContract implements AlbumRepository {
       lean: true,
       select: {
         title: true,
+        path: true,
         folderName: true,
         cloudURL: true,
         cloudId: true
@@ -178,7 +179,8 @@ export default class AlbumRepositoryContract implements AlbumRepository {
           const lastProp = aggregateConfig.at(-1) as PipelineStage.Match | undefined
           if (lastProp) {
             Object.entries(filter['excluded']).forEach(([key, value]) => {
-              lastProp.$match[key] = { $ne: new Types.ObjectId(String(value)) }
+              const joinedKey = key.split('>').join('.')
+              lastProp.$match[joinedKey] = { $ne: new Types.ObjectId(String(value)) }
             })
           }
         }
@@ -203,7 +205,7 @@ export default class AlbumRepositoryContract implements AlbumRepository {
     const cloudAPI = getCloudApi(album.cloudURL)
     return await cloudAPI.getFile({
       id: album.cloudId,
-      path: `${album.folderName}/cover.webp`,
+      path: `${album.path}/cover.webp`,
       fileType: 'image'
     })
   }

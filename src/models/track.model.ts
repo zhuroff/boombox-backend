@@ -17,6 +17,10 @@ const schema = new Schema({
     type: String,
     required: true
   },
+  path: {
+    type: String,
+    required: true
+  },
   cloudURL: {
     type: String,
     required: true
@@ -36,10 +40,6 @@ const schema = new Schema({
   modified: {
     type: Date,
     required: true
-  },
-  path: {
-    type: String,
-    required: false
   },
   mimeType: {
     type: String,

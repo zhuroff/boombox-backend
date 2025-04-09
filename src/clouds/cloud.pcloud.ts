@@ -15,11 +15,9 @@ import CloudEntityViewFactory from '../views/CloudEntityViewFactory'
 export default class PCloudApi implements Cloud {
   #client: AxiosInstance
   #domain = process.env['PCLOUD_DOMAIN']
-  #cluster = process.env['MAIN_CLUSTER']
   #login = process.env['PCLOUD_LOGIN']
   #password = process.env['PCLOUD_PASSWORD']
   #digest = ''
-  #cloudRootPath: string
   #fileTypesMap = new Map<CloudFileTypes, string>([
     ['audio', 'getaudiolink'],
     ['video', 'getvideolink'],
@@ -30,8 +28,7 @@ export default class PCloudApi implements Cloud {
     return str ? createHash('sha1').update(str).digest('hex') : ''
   }
 
-  constructor(cloudRootPath: string) {
-    this.#cloudRootPath = cloudRootPath
+  constructor() {
     this.#client = axios.create({})
   }
 
@@ -46,19 +43,11 @@ export default class PCloudApi implements Cloud {
     return `https://${entity.hosts[0]}${entity.path}`.replace('.mp3', '')
   }
 
-  #handlePath(path: string) {
-    if (!path.length) return ''
-    if (path.startsWith('/')) return path
-    return `/${encodeURIComponent(path)}`
-  }
-
-  #qBuilder(path: string, cluster?: string, qMethod?: string) {
+  #qBuilder(path: string, qMethod?: string) {
     return (`
       ${this.#domain}/
-      ${qMethod || 'listfolder'}?path=/
-      ${this.#cloudRootPath}/
-      ${cluster || this.#cluster}
-      ${this.#handlePath(path)}
+      ${qMethod || 'listfolder'}?path=
+      ${path}
       &username=${this.#login}
       &digest=${this.#digest}
       &passworddigest=${this.#sha1(this.#password + this.#sha1(this.#login) + this.#digest)}
@@ -66,14 +55,14 @@ export default class PCloudApi implements Cloud {
   }
 
   async getFolders(payload: CLoudQueryPayload) {
-    const { path, cluster } = payload
+    const { path } = payload
 
     if (typeof path !== 'string') {
       throw new Error('"path" is required and should be a string for PCloud API')
     }
 
     this.#digest = await this.#getDigest()
-    const query = this.#qBuilder(path, cluster)
+    const query = this.#qBuilder(path)
 
     return await this.#client
       .get<PCloudResponse<PCloudEntity> | PCloudResponseError>(query)
@@ -96,14 +85,14 @@ export default class PCloudApi implements Cloud {
   }
 
   async getFolderContent(payload: CLoudQueryPayload): Promise<CloudFolderContent> {
-    const { path, cluster } = payload
+    const { path } = payload
 
     if (typeof path !== 'string') {
       throw new Error('"path" is required and should be a string for PCloud API')
     }
 
     this.#digest = await this.#getDigest()
-    const query = this.#qBuilder(path, cluster)
+    const query = this.#qBuilder(path)
 
     return await this.#client
       .get<PCloudResponse<PCloudEntity> | PCloudResponseError>(query)
@@ -131,7 +120,7 @@ export default class PCloudApi implements Cloud {
   }
 
   async getFile(payload: CLoudQueryPayload) {
-    const { path, fileType, cluster } = payload
+    const { path, fileType } = payload
 
     if (typeof path !== 'string') {
       throw new Error('"path" is required and should be a string for PCloud API')
@@ -143,7 +132,7 @@ export default class PCloudApi implements Cloud {
 
     this.#digest = await this.#getDigest()
     const targetFileType = this.#fileTypesMap.get(fileType)
-    const query = this.#qBuilder(path, cluster, targetFileType)
+    const query = this.#qBuilder(path, targetFileType)
 
     return await this.#client
       .get<PCloudFileResponse | PCloudResponseError>(query)

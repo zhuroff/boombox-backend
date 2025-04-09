@@ -27,8 +27,8 @@ const albumService = new AlbumService(albumRepository, categoryService, collecti
 const albumController = new AlbumsController(albumService)
 const router = Router()
 
-router.post('/', authChecker, albumController.getAlbums)
-router.get('/', authChecker, albumController.getAlbumsRandom)
+router.get('/', authChecker, albumController.getAlbums)
 router.get('/:id', authChecker, albumController.getAlbum)
+// router.get('/random', authChecker, albumController.getAlbumsRandom)
 
 export default router

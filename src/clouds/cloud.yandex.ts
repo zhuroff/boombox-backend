@@ -11,34 +11,25 @@ import CloudEntityViewFactory from '../views/CloudEntityViewFactory'
 export default class YandexCloudApi implements Cloud {
   #client: AxiosInstance
   #domain = process.env['YCLOUD_DOMAIN']
-  #cluster = process.env['MAIN_CLUSTER']
-  #cloudRootPath: string
 
-  #handlePath(path: string) {
-    if (!path.length) return ''
-    if (path.startsWith('/')) return path
-    return `/${encodeURIComponent(path)}`
+  #qBuilder(path: string) {
+    return `${this.#domain}${path}`
   }
 
-  #qBuilder(path: string, cluster?: string) {
-    return `${this.#domain}${this.#cloudRootPath}/${cluster || this.#cluster}${this.#handlePath(path)}`
-  }
-
-  constructor(cloudRootPath: string) {
-    this.#cloudRootPath = cloudRootPath
+  constructor() {
     this.#client = axios.create({
       headers: { Authorization: String(process.env['YCLOUD_OAUTH_TOKEN']) }
     })
   }
 
   async getFolders(payload: CLoudQueryPayload, params: AxiosRequestConfig = {}) {
-    const { path, cluster } = payload
+    const { path } = payload
 
     if (typeof path !== 'string') {
       throw new Error('"path" is required and should be a string for Yandex Cloud API')
     }
 
-    const query = this.#qBuilder(path, cluster)
+    const query = this.#qBuilder(path)
 
     return await this.#client
       .get<YandexCloudResponse<YandexCloudEntity>>(query, params)
@@ -57,13 +48,13 @@ export default class YandexCloudApi implements Cloud {
   }
   
   async getFolderContent(payload: CLoudQueryPayload): Promise<CloudFolderContent> {
-    const { path, cluster } = payload
+    const { path } = payload
 
     if (typeof path !== 'string') {
       throw new Error('"path" is required and should be a string for Yandex Cloud API')
     }
 
-    const query = this.#qBuilder(path, cluster)
+    const query = this.#qBuilder(path)
 
     return await this.#client
       .get<YandexCloudResponse<YandexCloudEntity>>(`${query}&limit=100`)
@@ -85,13 +76,13 @@ export default class YandexCloudApi implements Cloud {
   }
 
   async getFile(payload: CLoudQueryPayload) {
-    const { path, cluster } = payload
+    const { path } = payload
 
     if (typeof path !== 'string') {
       throw new Error('"path" is required and should be a string for Yandex Cloud API')
     }
 
-    const query = this.#qBuilder(path, cluster)
+    const query = this.#qBuilder(path)
 
     return await this.#client
       .get<YandexCloudResponse<YandexCloudEntity>>(query)

@@ -2,8 +2,10 @@ import { Request } from 'express'
 import { Types, PaginateModel } from 'mongoose'
 import { AlbumRepository } from '../types/album.types'
 import { CategoryDocument, CategoryRepository } from '../types/category.types'
+import { ListRequestConfig } from '../types/pagination.types'
 import CategoryViewFactory from '../views/CategoryViewFactory'
 import PaginationViewFactory from '../views/PaginationViewFactory'
+import Parser from '../utils/Parser'
 
 export default class CategoryService {
   constructor(
@@ -44,12 +46,23 @@ export default class CategoryService {
 
     return CategoryViewFactory.createCategoryPageView({
       ...targetCategory,
-      albums: albumsResponse.map(({ album, cover }) => ({ ...album, cover }))
+      albums: albumsResponse
+        .map(({ album, cover }) => ({ ...album, cover }))
+        .sort((a, b) => {
+          let comparison = parseInt(a.period.title) - parseInt(b.period.title)
+
+          if (comparison === 0) {
+            comparison = a.title.localeCompare(b.title)
+          }
+          
+          return comparison
+        })
     })
   }
 
   async getCategories(Model: PaginateModel<CategoryDocument>, req: Request) {
-    const categories = await this.categoryRepository.getPopulatedCategories(Model, req)
+    const parsedQuery = Parser.parseNestedQuery<ListRequestConfig>(req)
+    const categories = await this.categoryRepository.getPopulatedCategories(Model, parsedQuery)
 
     if (!categories.docs?.every((col) => !!col)) {
       throw new Error('Incorrect request options')

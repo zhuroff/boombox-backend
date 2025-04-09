@@ -14,20 +14,20 @@ export default class AlbumsController {
     }
   }
 
-  getAlbumsRandom = async (req: Request, res: Response) => {
-    if (Array.isArray(req.query)) {
-      throw new Error('Query should be a string in this request')
-    }
+  // getAlbumsRandom = async (req: Request, res: Response) => {
+  //   if (Array.isArray(req.query)) {
+  //     throw new Error('Query should be a string in this request')
+  //   }
 
-    try {
-      const quantity = parseInt(String(req.query?.['quantity'] || 8))
-      const result = await this.albumService.getAlbumsRandom(quantity)
-      res.json(result)
-    } catch (error) {
-      console.error(error)
-      res.status(500).json(error)
-    }
-  }
+  //   try {
+  //     const quantity = parseInt(String(req.query?.['quantity'] || 8))
+  //     const result = await this.albumService.getAlbumsRandom(quantity)
+  //     res.json(result)
+  //   } catch (error) {
+  //     console.error(error)
+  //     res.status(500).json(error)
+  //   }
+  // }
 
   getAlbum = async (req: Request<{ id: string }>, res: Response) => {
     try {
