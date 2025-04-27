@@ -21,7 +21,9 @@ const searchMap = new Map<SearchModelKey, SearchConfig>([
         albumCover: true,
         period: true,
         folderName: true,
-        cloudURL: true
+        cloudURL: true,
+        cloudId: true,
+        path: true
       },
       populates: [
         { path: 'artist', select: ['title'] },
@@ -89,8 +91,19 @@ const searchMap = new Map<SearchModelKey, SearchConfig>([
       instance: Track,
       options: { _id: true, title: true, path: true, duration: true, cloudURL: true },
       populates: [
-        { path: 'inAlbum', select: ['title', 'folderName', 'cloudURL'], populate: { path: 'period', model: Period, select: ['title'] } },
-        { path: 'artist', select: ['title'] },
+        {
+          path: 'inAlbum',
+          select: ['title', 'folderName', 'albumCover', 'cloudURL', 'cloudId', 'path'],
+          populate: {
+            path: 'period',
+            model: Period,
+            select: ['title']
+          }
+        },
+        {
+          path: 'artist',
+          select: ['title']
+        }
       ]
     }
   ]

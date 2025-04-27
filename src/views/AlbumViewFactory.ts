@@ -77,7 +77,7 @@ export default class AlbumViewFactory {
       this.createBasicView(album.artist),
       this.createBasicView(album.genre),
       this.createBasicView(album.period),
-      album.inCollections.map(this.createBasicView).filter(Boolean),
+      album.inCollections?.map(this.createBasicView).filter(Boolean) || [],
       albumCover || album.cover,
       order
     )

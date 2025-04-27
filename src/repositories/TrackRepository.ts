@@ -81,7 +81,7 @@ export default class TrackRepositoryContract implements TrackRepository {
       const cloudAPI = getCloudApi(track.cloudURL)
       const cover = await cloudAPI.getFile({
         id: track.cloudId,
-        path: `${track.inAlbum.folderName}/cover.webp`,
+        path: `${track.inAlbum.path}/cover.webp`,
         fileType: 'image'
       })
       if (cover) track.coverURL = cover
