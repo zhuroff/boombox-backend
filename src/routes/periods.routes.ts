@@ -20,8 +20,8 @@ import upload from '../middleware/upload'
 
 const router = Router()
 
+router.get('/', authChecker, periodController.getCategories(Period))
 router.get('/:id', authChecker, periodController.getCategory(Period))
-router.post('/', authChecker, periodController.getCategories(Period))
 router.post('/create', authChecker, periodController.createCategory(Period))
 router.post('/:id/poster', authChecker, upload.single('poster'), periodController.updateModelFileLink(Period))
 router.post('/:id/avatar', authChecker, upload.single('avatar'), periodController.updateModelFileLink(Period))

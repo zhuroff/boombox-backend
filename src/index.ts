@@ -34,11 +34,10 @@ const corsConfig = {
     : process.env['CLIENT_URL_PROD']
 }
 export const rootDir = path.resolve(__dirname, '../')
-export const cloudRootPath = `${process.env['COLLECTION_ROOT']}`
 
 export const cloudsMap = new Map<string, CloudApi>([
-  ['https://eapi.pcloud.com', new PCloudApi(cloudRootPath)],
-  ['https://cloud-api.yandex.net', new YandexCloudApi(cloudRootPath)]
+  ['https://eapi.pcloud.com', new PCloudApi()],
+  ['https://cloud-api.yandex.net', new YandexCloudApi()]
 ])
 
 export const getCloudApi = (url: string) => cloudsMap.get(url) as CloudApi

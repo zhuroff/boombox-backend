@@ -19,9 +19,9 @@ const compilationController = new CompilationController(compilationService, file
 const router = Router()
 
 // router.patch('/:id/rename', compilationController.renameCompilation)
+router.get('/', authChecker, compilationController.getCompilations)
 router.post('/create', authChecker, compilationController.createCompilation)
 router.patch('/update', authChecker, compilationController.updateCompilation)
-router.post('/', authChecker, compilationController.getCompilations)
 router.get('/:id', authChecker, compilationController.getCompilation)
 router.patch('/:id/reorder', authChecker, compilationController.reorderCompilationTracks)
 router.delete('/:id', authChecker, compilationController.removeCompilation)

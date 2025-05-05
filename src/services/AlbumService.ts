@@ -190,7 +190,7 @@ export default class AlbumService {
     const cloudAPI = getCloudApi(album.cloudURL)
     const cover = withCover ? await cloudAPI.getFile({
       id: album.cloudId,
-      path: `${album.folderName}/cover.webp`,
+      path: `${album.path}/cover.webp`,
       fileType: 'image'
     }) : undefined
     
@@ -198,11 +198,16 @@ export default class AlbumService {
   }
 
   async getAlbums(req: Request<{}, {}, ListRequestConfig>) {
-    if (req.body.isRandom) {
-      return await this.getAlbumsRandom(req.body.limit, req.body.filter)
+    const parsedQuery = Parser.parseNestedQuery<ListRequestConfig>(req)
+
+    if (!!parsedQuery['isRandom']) {
+      return await this.getAlbumsRandom(
+        Number(parsedQuery['limit']),
+        parsedQuery['filter']
+      )
     }
 
-    const dbList = await this.albumRepository.getAlbums(req.body)
+    const dbList = await this.albumRepository.getAlbums(parsedQuery)
 
     if (!dbList) {
       throw new Error('Incorrect request options')

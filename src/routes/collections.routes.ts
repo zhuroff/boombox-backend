@@ -19,9 +19,9 @@ const collectionController = new CollectionController(collectionService, fileSer
 const router = Router()
 
 // router.patch('/:id/rename', controller.rename)
+router.get('/', authChecker, collectionController.getCollections)
 router.post('/create', authChecker, collectionController.createCollection)
 router.patch('/update', authChecker, collectionController.updateCollection)
-router.post('/', authChecker, collectionController.getCollections)
 router.get('/:id', authChecker, collectionController.getCollection)
 router.patch('/:id/reorder', authChecker, collectionController.reorderCollections)
 router.delete('/:id', authChecker, collectionController.removeCollection)

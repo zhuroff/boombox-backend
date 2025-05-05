@@ -1,3 +1,4 @@
+import { Request } from 'express'
 import { Types } from 'mongoose'
 import { Artist } from '../models/artist.model'
 import { Genre } from '../models/genre.model'
@@ -5,6 +6,7 @@ import { Period } from '../models/period.model'
 import { CategoryRepository } from '../types/category.types'
 import { EmbeddedPayload, EmbeddedRepository } from '../types/embedded.types'
 import { ListRequestConfig } from '../types/pagination.types'
+import Parser from '../utils/Parser'
 import PaginationViewFactory from '../views/PaginationViewFactory'
 
 export default class EmbeddedService {
@@ -46,8 +48,9 @@ export default class EmbeddedService {
     return embedded
   }
 
-  async getPopulatedEmbeddedList(payload: ListRequestConfig) {
-    const response = await this.embeddedRepository.getPopulatedEmbeddedList(payload)
+  async getPopulatedEmbeddedList(req: Request) {
+    const parsedQuery = Parser.parseNestedQuery<ListRequestConfig>(req)
+    const response = await this.embeddedRepository.getPopulatedEmbeddedList(parsedQuery)
 
     if (!response.docs.every((doc) => !!doc)) {
       throw new Error('Incorrect request options')

@@ -12,7 +12,7 @@ export default class SearchRepositoryContract implements SearchRepository {
     private trackRepository: TrackRepository
   ) {}
 
-  async splitSearch({ query, key }: SearchPayload, config?: SearchConfig) {
+  async splitSearch({ query, key }: SearchPayload, config: SearchConfig) {
     if (!config) {
       throw new Error('Query config not found')
     }
@@ -22,8 +22,8 @@ export default class SearchRepositoryContract implements SearchRepository {
     if (key === 'albums') {
       const albumRes = await this.searchEntry<AlbumDocument[]>(searchParams, config)
       const coveredAlbums = await this.albumRepository.getCoveredAlbums(albumRes)
-      return await Promise.all(coveredAlbums.map(({ album }) => (
-        AlbumViewFactory.createAlbumItemView(album)
+      return await Promise.all(coveredAlbums.map(({ album, cover }) => (
+        AlbumViewFactory.createAlbumItemView(album, cover)
       )))
     } else if (key === 'tracks') {
       const trackRes = await this.searchEntry<TrackDocument[]>(searchParams, config)

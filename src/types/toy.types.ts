@@ -3,5 +3,5 @@ import { CloudEntity, CloudFolderContent, CloudReqPayloadFilter } from './cloud.
 export interface TOYRepository {
   getFolderContent(filter: Omit<CloudReqPayloadFilter, 'value' | 'exclude'>): Promise<CloudFolderContent>
   getCloudFile(filter: Omit<CloudReqPayloadFilter, 'value' | 'exclude'>): Promise<string | undefined>
-  getImageWithURL(item: Required<CloudEntity>, cluster: string): Promise<CloudEntity>
+  getImageWithURL(item: Required<CloudEntity>): Promise<CloudEntity>
 }

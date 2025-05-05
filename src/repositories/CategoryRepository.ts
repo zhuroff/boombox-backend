@@ -2,6 +2,7 @@ import { Request } from 'express'
 import { Types, PaginateModel, FilterQuery, PaginateOptions, UpdateQuery, QueryOptions } from 'mongoose'
 import { Embedded } from '../models/embedded.model'
 import { CategoryDocument, CategoryRepository } from '../types/category.types'
+import { ListRequestConfig } from '../types/pagination.types'
 
 export default class CategoryRepositoryContract implements CategoryRepository {
   async createCategory<T>(Model: PaginateModel<T>, title: string, _id?: Types.ObjectId) {
@@ -30,7 +31,7 @@ export default class CategoryRepositoryContract implements CategoryRepository {
     return await Model.findById(req.params['id'])
       .populate({
         path: 'albums',
-        select: ['title', 'folderName', 'cloudURL', 'cloudId'],
+        select: ['title', 'folderName', 'cloudURL', 'cloudId', 'path'],
         populate: [
           { path: 'artist', select: ['title', '_id'] },
           { path: 'genre', select: ['title', '_id'] },
@@ -50,16 +51,19 @@ export default class CategoryRepositoryContract implements CategoryRepository {
       .lean()
   }
 
-  async getPopulatedCategories(Model: PaginateModel<CategoryDocument>, req: Request) {
+  async getPopulatedCategories(
+    Model: PaginateModel<CategoryDocument>,
+    body: ListRequestConfig
+  ) {
     const populates = [
       { path: 'albums', select: ['_id'] },
       { path: 'embeddedAlbums', select: ['_id'], model: Embedded }
     ]
 
     const options: PaginateOptions = {
-      page: req.body.page,
-      limit: req.body.limit,
-      sort: req.body.sort,
+      page: body.page,
+      limit: body.limit,
+      sort: body.sort,
       populate: populates,
       lean: true,
       select: {

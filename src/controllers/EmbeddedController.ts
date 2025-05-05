@@ -16,7 +16,7 @@ export default class EmbeddedController {
 
   getPopulatedEmbeddedList = async (req: Request, res: Response) => {
     try {
-      const response = await this.embeddedService.getPopulatedEmbeddedList(req.body)
+      const response = await this.embeddedService.getPopulatedEmbeddedList(req)
       res.json(response)
     } catch (error) {
       console.error(error)

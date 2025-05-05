@@ -4,6 +4,7 @@ import EntityBasicView from './BasicEntityView'
 import TrackView from './TrackView'
 
 class AlbumItemView extends EntityBasicView {
+  path: string
   folderName: string
   inCollections: EntityBasicView[]
   artist: EntityBasicView
@@ -16,6 +17,7 @@ class AlbumItemView extends EntityBasicView {
     _id: Types.ObjectId,
     title: string,
     cloudURL: string | undefined,
+    path: string,
     folderName: string,
     artist: EntityBasicView,
     genre: EntityBasicView,
@@ -25,6 +27,7 @@ class AlbumItemView extends EntityBasicView {
     order?: number
   ) {
     super(_id, title, cloudURL)
+    this.path = path
     this.folderName = folderName
     this.artist = artist
     this.genre = genre
@@ -46,6 +49,7 @@ class AlbumPageView extends AlbumItemView {
       album._id,
       album.title,
       album.cloudURL,
+      album.path,
       album.folderName,
       album.artist,
       album.genre,
@@ -68,11 +72,12 @@ export default class AlbumViewFactory {
       album._id,
       album.title,
       album.cloudURL,
+      album.path,
       album.folderName,
       this.createBasicView(album.artist),
       this.createBasicView(album.genre),
       this.createBasicView(album.period),
-      album.inCollections.map(this.createBasicView).filter(Boolean),
+      album.inCollections?.map(this.createBasicView).filter(Boolean) || [],
       albumCover || album.cover,
       order
     )

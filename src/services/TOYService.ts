@@ -29,11 +29,7 @@ export default class TOYService {
   }
 
   async getCloudImages(filter: Required<CloudReqPayloadFilter>) {
-    const { id, type, path, cloudURL, offset, cluster } = filter
-
-    if (!cluster) {
-      throw new Error('Cluster property is required for TOY queries')
-    }
+    const { id, type, path, cloudURL, offset } = filter
 
     if (![path, type, cloudURL].some(Boolean)) {
       throw new Error('Incorrect request options: "path", "type" and "cloudURL" are required')
@@ -43,7 +39,6 @@ export default class TOYService {
       id,
       path,
       cloudURL,
-      cluster,
       offset
     })
 
@@ -55,7 +50,7 @@ export default class TOYService {
       ...response,
       items: await Promise.allSettled(
         FileFilter.fileFilter(response.items, 'imagesMimeTypes')
-          .map(async (item) => await this.toyRepository.getImageWithURL(item, cluster))
+          .map(async (item) => await this.toyRepository.getImageWithURL(item))
       ) as PromiseFulfilledResult<Required<CloudEntity>>[]
     }
 
@@ -70,12 +65,8 @@ export default class TOYService {
   }
 
   async getRandomAlbums(filter: CloudReqPayloadFilter) {
-    const { id, type, path, cloudURL, cluster, limit = 5, exclude, value } = filter
+    const { id, type, path, cloudURL, limit = 5, exclude, value } = filter
     
-    if (!cluster) {
-      throw new Error('"Cluster" property is required for TOY queries')
-    }
-
     if (![path, type, cloudURL].some(Boolean)) {
       throw new Error('Incorrect request options: "path", "type" and "cloudURL" are required')
     }
@@ -84,7 +75,6 @@ export default class TOYService {
       id,
       path,
       cloudURL,
-      cluster: encodeURIComponent(`${cluster}/${value}`),
       offset: 0
     })
 
@@ -106,25 +96,19 @@ export default class TOYService {
         id: folder.id,
         path: `${value}/${folder.title}/cover.webp`,
         type: 'image',
-        cloudURL,
-        cluster
+        cloudURL
       })
     })))
   }
 
   async getRandomTracks(filter: CloudReqPayloadFilter & { years: string[] }) {
-    const { id, path, cloudURL, cluster, limit = 5, years } = filter
-
-    if (!cluster) {
-      throw new Error('Cluster property is required for TOY queries')
-    }
+    const { id, path, cloudURL, limit = 5, years } = filter
 
     const response = years.map(async (year) => (
       await this.toyRepository.getFolderContent({
         id,
         path,
-        cloudURL,
-        cluster: `${cluster}/${year}`
+        cloudURL
       })
     ))
 

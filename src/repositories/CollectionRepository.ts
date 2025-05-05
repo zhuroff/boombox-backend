@@ -1,22 +1,23 @@
-import { Request } from 'express'
 import { PaginateOptions, Types } from 'mongoose'
 import { Collection, CollectionDocumentAlbum } from '../models/collection.model'
 import { CollectionRepository, GatheringUpdatePayload, NewCollectionPayload } from '../types/gathering.types'
+import { ListRequestConfig } from '../types/pagination.types'
 
 export default class CollectionRepositoryContract implements CollectionRepository {
   async getRawCollections() {
     return await Collection.find({}, { title: true })
   }
 
-  async getPaginatedCollections(req: Request) {
+  async getPaginatedCollections(body: ListRequestConfig) {
     const options: PaginateOptions = {
-      page: req.body.page,
-      limit: req.body.limit,
-      sort: req.body.sort,
+      page: body.page,
+      limit: body.limit,
+      sort: body.sort,
       lean: true,
       select: {
         title: true,
-        avatar: true
+        avatar: true,
+        albums: true
       }
     }
 
@@ -44,7 +45,18 @@ export default class CollectionRepositoryContract implements CollectionRepositor
 
   async createCollection(payload: NewCollectionPayload) {
     const newCollection = new Collection(payload)
-    return await newCollection.save()
+    await newCollection.save()
+
+    const collections = await this.getPaginatedCollections({
+      limit: 15,
+      sort: { title: 1 },
+      page: 1
+    })
+
+    return {
+      id: newCollection._id,
+      collections
+    }
   }
 
   async updateCollection({ entityID, gatheringID, isInList, order }: GatheringUpdatePayload) {
@@ -55,6 +67,12 @@ export default class CollectionRepositoryContract implements CollectionRepositor
     const options = { new: true }
 
     await Collection.findOneAndUpdate(query, update, options)
+
+    return await this.getPaginatedCollections({
+      limit: 15,
+      sort: { title: 1 },
+      page: 1
+    })
   }
 
   async updateCollectionOrder(_id: Types.ObjectId | string, albums: CollectionDocumentAlbum[]) {

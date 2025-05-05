@@ -71,7 +71,6 @@ export interface CloudFolderContent {
 export interface CLoudQueryPayload {
   id: string
   path?: string
-  cluster?: string
   fileType?: CloudFileTypes
 }
 
@@ -84,7 +83,6 @@ export interface CloudReqPayload {
 export interface CloudReqPayloadFilter extends CloudReqPayload {
   value: string
   exclude: string
-  cluster: string
   type?: CloudFileTypes
   limit?: number
   offset?: number

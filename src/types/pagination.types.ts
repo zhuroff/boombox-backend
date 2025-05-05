@@ -12,10 +12,10 @@ export interface RelatedAlbumsReqFilter extends RandomEntityReqFilter {
 }
 
 export interface ListRequestConfig {
-  limit: number,
-  sort: SortingValue,
-  page: number,
-  isRandom?: true
+  limit: number
+  sort: SortingValue
+  page: number
+  isRandom?: true | 1
   filter?: RandomEntityReqFilter | RelatedAlbumsReqFilter
 }
 
