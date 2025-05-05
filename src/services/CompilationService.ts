@@ -4,6 +4,7 @@ import { TrackDocument } from '../models/track.model'
 import { CompilationRepository, GatheringCreatePayload, GatheringReorder, GatheringUpdatePayload, NewCompilationPayload } from '../types/gathering.types'
 import { ListRequestConfig } from '../types/pagination.types'
 import { TrackRepository } from '../types/track.types'
+import Parser from '../utils/Parser'
 import TrackView from '../views/TrackView'
 import GatheringViewFactory from '../views/GatheringViewFactory'
 import PaginationViewFactory from '../views/PaginationViewFactory'
@@ -38,7 +39,7 @@ export default class CompilationService {
       inList: false
     })
 
-    return GatheringViewFactory.createGatheringItemView(newCompilation)
+    return GatheringViewFactory.createGatheringItemView(newCompilation, newCompilation.tracks)
   }
 
   async updateCompilation(payload: GatheringUpdatePayload) {
@@ -91,7 +92,8 @@ export default class CompilationService {
   }
 
   async getCompilations(req: Request) {
-    const compilations = await this.compilationRepository.getPaginatedCompilations(req)
+    const parsedQuery = Parser.parseNestedQuery<ListRequestConfig>(req)
+    const compilations = await this.compilationRepository.getPaginatedCompilations(parsedQuery)
 
     if (!compilations.docs?.every((col) => !!col)) {
       throw new Error('Incorrect request options')
@@ -100,7 +102,7 @@ export default class CompilationService {
     const { totalDocs, totalPages, page } = compilations
     const pagination = PaginationViewFactory.create({ totalDocs, totalPages, page })
     const docs = compilations.docs.map((compilation) => (
-      GatheringViewFactory.createGatheringItemView(compilation)
+      GatheringViewFactory.createGatheringItemView(compilation, compilation.tracks)
     ))
 
     return { docs, pagination }

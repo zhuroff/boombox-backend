@@ -1,11 +1,13 @@
 import { Request } from 'express'
 import { Types } from 'mongoose'
 import { AlbumDocument } from '../models/album.model'
-import { NewCollectionPayload, CollectionRepository, GatheringCreatePayload, GatheringReorder, GatheringUpdatePayload } from '../types/gathering.types'
+import { NewCollectionPayload, CollectionRepository, GatheringCreatePayload, GatheringReorder, GatheringUpdatePayload, GatheringItem } from '../types/gathering.types'
 import { AlbumRepository } from '../types/album.types'
+import { ListRequestConfig } from '../types/pagination.types'
 import AlbumViewFactory from '../views/AlbumViewFactory'
 import GatheringViewFactory from '../views/GatheringViewFactory'
 import PaginationViewFactory from '../views/PaginationViewFactory'
+import Parser from '../utils/Parser'
 
 export default class CollectionService {
   constructor(
@@ -14,9 +16,9 @@ export default class CollectionService {
   ) {}
 
   async createCollection({ title, entityID }: GatheringCreatePayload) {
-    const collections = await this.collectionRepository.getRawCollections()
+    const rawCollections = await this.collectionRepository.getRawCollections()
 
-    if (collections.some((col) => col.title === title)) {
+    if (rawCollections.some((col) => col.title === title)) {
       throw new Error('collections.exists')
     }
 
@@ -30,34 +32,50 @@ export default class CollectionService {
       ]
     }
 
-    const newCollection = await this.collectionRepository.createCollection(payload)
+    const {
+      id,
+      collections: { totalDocs, totalPages, page, docs }
+    } = await this.collectionRepository.createCollection(payload)
+
     this.albumRepository.updateCollectionsInAlbum({
-      listID: newCollection._id.toString(),
+      listID: id.toString(),
       itemID: entityID,
       inList: false
     })
 
-    return GatheringViewFactory.createGatheringItemView(newCollection)
+    const pagination = PaginationViewFactory.create({ totalDocs, totalPages, page })
+
+    return {
+      pagination,
+      docs: docs.reduce<GatheringItem[]>((acc, next) => {
+        if (!!next) {
+          acc.push(GatheringViewFactory.createGatheringItemView(next, next.albums))
+        }
+        return acc
+      }, [])
+    }
   }
 
-  async getCollections(req: Request, isTitlesOnly = false) {
-    const collections = await this.collectionRepository.getPaginatedCollections(req)
+  async getCollections(req: Request) {
+    const parsedQuery = Parser.parseNestedQuery<ListRequestConfig>(req)
+    const dbList = await this.collectionRepository.getPaginatedCollections(parsedQuery)
 
-    if (!collections.docs?.every((col) => !!col)) {
+    if (!dbList) {
       throw new Error('Incorrect request options')
     }
 
-    if (isTitlesOnly) {
-      return collections.docs.map(({ title }) => title)
-    }
-
-    const { totalDocs, totalPages, page } = collections
+    const { totalDocs, totalPages, page, docs } = dbList
     const pagination = PaginationViewFactory.create({ totalDocs, totalPages, page })
-    const docs = collections.docs.map((collection) => (
-      GatheringViewFactory.createGatheringItemView(collection)
-    ))
 
-    return { docs, pagination }
+    return {
+      pagination,
+      docs: docs.reduce<GatheringItem[]>((acc, next) => {
+        if (!!next) {
+          acc.push(GatheringViewFactory.createGatheringItemView(next, next.albums))
+        }
+        return acc
+      }, [])
+    }
   }
 
   async getCollection(id: string) {
@@ -82,7 +100,7 @@ export default class CollectionService {
   }
 
   async updateCollection({ entityID, gatheringID, isInList, order }: GatheringUpdatePayload) {
-    await this.collectionRepository.updateCollection({
+    const updatedCollections = await this.collectionRepository.updateCollection({
       entityID,
       gatheringID,
       isInList,
@@ -95,7 +113,18 @@ export default class CollectionService {
       inList: isInList
     })
 
-    return { message: isInList ? 'collections.removed' : 'collections.added' }
+    const { totalDocs, totalPages, page, docs } = updatedCollections
+    const pagination = PaginationViewFactory.create({ totalDocs, totalPages, page })
+
+    return {
+      pagination,
+      docs: docs.reduce<GatheringItem[]>((acc, next) => {
+        if (!!next) {
+          acc.push(GatheringViewFactory.createGatheringItemView(next, next.albums))
+        }
+        return acc
+      }, [])
+    }
   }
 
   async removeCollection(id: Types.ObjectId | string) {

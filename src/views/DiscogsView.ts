@@ -6,8 +6,6 @@ export default class DiscogsView {
   cover: string
   releaseFormat: string[]
   label: string[]
-  masterApiUrl: string
-  releaseApiUrl: string
   pageURL: string
   releaseTitle: string
   releaseYear: string
@@ -18,8 +16,6 @@ export default class DiscogsView {
     this.cover = item.thumb
     this.releaseFormat = item.format
     this.label = [...new Set(item.label)].splice(0, 2)
-    this.masterApiUrl = item.master_url
-    this.releaseApiUrl = item.resource_url
     this.pageURL = `https://www.discogs.com${item.uri}`
     this.releaseTitle = item.title
     this.releaseYear = item.year

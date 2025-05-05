@@ -1,4 +1,3 @@
-import { Request } from 'express'
 import { PaginateOptions, PipelineStage, Types } from 'mongoose'
 import { Compilation, CompilationDocument, CompilationDocumentTrack } from '../models/compilation.model'
 import { CompilationRepository, GatheringUpdatePayload, NewCompilationPayload } from '../types/gathering.types'
@@ -36,11 +35,11 @@ export default class CompilationRepositoryContract implements CompilationReposit
     await Compilation.updateOne({ _id }, { $set: { tracks } })
   }
 
-  async getPaginatedCompilations(req: Request) {
+  async getPaginatedCompilations(body: ListRequestConfig) {
     const options: PaginateOptions = {
-      page: req.body.page,
-      limit: req.body.limit,
-      sort: req.body.sort,
+      page: body.page,
+      limit: body.limit,
+      sort: body.sort,
       lean: true,
       select: {
         title: true,

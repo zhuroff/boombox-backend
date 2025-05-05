@@ -13,9 +13,9 @@ const embeddedService = new EmbeddedService(embeddedRepository, categoryReposito
 const embeddedController = new EmbeddedController(embeddedService)
 const router = Router()
 
+router.get('/', authChecker, embeddedController.getPopulatedEmbeddedList)
 router.get('/:id', authChecker, embeddedController.getPopulatedEmbedded)
 router.post('/create', authChecker, embeddedController.createEmbedded)
-router.post('/', authChecker, embeddedController.getPopulatedEmbeddedList)
 router.delete('/:id', authChecker, embeddedController.removeEmbedded)
 
 export default router
