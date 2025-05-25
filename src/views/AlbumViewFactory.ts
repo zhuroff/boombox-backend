@@ -1,7 +1,7 @@
 import { Types } from 'mongoose'
 import { AlbumDocument } from '../models/album.model'
 import EntityBasicView from './BasicEntityView'
-import TrackView from './TrackView'
+import TrackViewFactory from './TrackViewFactory'
 
 class AlbumItemView extends EntityBasicView {
   path: string
@@ -42,9 +42,9 @@ class AlbumItemView extends EntityBasicView {
 }
 
 class AlbumPageView extends AlbumItemView {
-  tracks: TrackView[]
+  tracks: ReturnType<typeof TrackViewFactory.create>[]
 
-  constructor(album: AlbumItemView, tracks: TrackView[]) {
+  constructor(album: AlbumItemView, tracks: ReturnType<typeof TrackViewFactory.create>[]) {
     super(
       album._id,
       album.title,
@@ -85,7 +85,7 @@ export default class AlbumViewFactory {
 
   static createAlbumPageView(album: AlbumDocument, albumCover?: string) {
     const albumItem = this.createAlbumItemView(album, albumCover)
-    const tracks = album.tracks.map((track) => new TrackView(track))
+    const tracks = album.tracks.map((track) => TrackViewFactory.create(track))
     return new AlbumPageView(albumItem, tracks)
   }
 }

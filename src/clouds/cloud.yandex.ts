@@ -32,7 +32,7 @@ export default class YandexCloudApi implements Cloud {
     const query = this.#qBuilder(path)
 
     return await this.#client
-      .get<YandexCloudResponse<YandexCloudEntity>>(query, params)
+      .get<YandexCloudResponse<YandexCloudEntity>>(`${query}&limit=100`, params)
       .then(({ config: { url }, data }) => {
         if (!url) {
           throw new Error('"url" property is not found in cloud response')

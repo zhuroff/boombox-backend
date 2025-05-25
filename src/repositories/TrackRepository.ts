@@ -70,7 +70,6 @@ export default class TrackRepositoryContract implements TrackRepository {
     const cloudAPI = getCloudApi(audioPayload.cloudURL)
 
     return await cloudAPI.getFile({
-      id: audioPayload.id,
       path: audioPayload.path,
       fileType: 'audio'
     })
@@ -80,7 +79,6 @@ export default class TrackRepositoryContract implements TrackRepository {
     return await Promise.all(docs.map(async (track) => {
       const cloudAPI = getCloudApi(track.cloudURL)
       const cover = await cloudAPI.getFile({
-        id: track.cloudId,
         path: `${track.inAlbum.path}/cover.webp`,
         fileType: 'image'
       })
@@ -159,7 +157,6 @@ export default class TrackRepositoryContract implements TrackRepository {
       return {
         ...track,
         coverURL: await cloudAPI.getFile({
-          id: cloudId,
           path: `${folderName}/cover.webp`,
           fileType: 'image'
         })

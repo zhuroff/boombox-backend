@@ -1,8 +1,14 @@
+import { Request } from 'express'
+import { getCloudApi } from '..'
 import { TOYRepository } from '../types/toy.types'
-import { CloudEntity, CloudReqPayloadFilter } from '../types/cloud.types'
-import FileFilter from '../utils/FileFilter'
+import { ListRequestConfig } from '../types/pagination.types'
+import TrackViewFactory from '../views/TrackViewFactory'
+// import { CloudEntity, CloudReqPayloadFilter } from '../types/cloud.types'
+// import FileFilter from '../utils/FileFilter'
+import Parser from '../utils/Parser'
 
 export default class TOYService {
+  #toyRoot = 'MelodyMap/TOY'
   #shuffleArray<T>(array: T[]) {
     let length = array.length
     let index: number
@@ -20,120 +26,140 @@ export default class TOYService {
 
   constructor(private toyRepository: TOYRepository) {}
 
-  async getCloudFile(filter: CloudReqPayloadFilter) {
-    return await this.toyRepository.getCloudFile(filter)
+  async getTOYList(req: Request) {
+    const parsedQuery = Parser.parseNestedQuery<ListRequestConfig>(req)
+    const { path, isRandom } = req.query
+
+    if (!isRandom && path) {
+      const folders = await this.toyRepository.getTOYList(String(path))
+      return ({
+        docs: folders.filter((folder) => !folder.title.startsWith('-'))
+      })
+    }
+
+    if (isRandom) {
+      return await this.getTOYRandomAlbums(parsedQuery)
+    }
+
+    throw new Error('Incorrect request options: "path" or "isRandom" are required')
   }
 
-  async getCloudContent(filter: CloudReqPayloadFilter) {
-    return await this.toyRepository.getFolderContent(filter)
+  async getTOYAlbum(req: Request) {
+    const { genre, year } = req.params
+
+    if (genre === 'random') {
+      return await this.getTOYRandomAlbum()
+    }
+
+    const path = encodeURIComponent(`${this.#toyRoot}/${genre}/${year}`)
+    const { result, metadataContent, coverURL } = await this.toyRepository.getTOYAlbum(path)
+    
+    return {
+      coverURL,
+      metadataContent,
+      title: `TOY: ${genre}, ${year}`,
+      artist: { title: 'Various Artists' },
+      genre: { title: genre },
+      period: { title: year },
+      tracks: result.items
+        .filter((item) => item.mimeType?.startsWith('audio'))
+        .map((item) => TrackViewFactory.create(item))
+    }
   }
 
-  async getCloudImages(filter: Required<CloudReqPayloadFilter>) {
-    const { id, type, path, cloudURL, offset } = filter
+  async getTOYRandomAlbum() {
+    const genres = await this.toyRepository.getTOYList(this.#toyRoot)
+    const years = await Promise.all(genres.map(async (genre) => {
+      const years = await this.toyRepository.getTOYList(`${this.#toyRoot}/${encodeURIComponent(genre.title)}`)
+      return years.reduce<Record<string, string>[]>((acc, next) => {
+        if (!next.title.startsWith('-')) {
+          acc.push({
+            genre: genre.title,
+            year: next.title
+          })
+        }
+        return acc
+      }, [])
+    }))
 
-    if (![path, type, cloudURL].some(Boolean)) {
-      throw new Error('Incorrect request options: "path", "type" and "cloudURL" are required')
+    const results = years.flat()
+    const randomIndex = Math.floor(Math.random() * results.length)
+    const album = results[randomIndex]
+
+    if (!album) {
+      throw new Error('No album found')
     }
 
-    const response = await this.toyRepository.getFolderContent({
-      id,
-      path,
-      cloudURL,
-      offset
-    })
-
-    if (!response) {
-      throw new Error('Files not found')
-    }
-
-    const finalContent = {
-      ...response,
-      items: await Promise.allSettled(
-        FileFilter.fileFilter(response.items, 'imagesMimeTypes')
-          .map(async (item) => await this.toyRepository.getImageWithURL(item))
-      ) as PromiseFulfilledResult<Required<CloudEntity>>[]
-    }
+    const path = encodeURIComponent(`${this.#toyRoot}/${album['genre']}/${album['year']}`)
+    const { result, coverURL, metadataContent } = await this.toyRepository.getTOYAlbum(path)
 
     return {
-      ...finalContent,
-      items: finalContent.items.map(({ value }) => value)
-    }
-  }
-
-  async getTrackDuration(filter: CloudReqPayloadFilter) {
-    return await this.toyRepository.getCloudFile(filter)
-  }
-
-  async getRandomAlbums(filter: CloudReqPayloadFilter) {
-    const { id, type, path, cloudURL, limit = 5, exclude, value } = filter
-    
-    if (![path, type, cloudURL].some(Boolean)) {
-      throw new Error('Incorrect request options: "path", "type" and "cloudURL" are required')
-    }
-
-    const response = await this.toyRepository.getFolderContent({
-      id,
-      path,
-      cloudURL,
-      offset: 0
-    })
-
-    const filteredItems = this.#shuffleArray(response.items.filter(({ title, mimeType }) => (
-      !mimeType && !title.startsWith('-') && title !== exclude
-    )))
-
-    while (filteredItems.length > Math.abs(limit)) {
-      const randomIndex = Math.floor(Math.random() * filteredItems.length)
-      filteredItems.splice(randomIndex, 1)
-    }
-
-    return await Promise.all(filteredItems.map(async (folder) => ({
-      title: `TOY: ${value}`,
+      coverURL,
+      metadataContent,
+      title: `TOY: ${album['genre']}, ${album['year']}`,
       artist: { title: 'Various Artists' },
-      genre: { title: value },
-      period: { title: folder.title },
-      coverURL: await this.toyRepository.getCloudFile({
-        id: folder.id,
-        path: `${value}/${folder.title}/cover.webp`,
-        type: 'image',
-        cloudURL
+      genre: { title: album['genre'] },
+      period: { title: album['year'] },
+      tracks: result.items
+        .filter((item) => item.mimeType?.startsWith('audio'))
+        .map((item) => TrackViewFactory.create(item))
+    }
+  }
+
+  async getTOYRandomAlbums(parsedQuery: ListRequestConfig) {
+    const cloudApi = getCloudApi(String(process.env['TOY_CLOUD_URL']))
+    const results = await this.toyRepository.getTOYListRandom(parsedQuery)
+    const shuffledResults = this.#shuffleArray(results)
+
+    while (shuffledResults.length > Math.abs(parsedQuery.limit || 5)) {
+      const randomIndex = Math.floor(Math.random() * shuffledResults.length)
+      shuffledResults.splice(randomIndex, 1)
+    }
+
+    const docs = await Promise.all(shuffledResults.map(async (album) => ({
+      ...album,
+      coverURL: await cloudApi.getFile({
+        path: `${album.path}/cover.webp`,
+        fileType: 'image'
       })
     })))
+
+    return { docs }
   }
 
-  async getRandomTracks(filter: CloudReqPayloadFilter & { years: string[] }) {
-    const { id, path, cloudURL, limit = 5, years } = filter
+  // async getRandomTracks(filter: CloudReqPayloadFilter & { years: string[] }) {
+  //   const { id, path, cloudURL, limit = 5, years } = filter
 
-    const response = years.map(async (year) => (
-      await this.toyRepository.getFolderContent({
-        id,
-        path,
-        cloudURL
-      })
-    ))
+  //   const response = years.map(async (year) => (
+  //     await this.toyRepository.getFolderContent({
+  //       id,
+  //       path,
+  //       cloudURL
+  //     })
+  //   ))
 
-    const content = await Promise.all(response)
+  //   const content = await Promise.all(response)
 
-    const allTracks =  content.reduce<CloudEntity[]>((acc, next) => {
-      acc.push(...next.items.filter((item) => (
-        item.mimeType && FileFilter.typesMap.audioMimeTypes.has(item.mimeType)
-      )))
+  //   const allTracks =  content.reduce<CloudEntity[]>((acc, next) => {
+  //     acc.push(...next.items.filter((item) => (
+  //       item.mimeType && FileFilter.typesMap.audioMimeTypes.has(item.mimeType)
+  //     )))
 
-      return acc
-    }, [])
+  //     return acc
+  //   }, [])
 
-    if (!limit || allTracks.length <= limit) {
-      return this.#shuffleArray(allTracks)
-    }
+  //   if (!limit || allTracks.length <= limit) {
+  //     return this.#shuffleArray(allTracks)
+  //   }
 
-    let overLimit = allTracks.length - limit
+  //   let overLimit = allTracks.length - limit
 
-    while (overLimit) {
-      const randomIndex = Math.floor(Math.random() * allTracks.length)
-      allTracks.splice(randomIndex, 1)
-      overLimit--
-    }
+  //   while (overLimit) {
+  //     const randomIndex = Math.floor(Math.random() * allTracks.length)
+  //     allTracks.splice(randomIndex, 1)
+  //     overLimit--
+  //   }
 
-    return this.#shuffleArray(allTracks)
-  }
+  //   return this.#shuffleArray(allTracks)
+  // }
 }

@@ -5,7 +5,7 @@ export default class SyncRepositoryContract implements SyncRepository {
   async fetchCloudFolders() {
     return await Promise.all([...cloudsMap].map(async ([_, cloudAPI]) => (
       await cloudAPI.getFolders(
-        { id: '', path: '' },
+        { path: '' },
         { params: { limit: 5000 } }
       )
     )))

@@ -7,6 +7,7 @@ class CloudEntityView {
   created: Date = new Date()
   modified: Date = new Date()
   mimeType?: string
+  type?: string
   path?: string
 
   constructor(
@@ -16,6 +17,7 @@ class CloudEntityView {
     created: string,
     modified: string,
     mimeType: string | undefined,
+    type: string | undefined,
     path?: string
   ) {
     this.id = id
@@ -26,6 +28,10 @@ class CloudEntityView {
 
     if (mimeType) {
       this.mimeType = mimeType
+    }
+
+    if (type) {
+      this.type = type
     }
 
     if (path) {
@@ -63,6 +69,7 @@ export default class CloudEntityViewFactory {
       entity.created,
       entity.modified,
       entity.mime_type,
+      entity.type,
       entity.path
     )
   }

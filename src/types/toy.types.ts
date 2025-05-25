@@ -1,7 +1,16 @@
-import { CloudEntity, CloudFolderContent, CloudReqPayloadFilter } from './cloud.types'
+import { AlbumDocument } from '../models/album.model'
+import { CloudEntity, CloudFolderContent } from './cloud.types'
+import { ListRequestConfig } from './pagination.types'
+
+export type DeepPartial<T> = {
+  [P in keyof T]?: 
+    T[P] extends (infer U)[] ? DeepPartial<U>[] :
+    T[P] extends object ? DeepPartial<T[P]> :
+    T[P]
+}
 
 export interface TOYRepository {
-  getFolderContent(filter: Omit<CloudReqPayloadFilter, 'value' | 'exclude'>): Promise<CloudFolderContent>
-  getCloudFile(filter: Omit<CloudReqPayloadFilter, 'value' | 'exclude'>): Promise<string | undefined>
-  getImageWithURL(item: Required<CloudEntity>): Promise<CloudEntity>
+  getTOYList(path: string): Promise<CloudEntity[]>
+  getTOYAlbum(path: string): Promise<{ result: CloudFolderContent, coverURL?: string, metadataContent?: Record<string, string>[] | null }>
+  getTOYListRandom(queryConfig: ListRequestConfig): Promise<DeepPartial<AlbumDocument>[]>
 }

@@ -66,7 +66,6 @@ export default class AlbumService {
   async createAlbumShape(album: CloudEntity): Promise<AlbumShape> {
     const cloudAPI = getCloudApi(album.cloudURL)
     const albumContent = await cloudAPI.getFolderContent({
-      id: album.id,
       path: album.path,
       fileType: 'audio'
     })
@@ -189,7 +188,6 @@ export default class AlbumService {
 
     const cloudAPI = getCloudApi(album.cloudURL)
     const cover = withCover ? await cloudAPI.getFile({
-      id: album.cloudId,
       path: `${album.path}/cover.webp`,
       fileType: 'image'
     }) : undefined

@@ -1,5 +1,5 @@
 import { PaginateOptions, PopulateOptions, Types } from 'mongoose'
-import { Embedded } from '../models/embedded.model'
+import { Embedded, EmbeddedDocument } from '../models/embedded.model'
 import { EmbeddedPayload, EmbeddedRepository } from '../types/embedded.types'
 import { ListRequestConfig } from '../types/pagination.types'
 
@@ -10,7 +10,11 @@ export default class EmbeddedRepositoryContract implements EmbeddedRepository {
   }
 
   async getPopulatedEmbedded(id: string | Types.ObjectId) {
-    return await Embedded.findById(id)
+    return await(
+      id === 'random'
+        ? Embedded.findOne<EmbeddedDocument>().skip(Math.floor(Math.random() * await Embedded.countDocuments()))
+        : Embedded.findById(id)
+    )
       .populate({ path: 'artist', select: ['title'] })
       .populate({ path: 'genre', select: ['title'] })
       .populate({ path: 'period', select: ['title'] })

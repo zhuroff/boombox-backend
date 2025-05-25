@@ -69,7 +69,6 @@ export interface CloudFolderContent {
 }
 
 export interface CLoudQueryPayload {
-  id: string
   path?: string
   fileType?: CloudFileTypes
 }

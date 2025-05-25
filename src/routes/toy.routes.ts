@@ -10,11 +10,8 @@ const toyController = new TOYController(toyService)
 
 const router = Router()
 
-router.post('/images', authChecker, toyController.getCloudImages)
-router.post('/image', authChecker, toyController.getCloudImage)
-router.post('/track/duration', authChecker, toyController.getTrackDuration)
-router.post('/tracks/random', authChecker, toyController.getRandomTracks)
-router.post('/albums/random', authChecker, toyController.getRandomAlbums)
-router.post('/content', authChecker, toyController.getFolderContent)
+router.get('/', authChecker, toyController.getTOYList)
+router.get('/:genre', authChecker, toyController.getTOYList)
+router.get('/:genre/:year', authChecker, toyController.getTOYAlbum)
 
 export default router

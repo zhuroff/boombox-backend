@@ -2,7 +2,7 @@ import { Types } from 'mongoose'
 import { CollectionDocument, CollectionDocumentAlbum } from '../models/collection.model'
 import { CompilationDocument, CompilationDocumentTrack } from '../models/compilation.model'
 import { AlbumItem } from '../types/album.types'
-import TrackView from './TrackView'
+import TrackViewFactory from './TrackViewFactory'
 
 class GatheringItemView {
   _id: Types.ObjectId
@@ -54,11 +54,11 @@ class CollectionPageView extends GatheringItemView {
 }
 
 class CompilationPageView extends GatheringItemView {
-  tracks: TrackView[]
+  tracks: ReturnType<typeof TrackViewFactory.create>[]
 
   constructor(
     compilation: CompilationDocument,
-    tracks: TrackView[]
+    tracks: ReturnType<typeof TrackViewFactory.create>[]
   ) {
     super(
       compilation._id,
@@ -94,7 +94,7 @@ export default class GatheringViewFactory {
     return new CollectionPageView(collection, albums)
   }
 
-  static createCompilationPageView(compilation: CompilationDocument, tracks: TrackView[]) {
+  static createCompilationPageView(compilation: CompilationDocument, tracks: ReturnType<typeof TrackViewFactory.create>[]) {
     return new CompilationPageView(compilation, tracks)
   }
 }

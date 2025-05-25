@@ -2,6 +2,7 @@ export interface DiscogsPayload {
   artist: string
   album: string
   page: number
+  isMasterOnly?: boolean
 }
 
 export interface DiscorsResponseItem {
@@ -34,7 +35,7 @@ export interface DiscogsResponsePagination {
 }
 
 export interface DiscogsResponse {
-  pagination: DiscogsResponsePagination
+  pagination?: DiscogsResponsePagination
   results: DiscorsResponseItem[]
 }
 

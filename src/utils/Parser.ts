@@ -74,4 +74,21 @@ export default class Parser {
   
     return result as T
   }
+
+  static parseTOYMetadata(albumStrings: string[]): Record<string, string>[] {
+    return albumStrings.map((str) => {      
+      const withoutTrackNumber = str.replace(/^\d+\.\s*/, '')      
+      const withoutDateAndLabel = withoutTrackNumber.replace(/\s+\d{2}\.\d{2},.*$/, '')      
+      const parts = withoutDateAndLabel.split(/[–-]/).map(s => s.trim())      
+      const albumArtist = String(parts[0])
+      const rest = parts[1] || ''      
+      const lastParenthesesMatch = rest.match(/\(([^)]+)\)[^)]*$/)      
+      const albumTitle = lastParenthesesMatch?.[1]?.trim() || rest.trim()
+      
+      return {
+        albumArtist,
+        albumTitle
+      }
+    })
+  }
 }

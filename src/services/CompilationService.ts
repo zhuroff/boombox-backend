@@ -5,7 +5,7 @@ import { CompilationRepository, GatheringCreatePayload, GatheringReorder, Gather
 import { ListRequestConfig } from '../types/pagination.types'
 import { TrackRepository } from '../types/track.types'
 import Parser from '../utils/Parser'
-import TrackView from '../views/TrackView'
+import TrackViewFactory from '../views/TrackViewFactory'
 import GatheringViewFactory from '../views/GatheringViewFactory'
 import PaginationViewFactory from '../views/PaginationViewFactory'
 
@@ -119,7 +119,7 @@ export default class CompilationService {
       compilation,
       compilation.tracks.map(({ track, order }) => {
         const trackDoc = track as TrackDocument
-        return new TrackView(trackDoc, order)
+        return TrackViewFactory.create(trackDoc, order)
       })
     )
   }

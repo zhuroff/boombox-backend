@@ -204,7 +204,6 @@ export default class AlbumRepositoryContract implements AlbumRepository {
   async fetchAlbumCover(album: AlbumDocument) {
     const cloudAPI = getCloudApi(album.cloudURL)
     return await cloudAPI.getFile({
-      id: album.cloudId,
       path: `${album.path}/cover.webp`,
       fileType: 'image'
     })

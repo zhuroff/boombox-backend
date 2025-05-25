@@ -1,13 +1,10 @@
 type SortingValue = Record<string, 1 | -1>
 
-export interface RandomEntityReqFilter {
+export interface RelatedAlbumsReqFilter {
   from: string
   key: string
   name: string
   excluded?: Record<string, string>
-}
-
-export interface RelatedAlbumsReqFilter extends RandomEntityReqFilter {
   value: string
 }
 
@@ -16,7 +13,8 @@ export interface ListRequestConfig {
   sort: SortingValue
   page: number
   isRandom?: true | 1
-  filter?: RandomEntityReqFilter | RelatedAlbumsReqFilter
+  filter?: RelatedAlbumsReqFilter
+  path?: string
 }
 
 export interface Pagination {

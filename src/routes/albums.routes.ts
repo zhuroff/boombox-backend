@@ -29,6 +29,5 @@ const router = Router()
 
 router.get('/', authChecker, albumController.getAlbums)
 router.get('/:id', authChecker, albumController.getAlbum)
-// router.get('/random', authChecker, albumController.getAlbumsRandom)
 
 export default router

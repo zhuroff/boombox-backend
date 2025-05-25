@@ -1,46 +1,119 @@
-import { TOYRepository } from '../types/toy.types'
-import { CloudEntity, CloudReqPayloadFilter } from '../types/cloud.types'
+import { DeepPartial, TOYRepository } from '../types/toy.types'
+import { ListRequestConfig, RelatedAlbumsReqFilter } from '../types/pagination.types'
 import { getCloudApi } from '..'
+import { CloudApi } from '../types/cloud.types'
+import { AlbumDocument } from '../models/album.model'
+import CloudEntityViewFactory from '../views/CloudEntityViewFactory'
+import Parser from '../utils/Parser'
 
 export default class TOYRepositoryContracts implements TOYRepository {
-  private satitizePath(path: string) {
-    return path
-      .split('/')
-      .reduce((acc, next) => acc + next + '/', '')
-      .slice(0, -1)
+  async #randomAlbumsQueryAdapter(filter: RelatedAlbumsReqFilter, rootPath: string): Promise<DeepPartial<AlbumDocument>[]> {
+    const { from } = filter
+    const cloudApi = getCloudApi(String(process.env['TOY_CLOUD_URL']))
+
+    switch(from) {
+      case 'genres':
+        return await this.#getRandomAlbumsByGenre(filter, cloudApi, rootPath)
+      case 'years':
+        return await this.#getRandomAlbumsByYear(filter, cloudApi, rootPath)
+      default:
+        throw new Error('Invalid filter')
+    }
   }
 
-  async getFolderContent(filter: Omit<CloudReqPayloadFilter, 'value' | 'exclude'>) {
-    const { id, path, cloudURL, limit, offset } = filter
-
-    const cloudApi = getCloudApi(cloudURL)
-
-    return await cloudApi.getFolderContent({
-      id,
-      fileType: 'file',
-      path: `${this.satitizePath(path)}&limit=${limit || 500}&offset=${offset || 0}`
+  async #getRandomAlbumsByGenre(filter: RelatedAlbumsReqFilter, cloudApi: CloudApi, rootPath: string) {
+    const { excluded, value } = filter
+    const content = await cloudApi.getFolders({
+      path: `${rootPath}/${encodeURIComponent(value)}`,
     })
+
+    return (
+      content.filter((album) => (
+        !album.title.startsWith('-') && album.title !== String(excluded?.['year'])
+      ))
+      .map((album) => ({
+        title: `TOY: ${album.title}`,
+        artist: { title: 'Various Artists' },
+        genre: { title: value },
+        period: { title: album.title },
+        path: `${rootPath}/${encodeURIComponent(value)}/${album.path}`
+      }))
+    )
   }
 
-  async getCloudFile(filter: Omit<CloudReqPayloadFilter, 'value' | 'exclude'>) {
-    const { id, type, path, cloudURL } = filter
-    const cloudApi = getCloudApi(cloudURL)
+  async #getRandomAlbumsByYear(filter: RelatedAlbumsReqFilter, cloudApi: CloudApi, rootPath: string) {
+    const { excluded, value } = filter
+    const toyRoot = await this.getTOYList(rootPath)
+    const toyRootFolders = toyRoot.filter((item) => (
+      item.type === 'dir' && item.title !== excluded?.['genre']
+    ))
 
-    return await cloudApi.getFile({
-      id,
-      fileType: type,
-      path: this.satitizePath(path)
-    })
+    const albums = await Promise.all(toyRootFolders.map(async (item) => {
+      const folders = await cloudApi.getFolders({
+        path: `${rootPath}/${encodeURIComponent(String(item.path))}`,
+      })
+
+      return folders.map((folder) => ({
+        ...folder,
+        path: `${rootPath}/${encodeURIComponent(String(item.path))}/${folder.path}`,
+        genre: item.title
+      }))
+    }))
+
+    return (
+      albums.flat()
+      .filter((album) => (
+        album.type === 'dir' && album.title === String(value)
+      ))
+      .map((album) => ({
+        title: `TOY: ${album.title}`,
+        artist: { title: 'Various Artists' },
+        genre: { title: album.genre },
+        period: { title: album.title },
+        path: album.path
+      }))
+    )
   }
 
-  async getImageWithURL(item: Required<CloudEntity>) {
-    const fetchedFile = await this.getCloudFile({
-      id: item.id,
-      path: item.path,
-      type: 'image',
-      cloudURL: item.cloudURL
+  async #fetchTOYMetadata(path: string, metadataFile?: ReturnType<typeof CloudEntityViewFactory.create>) {
+    if (!metadataFile) return null
+
+    const cloudApi = getCloudApi(String(process.env['TOY_CLOUD_URL']))
+    const metadataURL = await cloudApi.getFile({
+      path: `${path}/${metadataFile.path}`
+    })
+    
+    const response = await fetch(String(metadataURL))
+    const responseText = await response.text()
+    return Parser.parseTOYMetadata(responseText.split('\r\n').slice(1))
+  }
+
+  async getTOYList(path: string) {
+    const cloudApi = getCloudApi(String(process.env['TOY_CLOUD_URL']))
+    const result = await cloudApi.getFolders({ path })
+    return result.filter((item) => !item.mimeType)
+  }
+
+  async getTOYAlbum(path: string) {
+    const cloudApi = getCloudApi(String(process.env['TOY_CLOUD_URL']))
+    const result = await cloudApi.getFolderContent({ path })
+    const coverURL = await cloudApi.getFile({
+      path: `${path}/cover.webp`, 
+      fileType: 'image'
     })
 
-    return { ...item, url: fetchedFile }
+    const metadataFile = result.items.find((item) => item.mimeType === 'text/plain')
+    const metadataContent = await this.#fetchTOYMetadata(path, metadataFile)
+
+    return { result, coverURL, metadataContent }
+  }
+
+  async getTOYListRandom(queryConfig: ListRequestConfig) {
+    if (!queryConfig || !queryConfig.filter || !queryConfig.path) {
+      throw new Error('Query config is invalid')
+    }
+
+    const { path: rootPath, filter } = queryConfig
+    return await this.#randomAlbumsQueryAdapter(filter, rootPath)
   }
 }
