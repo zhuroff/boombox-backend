@@ -1,12 +1,15 @@
 import { Router } from 'express'
 import { authChecker } from '../middleware/auth.checker'
-import controller from '../controllers/backup.controller'
+import BackupController from '../controllers/BackupController'
+import BackupService from '../services/BackupService'
 
 const router = Router()
+const backupService = new BackupService()
+const backupController = new BackupController(backupService)
 
-router.get('/', authChecker, controller.get)
-router.post('/save', authChecker, controller.save)
-router.post('/restore/:date', authChecker, controller.recover)
-router.delete('/:date', authChecker, controller.remove)
+router.get('/', authChecker, backupController.get)
+router.post('/save', authChecker, backupController.save)
+router.post('/restore/:date', authChecker, backupController.recover)
+router.delete('/:date', authChecker, backupController.remove)
 
 export default router
