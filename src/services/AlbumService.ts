@@ -19,6 +19,8 @@ import AlbumViewFactory from '../views/AlbumViewFactory'
 import PaginationViewFactory from '../views/PaginationViewFactory'
 
 export default class AlbumService {
+  #root = '/MelodyMap/Collection'
+
   constructor(
     private albumRepository: AlbumRepository,
     private categoryService: CategoryService,
@@ -52,21 +54,26 @@ export default class AlbumService {
     invalidFolders.push(...invalidShapes)
 
     return {
-      added: savedAlbums.length,
-      invalid: invalidFolders.length > 0 ? invalidFolders : 0,
-      updated: 0,
-      deleted: 0
+      added: savedAlbums,
+      invalid: invalidFolders.length > 0 ? invalidFolders : [],
+      updated: [],
+      deleted: []
     }
   }
 
-  async updateAlbums(albums: AlbumDocument[]) {
-    return await this.albumRepository.updateAlbums(albums)
+  async updateAlbumsClouds(albums: AlbumDocument[]) {
+    return await this.albumRepository.updateAlbumsClouds(albums)
   }
 
   async createAlbumShape(album: CloudEntity): Promise<AlbumShape> {
+    if (!album.path) {
+      throw new Error('Album path is not defined')
+    }
+
     const cloudAPI = getCloudApi(album.cloudURL)
+    const albumPath = `${this.#root}/${encodeURIComponent(album.path)}`
     const albumContent = await cloudAPI.getFolderContent({
-      path: album.path,
+      path: albumPath,
       fileType: 'audio'
     })
     
@@ -74,6 +81,7 @@ export default class AlbumService {
       folderName: album.title,
       cloudURL: album.cloudURL,
       cloudId: album.id,
+      path: albumPath,
       title: Parser.parseAlbumTitle(album.title),
       artist: Parser.parseArtistName(album.title),
       genre: Parser.parseAlbumGenre(album.title),
@@ -126,12 +134,19 @@ export default class AlbumService {
         })
       )))
 
-      return await this.albumRepository.saveNewAlbum(newAlbum, {
+      await this.albumRepository.saveNewAlbum(newAlbum, {
         artist: newArtist._id,
         genre: newGenre._id,
         period: newPeriod._id,
         tracks: albumTracks.map(({ _id }) => _id)
       })
+
+      return {
+        ...newAlbum.toObject(),
+        artist: newArtist,
+        genre: newGenre,
+        period: newPeriod
+      }
     }
 
     throw new Error('Unable to create album')
@@ -176,7 +191,8 @@ export default class AlbumService {
       await this.compilationService.cleanCompilation(compilations)
     }
 
-    return await this.albumRepository.deleteAlbum(_id)
+    await this.albumRepository.deleteAlbum(_id)
+    return album
   }
 
   async getAlbum(_id: Types.ObjectId | string, withCover = true) {
@@ -247,5 +263,9 @@ export default class AlbumService {
         AlbumViewFactory.createAlbumItemView(album, cover)
       ))
     }
+  }
+
+  async getAlbumContent(req: Request) {
+    return await this.albumRepository.getAlbumContent(req)
   }
 }

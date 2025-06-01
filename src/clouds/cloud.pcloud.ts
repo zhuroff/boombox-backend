@@ -4,7 +4,6 @@ import {
   PCloudResponseError,
   PCloudFileResponse,
   PCloudResponse,
-  CloudFileTypes,
   CloudFolderContent,
   CLoudQueryPayload
 } from '../types/cloud.types'
@@ -18,7 +17,7 @@ export default class PCloudApi implements Cloud {
   #login = process.env['PCLOUD_LOGIN']
   #password = process.env['PCLOUD_PASSWORD']
   #digest = ''
-  #fileTypesMap = new Map<CloudFileTypes, string>([
+  #fileTypesMap = new Map<string, string>([
     ['audio', 'getaudiolink'],
     ['video', 'getvideolink'],
     ['image', 'getfilelink'],
@@ -144,7 +143,8 @@ export default class PCloudApi implements Cloud {
         return this.#getFileLink(data)
       })
       .catch((error: AxiosError) => {
-        throw error
+        console.error(error)
+        return undefined
       })
   }
 }

@@ -32,7 +32,7 @@ export default {
   async remove(req: Request, res: Response) {
     try {
       const response = await backupServices.remove(String(req.params['date']))
-      res.status(201).json(response)
+      res.status(204).json(response)
     } catch (error) {
       console.error(error)
       res.status(500).json(error)

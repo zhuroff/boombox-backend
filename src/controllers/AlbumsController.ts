@@ -23,4 +23,14 @@ export default class AlbumsController {
       res.status(500).json(error)
     }
   }
+
+  getAlbumContent = async (req: Request, res: Response) => {
+    try {
+      const result = await this.albumService.getAlbumContent(req)
+      res.json(result)
+    } catch (error) {
+      console.error(error)
+      res.json([])
+    }
+  }
 }

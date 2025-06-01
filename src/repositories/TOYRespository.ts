@@ -1,3 +1,4 @@
+import { Request } from 'express'
 import { DeepPartial, TOYRepository } from '../types/toy.types'
 import { ListRequestConfig, RelatedAlbumsReqFilter } from '../types/pagination.types'
 import { getCloudApi } from '..'
@@ -115,5 +116,20 @@ export default class TOYRepositoryContracts implements TOYRepository {
 
     const { path: rootPath, filter } = queryConfig
     return await this.#randomAlbumsQueryAdapter(filter, rootPath)
+  }
+
+  async getTOYContent(root: string, req: Request) {
+    const { genre, year, folder } = req.params
+    const { limit, offset, fileType } = req.query
+    const path = encodeURIComponent(`/${root}/${genre}/${year}/${folder}`)
+    const query = `limit=${limit}&offset=${offset}`
+    const cloudApi = getCloudApi(String(process.env['TOY_CLOUD_URL']))
+    const result = await cloudApi.getFolderContent({ path, query })
+    const items = result.items.filter((item) => !!item.mimeType?.includes(String(fileType)))
+    return await Promise.all(items.map(async (item) => {
+      return await cloudApi.getFile({
+        path: `${path}/${item.title}`
+      })
+    }))
   }
 }

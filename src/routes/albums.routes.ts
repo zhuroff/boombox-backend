@@ -29,5 +29,6 @@ const router = Router()
 
 router.get('/', authChecker, albumController.getAlbums)
 router.get('/:id', authChecker, albumController.getAlbum)
+router.get('/:id/:folder', authChecker, albumController.getAlbumContent)
 
 export default router

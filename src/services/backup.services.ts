@@ -66,7 +66,9 @@ export default {
           path.join(rootDir, './backups', folderName),
           { recursive: true },
           (error) => {
-            error ? reject(error) : resolve({ message: 'Backup was successfully deleted' })
+            error
+              ? reject(error)
+              : resolve({ message: 'Backup was successfully deleted' })
           }
         )
       })

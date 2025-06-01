@@ -26,6 +26,15 @@ export default class TOYController {
     }
   }
 
+  getTOYContent = async (req: Request, res: Response) => {
+    try {
+      const result = await this.toyService.getTOYContent(req)
+      res.json(result)
+    } catch (error) {
+      res.status(500).json(error)
+    }
+  }
+
   // getCloudImages = async (req: Request, res: Response) => {
   //   try {
   //     const result = await this.toyService.getCloudImages(req.body)

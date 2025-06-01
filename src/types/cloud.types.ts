@@ -1,10 +1,8 @@
-import { AxiosRequestConfig } from 'axios'
 import PCloudApi from '../clouds/cloud.pcloud'
 import YandexCloudApi from '../clouds/cloud.yandex'
 import CloudEntityViewFactory from '../views/CloudEntityViewFactory'
 
 export type CloudApi = PCloudApi | YandexCloudApi
-export type CloudFileTypes = 'audio' | 'video' | 'image' | 'file'
 
 export interface CloudCommonEntity {
   name: string
@@ -70,7 +68,9 @@ export interface CloudFolderContent {
 
 export interface CLoudQueryPayload {
   path?: string
-  fileType?: CloudFileTypes
+  query?: string
+  fileType?: string
+  limit?: number
 }
 
 export interface CloudReqPayload {
@@ -82,13 +82,13 @@ export interface CloudReqPayload {
 export interface CloudReqPayloadFilter extends CloudReqPayload {
   value: string
   exclude: string
-  type?: CloudFileTypes
+  type?: string
   limit?: number
   offset?: number
 }
 
 export interface Cloud {
-  getFolders: (payload: CLoudQueryPayload, params?: AxiosRequestConfig) => Promise<CloudEntity[] | null>
+  getFolders: (payload: CLoudQueryPayload) => Promise<CloudEntity[] | null>
   getFolderContent: (payload: CLoudQueryPayload) => Promise<CloudFolderContent | void>
   getFile: (payload: CLoudQueryPayload) => Promise<void | any>
 }

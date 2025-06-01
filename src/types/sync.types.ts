@@ -1,5 +1,5 @@
 import { CloudEntity } from '../types/cloud.types'
 
 export interface SyncRepository {
-  fetchCloudFolders(): Promise<CloudEntity[][]>
+  fetchCloudFolders(root: string): Promise<CloudEntity[][]>
 }

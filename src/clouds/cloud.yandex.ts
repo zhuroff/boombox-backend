@@ -5,7 +5,7 @@ import {
   YandexCloudResponse,
   CLoudQueryPayload
 } from '../types/cloud.types'
-import axios, {AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios'
+import axios, {AxiosInstance, AxiosError } from 'axios'
 import CloudEntityViewFactory from '../views/CloudEntityViewFactory'
 
 export default class YandexCloudApi implements Cloud {
@@ -22,8 +22,8 @@ export default class YandexCloudApi implements Cloud {
     })
   }
 
-  async getFolders(payload: CLoudQueryPayload, params: AxiosRequestConfig = {}) {
-    const { path } = payload
+  async getFolders(payload: CLoudQueryPayload) {
+    const { path, limit = 100 } = payload
 
     if (typeof path !== 'string') {
       throw new Error('"path" is required and should be a string for Yandex Cloud API')
@@ -32,7 +32,7 @@ export default class YandexCloudApi implements Cloud {
     const query = this.#qBuilder(path)
 
     return await this.#client
-      .get<YandexCloudResponse<YandexCloudEntity>>(`${query}&limit=100`, params)
+      .get<YandexCloudResponse<YandexCloudEntity>>(`${query}&limit=${limit}`)
       .then(({ config: { url }, data }) => {
         if (!url) {
           throw new Error('"url" property is not found in cloud response')
@@ -48,16 +48,16 @@ export default class YandexCloudApi implements Cloud {
   }
   
   async getFolderContent(payload: CLoudQueryPayload): Promise<CloudFolderContent> {
-    const { path } = payload
+    const { path, query = 'limit=100' } = payload
 
     if (typeof path !== 'string') {
       throw new Error('"path" is required and should be a string for Yandex Cloud API')
     }
 
-    const query = this.#qBuilder(path)
+    const q = this.#qBuilder(path)
 
     return await this.#client
-      .get<YandexCloudResponse<YandexCloudEntity>>(`${query}&limit=100`)
+      .get<YandexCloudResponse<YandexCloudEntity>>(`${q}&${query}`)
       .then(({ config: { url }, data }) => {
         if (!url) {
           throw new Error('"url" property is not found in cloud response')
@@ -88,7 +88,8 @@ export default class YandexCloudApi implements Cloud {
       .get<YandexCloudResponse<YandexCloudEntity>>(query)
       .then(({ data }) => data.file)
       .catch((error: AxiosError) => {
-        throw error
+        console.error(error)
+        return undefined
       })
   }
 }

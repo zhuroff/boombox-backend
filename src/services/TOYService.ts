@@ -127,6 +127,10 @@ export default class TOYService {
     return { docs }
   }
 
+  async getTOYContent(req: Request) {
+    return await this.toyRepository.getTOYContent(this.#toyRoot, req)
+  }
+
   // async getRandomTracks(filter: CloudReqPayloadFilter & { years: string[] }) {
   //   const { id, path, cloudURL, limit = 5, years } = filter
 

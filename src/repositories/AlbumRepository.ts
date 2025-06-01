@@ -1,3 +1,4 @@
+import { Request } from 'express'
 import { Document, PaginateOptions, PipelineStage, PopulateOptions, FilterQuery, Types } from 'mongoose'
 import { Album, AlbumDocument } from '../models/album.model'
 import { CollectionDocumentAlbum } from '../models/collection.model'
@@ -39,7 +40,7 @@ export default class AlbumRepositoryContract implements AlbumRepository {
     return await newAlbum.save()
   }
 
-  async updateAlbums(albums: AlbumDocument[]) {
+  async updateAlbumsClouds(albums: AlbumDocument[]) {
     return await Promise.all(albums.map(async (album) => (
       await Album.findOneAndUpdate(
         { _id: album._id },
@@ -207,5 +208,27 @@ export default class AlbumRepositoryContract implements AlbumRepository {
       path: `${album.path}/cover.webp`,
       fileType: 'image'
     })
+  }
+
+  async getAlbumContent(req: Request) {
+    const { id, folder } = req.params
+    const { limit, offset, fileType } = req.query
+    const query = `limit=${limit}&offset=${offset}`
+
+    const album = await Album.findById(id).select(['cloudURL', 'path'])
+
+    if (!album) {
+      throw new Error('Album not found')
+    }
+
+    const cloudApi = getCloudApi(album.cloudURL)
+    const result = await cloudApi.getFolderContent({ path: `${album.path}/${folder}`, query })
+    const items = result.items.filter((item) => !!item.mimeType?.includes(String(fileType)))
+    return await Promise.all(items.map(async (item) => {
+      return await cloudApi.getFile({
+        path: `${album.path}/${folder}/${item.title}`,
+        fileType: String(fileType)
+      })
+    }))
   }
 }

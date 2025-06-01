@@ -4,13 +4,15 @@ import { CloudEntity } from '../types/cloud.types'
 import AlbumService from './AlbumService'
 
 export default class SyncService {
+  #root = '/MelodyMap/Collection'
+
   constructor(
     private repository: SyncRepository,
     private albumService: AlbumService
   ) {}
 
   async synchronize() {
-    const cloudFoldersRes = await this.repository.fetchCloudFolders()
+    const cloudFoldersRes = await this.repository.fetchCloudFolders(this.#root)
     const dbFolders = await this.albumService.getAlbumDocs()
     const cloudFolders = cloudFoldersRes.flatMap((el) => el ?? [])
     return await this.dbUpdateSplitter(cloudFolders, dbFolders)
@@ -19,20 +21,20 @@ export default class SyncService {
   async dbUpdateSplitter(cloudFolders: CloudEntity[], dbFolders: AlbumDocument[]) {
     if (!dbFolders.length && !cloudFolders.length) {
       return Promise.resolve({
-        added: 0,
-        updated: 0,
-        deleted: 0,
-        invalid: 0
+        added: [],
+        updated: [],
+        deleted: [],
+        invalid: []
       })
     }
 
     if (!cloudFolders.length && dbFolders.length) {
       const deleted = await this.albumService.removeAlbums(dbFolders.map(({ _id }) => _id))
       return {
-        added: 0,
-        updated: 0,
-        deleted: deleted.length,
-        invalid: 0
+        added: [],
+        updated: [],
+        invalid: [],
+        deleted
       }
     }
 
@@ -60,10 +62,10 @@ export default class SyncService {
 
     const addedAlbums = albumsToAdd.length
       ? await this.albumService.createAlbums(albumsToAdd)
-      : { added: 0, invalid: 0 }
+      : { added: [], invalid: [] }
 
     const fixedAlbums = albumsToFix.length
-      ? await this.albumService.updateAlbums(albumsToFix)
+      ? await this.albumService.updateAlbumsClouds(albumsToFix)
       : []
 
     const deletedAlbums = dbFoldersMap.size
@@ -72,8 +74,8 @@ export default class SyncService {
 
     return {
       ...addedAlbums,
-      updated: fixedAlbums.length,
-      deleted: deletedAlbums.length
+      updated: fixedAlbums,
+      deleted: deletedAlbums
     }
   }
 }
