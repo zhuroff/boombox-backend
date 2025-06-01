@@ -1,5 +1,5 @@
 import { cloudsMap } from '..'
-import { SyncRepository } from '../types/sync.types'
+import { SyncRepository } from '../types/sync'
 
 export default class SyncRepositoryContract implements SyncRepository {
   async fetchCloudFolders(root: string) {

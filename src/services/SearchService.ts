@@ -1,7 +1,7 @@
 import { TrackDocument } from '../models/track.model'
-import { AlbumItem } from '../types/album.types'
-import { SearchRepository, SearchConfig, SearchModelKey, SearchPayload, SearchResult } from '../types/search.types'
-import { CategoryDocument } from '../types/category.types'
+import { AlbumItem } from '../types/album'
+import { SearchRepository, SearchConfig, SearchModelKey, SearchPayload, SearchResult } from '../types/search'
+import { CategoryDocument } from '../types/category'
 
 export default class SearchService {
   constructor(

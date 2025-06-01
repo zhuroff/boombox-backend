@@ -8,7 +8,7 @@ import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
 import { Compilation } from '../models/compilation.model'
 import { Track } from '../models/track.model'
-import { ModelKeys } from '../types/search.types'
+import { ModelKeys } from '../types/search'
 import fs from 'fs'
 import path from 'path'
 

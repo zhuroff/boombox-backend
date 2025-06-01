@@ -1,7 +1,7 @@
 import { Types } from 'mongoose'
 import { CollectionDocument, CollectionDocumentAlbum } from '../models/collection.model'
 import { CompilationDocument, CompilationDocumentTrack } from '../models/compilation.model'
-import { AlbumItem } from '../types/album.types'
+import { AlbumItem } from '../types/album'
 import TrackViewFactory from './TrackViewFactory'
 
 class GatheringItemView {

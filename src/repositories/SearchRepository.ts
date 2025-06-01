@@ -1,9 +1,9 @@
 import { AlbumDocument } from '../models/album.model'
 import { TrackDocument } from '../models/track.model'
-import { SearchRepository, SearchConfig, SearchParams, SearchPayload } from '../types/search.types'
-import { CategoryDocument } from '../types/category.types'
-import { TrackRepository } from '../types/track.types'
-import { AlbumRepository } from '../types/album.types'
+import { SearchRepository, SearchConfig, SearchParams, SearchPayload } from '../types/search'
+import { CategoryDocument } from '../types/category'
+import { TrackRepository } from '../types/track'
+import { AlbumRepository } from '../types/album'
 import AlbumViewFactory from '../views/AlbumViewFactory'
 
 export default class SearchRepositoryContract implements SearchRepository {

@@ -2,9 +2,9 @@ import { Request } from 'express'
 import { Document, PaginateOptions, PipelineStage, PopulateOptions, FilterQuery, Types } from 'mongoose'
 import { Album, AlbumDocument } from '../models/album.model'
 import { CollectionDocumentAlbum } from '../models/collection.model'
-import { AlbumAttrs, AlbumRepository } from '../types/album.types'
-import { ListRequestConfig } from '../types/pagination.types'
-import { GatheringUpdateProps } from '../types/gathering.types'
+import { AlbumAttrs, AlbumRepository } from '../types/album'
+import { ListRequestConfig } from '../types/pagination'
+import { GatheringUpdateProps } from '../types/gathering'
 import { getCloudApi } from '..'
 
 export default class AlbumRepositoryContract implements AlbumRepository {

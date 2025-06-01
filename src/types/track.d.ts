@@ -1,8 +1,8 @@
 import { Request } from 'express'
 import { DeleteResult, Document, Types } from 'mongoose'
-import { CloudEntity } from '../types/cloud.types'
+import { CloudEntity } from './cloud'
 import { AggregatedTrackDocument, TrackDocument } from '../models/track.model'
-import { GatheringUpdateProps } from './gathering.types'
+import { GatheringUpdateProps } from './gathering'
 
 export type TrackDocumentNullable = Document<unknown, {}, TrackDocument> | null
 

@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { DiscogsRepository, DiscogsResponse } from '../types/discogs.types'
+import { DiscogsRepository, DiscogsResponse } from '../types/discogs'
 
 export default class DiscogsRepositoryContract implements DiscogsRepository {
   async getDiscogsList(query: string) {

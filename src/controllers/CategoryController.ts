@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { PaginateModel } from 'mongoose'
-import { CategoryDocument } from '../types/category.types'
+import { CategoryDocument } from '../types/category'
 import FileService from '../services/FileService'
 import CategoryService from '../services/CategoryService'
 

@@ -1,5 +1,5 @@
 import { Types } from 'mongoose'
-import { TokenRepository } from '../types/token.types'
+import { TokenRepository } from '../types/token'
 import UserView from '../views/UserView'
 import jwt from 'jsonwebtoken'
 

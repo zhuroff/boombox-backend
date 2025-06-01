@@ -1,10 +1,10 @@
 import { Request } from 'express'
 import { Document, PaginateResult, Types } from 'mongoose'
-import { CloudEntity } from './cloud.types'
+import { CloudEntity } from './cloud'
 import { AlbumDocument } from '../models/album.model'
 import { CollectionDocumentAlbum } from '../models/collection.model'
-import { ListRequestConfig } from './pagination.types'
-import { GatheringUpdateProps } from './gathering.types'
+import { ListRequestConfig } from './pagination'
+import { GatheringUpdateProps } from './gathering'
 import AlbumViewFactory from '../views/AlbumViewFactory'
 
 export interface AlbumShape {

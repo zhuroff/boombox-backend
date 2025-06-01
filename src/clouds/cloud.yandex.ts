@@ -4,7 +4,7 @@ import {
   YandexCloudEntity,
   YandexCloudResponse,
   CLoudQueryPayload
-} from '../types/cloud.types'
+} from '../types/cloud'
 import axios, {AxiosInstance, AxiosError } from 'axios'
 import CloudEntityViewFactory from '../views/CloudEntityViewFactory'
 

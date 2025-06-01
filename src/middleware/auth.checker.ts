@@ -7,13 +7,13 @@ export const authChecker = (req: Request, res: Response, next: () => void) => {
   }
 
   try {
-    const token = String(req.headers.authorization).split(' ')[1]
+    const accessToken = req.cookies?.['accessToken']
 
-    if (!token) {
+    if (!accessToken) {
       return res.status(403).json({ message: 'User is not authorized' })
     }
 
-    const decodedToken = jwt.verify(token, String(process.env['JWT_SECRET_TOKEN']))
+    const decodedToken = jwt.verify(accessToken, String(process.env['JWT_SECRET_TOKEN']))
     req.user = decodedToken
     return next()
   } catch (error) {

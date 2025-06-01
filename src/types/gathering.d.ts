@@ -1,7 +1,7 @@
 import { PaginateResult, Types, UpdateWriteOpResult } from 'mongoose'
 import { CollectionDocument, CollectionDocumentAlbum } from '../models/collection.model'
 import { CompilationDocument, CompilationDocumentTrack } from '../models/compilation.model'
-import { ListRequestConfig } from './pagination.types'
+import { ListRequestConfig } from './pagination'
 import GatheringViewFactory from '../views/GatheringViewFactory'
 
 export interface GatheringCreatePayload {

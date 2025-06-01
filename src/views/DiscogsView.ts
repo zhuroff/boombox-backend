@@ -1,4 +1,4 @@
-import { DiscorsResponseItem } from '../types/discogs.types'
+import { DiscorsResponseItem } from '../types/discogs'
 
 export default class DiscogsView {
   id: number

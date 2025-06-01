@@ -6,7 +6,7 @@ import {
   PCloudResponse,
   CloudFolderContent,
   CLoudQueryPayload
-} from '../types/cloud.types'
+} from '../types/cloud'
 import { createHash } from 'node:crypto'
 import axios, { AxiosError, AxiosInstance } from 'axios'
 import CloudEntityViewFactory from '../views/CloudEntityViewFactory'

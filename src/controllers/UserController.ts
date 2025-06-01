@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { UserResponse } from '../types/user.types'
+import { UserResponse } from '../types/user'
 import UserService from '../services/UserService'
 
 export default class UserController {
@@ -8,7 +8,17 @@ export default class UserController {
       'refreshToken',
       payload?.refreshToken,
       {
-        maxAge: 30 * 24 + 60 * 60 * 1000,
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+        httpOnly: true,
+        secure: process.env['NODE_ENV'] === 'production'
+      }
+    )
+
+    res.cookie(
+      'accessToken',
+      payload?.accessToken,
+      {
+        maxAge: 24 * 60 * 60 * 1000,
         httpOnly: true,
         secure: process.env['NODE_ENV'] === 'production'
       }
@@ -41,6 +51,8 @@ export default class UserController {
   logout = async (req: Request, res: Response) => {
     try {
       const response = await this.userService.logout(req, res)
+      res.clearCookie('refreshToken')
+      res.clearCookie('accessToken')
       res.status(200).json(response)
     } catch (error) {
       console.error(error)

@@ -1,8 +1,8 @@
 import { Request } from 'express'
 import { Types, PaginateModel, FilterQuery, PaginateOptions, UpdateQuery, QueryOptions } from 'mongoose'
 import { Embedded } from '../models/embedded.model'
-import { CategoryDocument, CategoryRepository } from '../types/category.types'
-import { ListRequestConfig } from '../types/pagination.types'
+import { CategoryDocument, CategoryRepository } from '../types/category'
+import { ListRequestConfig } from '../types/pagination'
 
 export default class CategoryRepositoryContract implements CategoryRepository {
   async createCategory<T>(Model: PaginateModel<T>, title: string, _id?: Types.ObjectId) {

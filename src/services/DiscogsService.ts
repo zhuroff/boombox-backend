@@ -1,4 +1,4 @@
-import { DiscogsPayload, DiscogsRepository } from '../types/discogs.types'
+import { DiscogsPayload, DiscogsRepository } from '../types/discogs'
 import DiscogsView from '../views/DiscogsView'
 
 export default class DiscogsService {

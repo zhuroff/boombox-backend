@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { Types } from 'mongoose'
 import { validationResult } from 'express-validator'
-import { UserDataPayload, UserRepository } from '../types/user.types'
+import { UserDataPayload, UserRepository } from '../types/user'
 import TokenService from './TokenService'
 import UserView from '../views/UserView'
 import bcrypt from 'bcrypt'
@@ -63,12 +63,13 @@ export default class UserService {
   }
 
   async logout(req: Request, res: Response) {
-    if (!req.cookies?.['refreshToken']) {
+    if (!req.cookies?.['refreshToken'] || !req.cookies?.['accessToken']) {
       throw { message: 'user.unauthorized' }
     }
 
     const { refreshToken } = req.cookies
     res.clearCookie('refreshToken')
+    res.clearCookie('accessToken')
     
     return await this.tokenService.removeToken(refreshToken)
   }
@@ -89,7 +90,7 @@ export default class UserService {
   }
 
   async refreshToken(req: Request) {
-    if (!req.cookies?.['refreshToken']) {
+    if (!req.cookies?.['refreshToken'] || !req.cookies?.['accessToken']) {
       throw { message: 'user.unauthorized' }
     }
 
@@ -116,7 +117,7 @@ export default class UserService {
   }
 
   async removeUser(req: Request, res: Response) {
-    if (!req.cookies?.['refreshToken']) {
+    if (!req.cookies?.['refreshToken'] || !req.cookies?.['accessToken']) {
       throw { message: 'user.unauthorized' }
     }
 
@@ -126,6 +127,7 @@ export default class UserService {
 
     const { refreshToken } = req.cookies
     res.clearCookie('refreshToken')
+    res.clearCookie('accessToken')
 
     await this.tokenService.removeToken(refreshToken)
     await this.userRepository.removeUser(req.params['id'])

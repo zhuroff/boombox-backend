@@ -1,4 +1,4 @@
-import { DiscogsPagination, Pagination } from '../types/pagination.types'
+import { DiscogsPagination, Pagination } from '../types/pagination'
 
 class PaginationView {
   totalDocs: number

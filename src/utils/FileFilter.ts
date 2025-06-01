@@ -1,4 +1,4 @@
-import { CloudEntity } from '../types/cloud.types'
+import { CloudEntity } from '../types/cloud'
 
 export default class FileFilter {
   static readonly typesMap = {

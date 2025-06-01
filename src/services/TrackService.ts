@@ -2,7 +2,7 @@ import { Request } from 'express'
 import { Types } from 'mongoose'
 import { TrackDocument } from '../models/track.model'
 import { CompilationDocumentTrack } from '../models/compilation.model'
-import { AudioRequestPayload, NewTrackPayload, TrackRepository } from '../types/track.types'
+import { AudioRequestPayload, NewTrackPayload, TrackRepository } from '../types/track'
 import TrackViewFactory from '../views/TrackViewFactory'
 
 export default class TrackService {

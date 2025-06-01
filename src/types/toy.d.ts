@@ -1,7 +1,7 @@
 import { Request } from 'express'
 import { AlbumDocument } from '../models/album.model'
-import { CloudEntity, CloudFolderContent } from './cloud.types'
-import { ListRequestConfig } from './pagination.types'
+import { CloudEntity, CloudFolderContent } from './cloud'
+import { ListRequestConfig } from './pagination'
 
 export type DeepPartial<T> = {
   [P in keyof T]?: 

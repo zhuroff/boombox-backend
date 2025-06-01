@@ -1,5 +1,5 @@
 import { FilterQuery, Types, Model } from 'mongoose'
-import { FileLinkPayload, FileRepository } from '../types/file.types'
+import { FileLinkPayload, FileRepository } from '../types/file'
 
 export default class FileRepositoryContract implements FileRepository {
   async updateModelFileLink<T, U extends Model<T>>(

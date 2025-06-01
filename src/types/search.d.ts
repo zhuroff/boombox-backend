@@ -1,7 +1,7 @@
 import { Model, PaginateModel, PopulateOptions, ProjectionType } from 'mongoose'
 import { TrackDocument } from '../models/track.model'
-import { CategoryDocument } from './category.types'
-import { AlbumItem } from './album.types'
+import { CategoryDocument } from './category'
+import { AlbumItem } from './album'
 
 export type ModelKeys =
   | 'albums'

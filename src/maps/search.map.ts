@@ -6,7 +6,7 @@ import { Period } from '../models/period.model'
 import { Collection } from '../models/collection.model'
 import { Compilation } from '../models/compilation.model'
 import { Track } from '../models/track.model'
-import { SearchConfig, SearchModelKey } from '../types/search.types'
+import { SearchConfig, SearchModelKey } from '../types/search'
 
 const searchMap = new Map<SearchModelKey, SearchConfig>([
   [

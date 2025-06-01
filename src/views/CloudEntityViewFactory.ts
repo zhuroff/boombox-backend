@@ -1,4 +1,4 @@
-import { PCloudEntity, YandexCloudEntity, UnionCloudsEntity } from '../types/cloud.types'
+import { PCloudEntity, YandexCloudEntity, UnionCloudsEntity } from '../types/cloud'
 
 class CloudEntityView {
   id: string

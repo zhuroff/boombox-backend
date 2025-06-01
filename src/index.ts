@@ -21,7 +21,7 @@ import synchronizeRoutes from './routes/sync.routes'
 import toyRoutes from './routes/toy.routes'
 import PCloudApi from './clouds/cloud.pcloud'
 import YandexCloudApi from './clouds/cloud.yandex'
-import { CloudApi } from './types/cloud.types'
+import { CloudApi } from './types/cloud'
 
 dotenv.config()
 

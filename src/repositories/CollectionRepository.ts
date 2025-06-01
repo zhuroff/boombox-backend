@@ -1,7 +1,7 @@
 import { PaginateOptions, Types } from 'mongoose'
 import { Collection, CollectionDocumentAlbum } from '../models/collection.model'
-import { CollectionRepository, GatheringUpdatePayload, NewCollectionPayload } from '../types/gathering.types'
-import { ListRequestConfig } from '../types/pagination.types'
+import { CollectionRepository, GatheringUpdatePayload, NewCollectionPayload } from '../types/gathering'
+import { ListRequestConfig } from '../types/pagination'
 
 export default class CollectionRepositoryContract implements CollectionRepository {
   async getRawCollections() {

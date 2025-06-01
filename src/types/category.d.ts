@@ -14,7 +14,7 @@ import {
 import { ArtistDocument } from '../models/artist.model'
 import { GenreDocument } from '../models/genre.model'
 import { PeriodDocument } from '../models/period.model'
-import { ListRequestConfig } from './pagination.types'
+import { ListRequestConfig } from './pagination'
 
 export type CategoryDocument = ArtistDocument | GenreDocument | PeriodDocument
 

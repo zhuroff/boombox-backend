@@ -1,6 +1,6 @@
 import { AlbumDocument } from '../models/album.model'
-import { SyncRepository } from '../types/sync.types'
-import { CloudEntity } from '../types/cloud.types'
+import { SyncRepository } from '../types/sync'
+import { CloudEntity } from '../types/cloud'
 import AlbumService from './AlbumService'
 
 export default class SyncService {
