@@ -108,7 +108,6 @@ export default class AlbumRepositoryContract implements AlbumRepository {
       { path: 'artist', select: ['title'] },
       { path: 'genre', select: ['title'] },
       { path: 'period', select: ['title'] },
-      { path: 'inCollections', select: ['title'] }
     ]
 
     const options: PaginateOptions = {
@@ -120,9 +119,7 @@ export default class AlbumRepositoryContract implements AlbumRepository {
       select: {
         title: true,
         path: true,
-        folderName: true,
-        cloudURL: true,
-        cloudId: true
+        cloudURL: true
       }
     }
 

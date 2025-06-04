@@ -5,8 +5,6 @@ import TrackViewFactory from './TrackViewFactory'
 
 class AlbumItemView extends EntityBasicView {
   path: string
-  folderName: string
-  inCollections: EntityBasicView[]
   artist: EntityBasicView
   genre: EntityBasicView
   period: EntityBasicView
@@ -18,21 +16,17 @@ class AlbumItemView extends EntityBasicView {
     title: string,
     cloudURL: string | undefined,
     path: string,
-    folderName: string,
     artist: EntityBasicView,
     genre: EntityBasicView,
     period: EntityBasicView,
-    inCollections: EntityBasicView[],
     coverURL?: string,
     order?: number
   ) {
     super(_id, title, cloudURL)
     this.path = path
-    this.folderName = folderName
     this.artist = artist
     this.genre = genre
     this.period = period
-    this.inCollections = inCollections
     this.coverURL = coverURL
 
     if (order) {
@@ -42,23 +36,27 @@ class AlbumItemView extends EntityBasicView {
 }
 
 class AlbumPageView extends AlbumItemView {
+  inCollections: EntityBasicView[]
   tracks: ReturnType<typeof TrackViewFactory.create>[]
 
-  constructor(album: AlbumItemView, tracks: ReturnType<typeof TrackViewFactory.create>[]) {
+  constructor(
+    album: AlbumItemView,
+    tracks: ReturnType<typeof TrackViewFactory.create>[],
+    inCollections: EntityBasicView[]
+  ) {
     super(
       album._id,
       album.title,
       album.cloudURL,
       album.path,
-      album.folderName,
       album.artist,
       album.genre,
       album.period,
-      album.inCollections,
       album.coverURL,
       album.order
     )
     this.tracks = tracks
+    this.inCollections = inCollections
   }
 }
 
@@ -73,11 +71,9 @@ export default class AlbumViewFactory {
       album.title,
       album.cloudURL,
       album.path,
-      album.folderName,
       this.createBasicView(album.artist),
       this.createBasicView(album.genre),
       this.createBasicView(album.period),
-      album.inCollections?.map(this.createBasicView).filter(Boolean) || [],
       albumCover || album.cover,
       order
     )
@@ -86,6 +82,10 @@ export default class AlbumViewFactory {
   static createAlbumPageView(album: AlbumDocument, albumCover?: string) {
     const albumItem = this.createAlbumItemView(album, albumCover)
     const tracks = album.tracks.map((track) => TrackViewFactory.create(track))
-    return new AlbumPageView(albumItem, tracks)
+    return new AlbumPageView(
+      albumItem,
+      tracks,
+      album.inCollections?.map(this.createBasicView).filter(Boolean) || []
+    )
   }
 }

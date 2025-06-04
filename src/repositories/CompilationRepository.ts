@@ -61,20 +61,9 @@ export default class CompilationRepositoryContract implements CompilationReposit
             select: ['title']
           },
           {
-            path: 'genre',
-            select: ['title']
-          },
-          {
-            path: 'period',
-            select: ['title']
-          },
-          {
             path: 'inAlbum',
-            select: ['title', 'cloudURL', 'period'],
-            options: { lean: true },
-            populate: [
-              { path: 'period', select: ['title'] }
-            ]
+            select: ['title', 'cloudURL'],
+            options: { lean: true }
           }
         ]
       })

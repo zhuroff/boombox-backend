@@ -27,7 +27,6 @@ export default class EmbeddedRepositoryContract implements EmbeddedRepository {
       { path: 'artist', select: ['title'] },
       { path: 'genre', select: ['title'] },
       { path: 'period', select: ['title'] },
-      { path: 'inCollections', select: ['title'] }
     ]
 
     const options: PaginateOptions = {
