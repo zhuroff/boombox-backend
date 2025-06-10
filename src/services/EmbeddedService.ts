@@ -6,8 +6,9 @@ import { Period } from '../models/period.model'
 import { CategoryRepository } from '../types/category'
 import { EmbeddedPayload, EmbeddedRepository } from '../types/embedded'
 import { ListRequestConfig } from '../types/pagination'
-import Parser from '../utils/Parser'
 import PaginationViewFactory from '../views/PaginationViewFactory'
+import EmbeddedView from '../views/EmbeddedView'
+import Parser from '../utils/Parser'
 
 export default class EmbeddedService {
   constructor(
@@ -45,7 +46,7 @@ export default class EmbeddedService {
       throw new Error('Incorrect request options')
     }
 
-    return embedded
+    return new EmbeddedView(embedded)
   }
 
   async getPopulatedEmbeddedList(req: Request) {
@@ -58,7 +59,7 @@ export default class EmbeddedService {
 
     const { totalDocs, totalPages, page } = response
     const pagination = PaginationViewFactory.create({ totalDocs, totalPages, page })
-    const docs = response.docs
+    const docs = response.docs.map((doc) => new EmbeddedView(doc))
 
     return { docs, pagination }
   }

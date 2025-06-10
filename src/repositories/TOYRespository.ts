@@ -1,14 +1,13 @@
 import { Request } from 'express'
-import { DeepPartial, TOYRepository } from '../types/toy'
+import { TOYAlbumListItem, TOYRepository } from '../types/toy'
 import { ListRequestConfig, RelatedAlbumsReqFilter } from '../types/pagination'
 import { getCloudApi } from '..'
 import { CloudApi } from '../types/cloud'
-import { AlbumDocument } from '../models/album.model'
 import CloudEntityViewFactory from '../views/CloudEntityViewFactory'
 import Parser from '../utils/Parser'
 
 export default class TOYRepositoryContracts implements TOYRepository {
-  async #randomAlbumsQueryAdapter(filter: RelatedAlbumsReqFilter, rootPath: string): Promise<DeepPartial<AlbumDocument>[]> {
+  async #randomAlbumsQueryAdapter(filter: RelatedAlbumsReqFilter, rootPath: string): Promise<TOYAlbumListItem[]> {
     const { from } = filter
     const cloudApi = getCloudApi(String(process.env['TOY_CLOUD_URL']))
 
@@ -34,9 +33,8 @@ export default class TOYRepositoryContracts implements TOYRepository {
       ))
       .map((album) => ({
         title: `TOY: ${album.title}`,
-        artist: { title: 'Various Artists' },
-        genre: { title: value },
-        period: { title: album.title },
+        genre: value,
+        period: album.title,
         path: `${rootPath}/${encodeURIComponent(value)}/${album.path}`
       }))
     )
@@ -68,9 +66,8 @@ export default class TOYRepositoryContracts implements TOYRepository {
       ))
       .map((album) => ({
         title: `TOY: ${album.title}`,
-        artist: { title: 'Various Artists' },
-        genre: { title: album.genre },
-        period: { title: album.title },
+        genre: album.genre,
+        period: album.title,
         path: album.path
       }))
     )

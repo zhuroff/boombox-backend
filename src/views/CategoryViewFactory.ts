@@ -9,6 +9,7 @@ import AlbumViewFactory from '../views/AlbumViewFactory'
 class CategoryItemView extends EntityBasicView {
   albums: number
   avatar?: string | null
+  kind = 'category'
 
   constructor(
     _id: Types.ObjectId,

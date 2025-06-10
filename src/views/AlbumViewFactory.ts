@@ -10,6 +10,7 @@ class AlbumItemView extends EntityBasicView {
   period: EntityBasicView
   coverURL?: string
   order?: number
+  kind = 'album'
 
   constructor(
     _id: Types.ObjectId,

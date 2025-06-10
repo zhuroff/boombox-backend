@@ -2,6 +2,7 @@ import { Request } from 'express'
 import { getCloudApi } from '..'
 import { TOYRepository } from '../types/toy'
 import { ListRequestConfig } from '../types/pagination'
+import TOYView from '../views/TOYView'
 import TrackViewFactory from '../views/TrackViewFactory'
 // import { CloudEntity, CloudReqPayloadFilter } from '../types/cloud.types'
 // import FileFilter from '../utils/FileFilter'
@@ -51,20 +52,17 @@ export default class TOYService {
       return await this.getTOYRandomAlbum()
     }
 
+    if (!genre || !year) {
+      throw new Error('Genre and year are required')
+    }
+
     const path = encodeURIComponent(`${this.#toyRoot}/${genre}/${year}`)
     const { result, metadataContent, coverURL } = await this.toyRepository.getTOYAlbum(path)
-    
-    return {
-      coverURL,
-      metadataContent,
-      title: `TOY: ${genre}, ${year}`,
-      artist: { title: 'Various Artists' },
-      genre: { title: genre },
-      period: { title: year },
-      tracks: result.items
-        .filter((item) => item.mimeType?.startsWith('audio'))
-        .map((item) => TrackViewFactory.create(item))
-    }
+    const tracks = result.items
+      .filter((item) => item.mimeType?.startsWith('audio'))
+      .map((item) => TrackViewFactory.create(item))
+
+    return new TOYView(genre, year, tracks, coverURL, metadataContent)
   }
 
   async getTOYRandomAlbum() {
@@ -90,20 +88,17 @@ export default class TOYService {
       throw new Error('No album found')
     }
 
+    if (!album['genre'] || !album['year']) {
+      throw new Error('Genre and year are required')
+    }
+
     const path = encodeURIComponent(`${this.#toyRoot}/${album['genre']}/${album['year']}`)
     const { result, coverURL, metadataContent } = await this.toyRepository.getTOYAlbum(path)
+    const tracks = result.items
+      .filter((item) => item.mimeType?.startsWith('audio'))
+      .map((item) => TrackViewFactory.create(item))
 
-    return {
-      coverURL,
-      metadataContent,
-      title: `TOY: ${album['genre']}, ${album['year']}`,
-      artist: { title: 'Various Artists' },
-      genre: { title: album['genre'] },
-      period: { title: album['year'] },
-      tracks: result.items
-        .filter((item) => item.mimeType?.startsWith('audio'))
-        .map((item) => TrackViewFactory.create(item))
-    }
+    return new TOYView(album['genre'], album['year'], tracks, coverURL, metadataContent)
   }
 
   async getTOYRandomAlbums(parsedQuery: ListRequestConfig) {
@@ -116,13 +111,14 @@ export default class TOYService {
       shuffledResults.splice(randomIndex, 1)
     }
 
-    const docs = await Promise.all(shuffledResults.map(async (album) => ({
-      ...album,
-      coverURL: await cloudApi.getFile({
+    const docs = await Promise.all(shuffledResults.map(async (album) => {
+      const coverURL = await cloudApi.getFile({
         path: `${album.path}/cover.webp`,
         fileType: 'image'
       })
-    })))
+
+      return new TOYView(album.genre, album.period, [], coverURL)
+    }))
 
     return { docs }
   }

@@ -8,6 +8,7 @@ class GatheringItemView {
   _id: Types.ObjectId
   dateCreated: Date
   title: string
+  kind: 'collection' | 'compilation'
   poster?: string | null
   avatar?: string | null
   entities?: Types.ObjectId[]
@@ -16,6 +17,7 @@ class GatheringItemView {
     _id: Types.ObjectId,
     dateCreated: Date,
     title: string,
+    kind: 'collection' | 'compilation',
     poster?: string | null,
     avatar?: string | null,
     entities?: CollectionDocumentAlbum[] | CompilationDocumentTrack[]
@@ -25,6 +27,7 @@ class GatheringItemView {
     this.title = title
     this.poster = poster
     this.avatar = avatar
+    this.kind = kind
 
     if (entities) {
       this.entities = entities.map((entity) => (
@@ -36,6 +39,7 @@ class GatheringItemView {
 
 class CollectionPageView extends GatheringItemView {
   albums: AlbumItem[]
+  kind: 'collection' = 'collection'
 
   constructor(
     collection: CollectionDocument,
@@ -45,6 +49,7 @@ class CollectionPageView extends GatheringItemView {
       collection._id,
       collection.dateCreated,
       collection.title,
+      'collection',
       collection.poster,
       collection.avatar
     )
@@ -55,6 +60,7 @@ class CollectionPageView extends GatheringItemView {
 
 class CompilationPageView extends GatheringItemView {
   tracks: ReturnType<typeof TrackViewFactory.create>[]
+  kind: 'compilation' = 'compilation'
 
   constructor(
     compilation: CompilationDocument,
@@ -64,6 +70,7 @@ class CompilationPageView extends GatheringItemView {
       compilation._id,
       compilation.dateCreated,
       compilation.title,
+      'compilation',
       compilation.poster,
       compilation.avatar
     )
@@ -77,6 +84,7 @@ class CompilationPageView extends GatheringItemView {
 
 export default class GatheringViewFactory {
   static createGatheringItemView(
+    kind: 'collection' | 'compilation',
     entity: CollectionDocument | CompilationDocument,
     children: CollectionDocumentAlbum[] | CompilationDocumentTrack[]
   ) {
@@ -84,6 +92,7 @@ export default class GatheringViewFactory {
       entity._id,
       entity.dateCreated,
       entity.title,
+      kind,
       entity.poster,
       entity.avatar,
       children

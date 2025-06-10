@@ -49,7 +49,7 @@ export default class CollectionService {
       pagination,
       docs: docs.reduce<GatheringItem[]>((acc, next) => {
         if (!!next) {
-          acc.push(GatheringViewFactory.createGatheringItemView(next, next.albums))
+          acc.push(GatheringViewFactory.createGatheringItemView('collection', next, next.albums))
         }
         return acc
       }, [])
@@ -71,7 +71,7 @@ export default class CollectionService {
       pagination,
       docs: docs.reduce<GatheringItem[]>((acc, next) => {
         if (!!next) {
-          acc.push(GatheringViewFactory.createGatheringItemView(next, next.albums))
+          acc.push(GatheringViewFactory.createGatheringItemView('collection', next, next.albums))
         }
         return acc
       }, [])
@@ -120,7 +120,7 @@ export default class CollectionService {
       pagination,
       docs: docs.reduce<GatheringItem[]>((acc, next) => {
         if (!!next) {
-          acc.push(GatheringViewFactory.createGatheringItemView(next, next.albums))
+          acc.push(GatheringViewFactory.createGatheringItemView('collection', next, next.albums))
         }
         return acc
       }, [])

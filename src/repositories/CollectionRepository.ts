@@ -32,7 +32,16 @@ export default class CollectionRepositoryContract implements CollectionRepositor
     return await Collection.findById(id)
       .populate({
         path: 'albums.album',
-        select: ['title', 'artist', 'genre', 'period', 'albumCover', 'folderName', 'cloudURL'],
+        select: [
+          'title',
+          'artist',
+          'genre',
+          'period',
+          'albumCover',
+          'folderName',
+          'cloudURL',
+          'path'
+        ],
         populate: [
           { path: 'artist', select: ['title'] },
           { path: 'genre', select: ['title'] },

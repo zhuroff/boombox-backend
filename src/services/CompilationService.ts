@@ -39,7 +39,7 @@ export default class CompilationService {
       inList: false
     })
 
-    return GatheringViewFactory.createGatheringItemView(newCompilation, newCompilation.tracks)
+    return GatheringViewFactory.createGatheringItemView('compilation', newCompilation, newCompilation.tracks)
   }
 
   async updateCompilation(payload: GatheringUpdatePayload) {
@@ -102,7 +102,7 @@ export default class CompilationService {
     const { totalDocs, totalPages, page } = compilations
     const pagination = PaginationViewFactory.create({ totalDocs, totalPages, page })
     const docs = compilations.docs.map((compilation) => (
-      GatheringViewFactory.createGatheringItemView(compilation, compilation.tracks)
+      GatheringViewFactory.createGatheringItemView('compilation', compilation, compilation.tracks)
     ))
 
     return { docs, pagination }
