@@ -25,6 +25,10 @@ export default class TrackRepositoryContract implements TrackRepository {
     return await newTrack.save()
   }
 
+  async updateTrack(trackPayload: Partial<TrackDocument>) {
+    return await Track.findByIdAndUpdate(trackPayload._id, trackPayload, { new: true })
+  }
+
   async removeTracks(tracks: Array<string | Types.ObjectId>) {
     return await Track.deleteMany({ _id: { $in: tracks } })
   }
@@ -38,14 +42,8 @@ export default class TrackRepositoryContract implements TrackRepository {
   }
 
   async getTrackLyrics(id: string) {
-    return await Track.findById(id).populate('lyrics')
-    // const response = await Track.findById(id)
-    
-    // if (response) {
-    //   return { lyrics: response.lyrics }
-    // }
-
-    // throw new Error('Incorrect request options')
+    const response = await Track.findById(id).populate('lyrics')
+    return { lyrics: response?.lyrics || null }
   }
 
   async getTrackExternalLyrics(query: string) {
@@ -60,10 +58,6 @@ export default class TrackRepositoryContract implements TrackRepository {
         lyrics
       }
     }))
-  }
-
-  async saveTrackLyrics(id: string, lyrics: string) {
-    return await Track.findByIdAndUpdate(id, { $set: { lyrics } })
   }
 
   async getAudio(audioPayload: AudioRequestPayload) {

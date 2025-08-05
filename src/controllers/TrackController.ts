@@ -34,6 +34,16 @@ export default class TrackController {
     }
   }
 
+  updateTrack = async (req: Request, res: Response) => {
+    try {
+      await this.trackService.updateTrack(req.body)
+      res.json({ message: 'success' })
+    } catch (error) {
+      console.error(error)
+      res.status(500).json(error)
+    }
+  }
+
   getWave = async (req: Request, res: Response) => {
     try {
       const response = await this.trackService.getWave(req)
@@ -46,18 +56,8 @@ export default class TrackController {
 
   getTrackExternalLyrics = async (req: Request, res: Response) => {
     try {
-      const response = await this.trackService.getTrackExternalLyrics(req.body.query)
+      const response = await this.trackService.getTrackExternalLyrics(req)
       res.json(response)
-    } catch (error) {
-      console.error(error)
-      res.status(500).json(error)
-    }
-  }
-
-  saveTrackLyrics = async (req: Request, res: Response) => {
-    try {
-      await this.trackService.saveTrackLyrics(String(req.params['id']), req.body.lyrics)
-      res.json({ message: 'Lyrics successfully added to track' })
     } catch (error) {
       console.error(error)
       res.status(500).json(error)

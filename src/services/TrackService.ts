@@ -4,12 +4,17 @@ import { TrackDocument } from '../models/track.model'
 import { CompilationDocumentTrack } from '../models/compilation.model'
 import { AudioRequestPayload, NewTrackPayload, TrackRepository } from '../types/track'
 import TrackViewFactory from '../views/TrackViewFactory'
+import Parser from '../utils/Parser'
 
 export default class TrackService {
   constructor(private trackRepository: TrackRepository) {}
 
   async createTrack(trackPayload: NewTrackPayload) {
     return await this.trackRepository.createTrack(trackPayload)
+  }
+
+  async updateTrack(trackPayload: Partial<TrackDocument>) {
+    return await this.trackRepository.updateTrack(trackPayload)
   }
 
   async removeTracks(tracks: Array<string | Types.ObjectId>) {
@@ -28,12 +33,9 @@ export default class TrackService {
     return await this.trackRepository.getTrackLyrics(id)
   }
 
-  async getTrackExternalLyrics(query: string) {
-    return await this.trackRepository.getTrackExternalLyrics(query)
-  }
-
-  async saveTrackLyrics(id: string, lyrics: string) {
-    return await this.trackRepository.saveTrackLyrics(id, lyrics)
+  async getTrackExternalLyrics(req: Request) {
+    const parsedQuery = Parser.parseNestedQuery<{ query: string }>(req)
+    return await this.trackRepository.getTrackExternalLyrics(parsedQuery.query)
   }
 
   async getAudio(audioPayload: AudioRequestPayload) {

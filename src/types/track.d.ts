@@ -30,12 +30,12 @@ export interface AudioRequestPayload {
 
 export interface TrackRepository {
   createTrack(trackPayload: NewTrackPayload): Promise<TrackDocument>
+  updateTrack(trackPayload: Partial<TrackDocument>): Promise<TrackDocument | null>
   removeTracks(tracks: Array<string | Types.ObjectId>): Promise<DeleteResult>
   incrementListeningCounter(id: string): Promise<TrackDocumentNullable>
   saveTrackDuration(id: string, duration: number): Promise<TrackDocumentNullable>
-  getTrackLyrics(id: string): Promise<TrackDocumentNullable>
+  getTrackLyrics(id: string): Promise<{ lyrics: string | null }>
   getTrackExternalLyrics(query: string): Promise<ExternalTrackLyricsResponse[]>
-  saveTrackLyrics(id: string, lyrics: string): Promise<TrackDocumentNullable>
   getAudio(audioPayload: AudioRequestPayload): Promise<string | undefined>
   getCoveredTracks(docs: TrackDocument[]): Promise<TrackDocument[]>
   updateCompilationInTrack(payload: GatheringUpdateProps): Promise<void>

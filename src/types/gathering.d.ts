@@ -49,11 +49,16 @@ export interface CreatedCollectionRes {
   collections: PaginateResult<CollectionDocument | null>
 }
 
+export interface CreatedCompilationRes {
+  id: Types.ObjectId,
+  compilations: PaginateResult<CompilationDocument | null>
+}
+
 export interface CompilationRepository {
   getRawCompilations(): Promise<CompilationDocument[]>
   getRawCompilation(id: Types.ObjectId | string): Promise<CompilationDocument | null>
-  createCompilation(payload: NewCompilationPayload): Promise<CompilationDocument>
-  updateCompilation(payload: GatheringUpdatePayload): Promise<void>
+  createCompilation(payload: NewCompilationPayload): Promise<CreatedCompilationRes>
+  updateCompilation(payload: GatheringUpdatePayload): Promise<PaginateResult<CompilationDocument | null>>
   removeCompilation(id: string): Promise<CompilationDocument | null>
   updateCompilationOrder(_id: Types.ObjectId | string, tracks: CompilationDocumentTrack[]): Promise<void>
   getPaginatedCompilations(rbody: ListRequestConfig): Promise<PaginateResult<CompilationDocument | null>>

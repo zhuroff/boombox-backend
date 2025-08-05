@@ -14,7 +14,18 @@ export default class CompilationRepositoryContract implements CompilationReposit
 
   async createCompilation(payload: NewCompilationPayload) {
     const newCompilation = new Compilation(payload)
-    return await newCompilation.save()
+    await newCompilation.save()
+
+    const compilations = await this.getPaginatedCompilations({
+      limit: 15,
+      sort: { title: 1 },
+      page: 1
+    })
+
+    return {
+      id: newCompilation._id,
+      compilations
+    }
   }
 
   async updateCompilation({ entityID, gatheringID, isInList, order }: GatheringUpdatePayload) {
@@ -25,6 +36,12 @@ export default class CompilationRepositoryContract implements CompilationReposit
     const options = { new: true }
 
     await Compilation.findOneAndUpdate(query, update, options)
+
+    return await this.getPaginatedCompilations({
+      limit: 15,
+      sort: { title: 1 },
+      page: 1
+    })
   }
 
   async removeCompilation(id: string) {
@@ -43,7 +60,8 @@ export default class CompilationRepositoryContract implements CompilationReposit
       lean: true,
       select: {
         title: true,
-        avatar: true
+        avatar: true,
+        tracks: true
       }
     }
 

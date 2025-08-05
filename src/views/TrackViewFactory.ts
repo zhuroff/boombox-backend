@@ -4,43 +4,6 @@ import EntityBasicView from './BasicEntityView'
 import CloudEntityViewFactory from './CloudEntityViewFactory'
 import Parser from '../utils/Parser'
 
-// class TrackView {
-//   _id: string
-//   title: string
-//   path: string
-//   cloudURL: string
-//   // cloudId: string
-//   duration?: number | null
-//   listened?: number | null
-//   // period: EntityBasicView
-//   // genre: EntityBasicView
-//   artist: EntityBasicView
-//   inAlbum: AlbumDocument
-//   inCompilations?: EntityBasicView[]
-//   coverURL?: string
-//   order?: number
-
-//   constructor(track: TrackDocument, order?: number) {
-//     this._id = track._id.toString()
-//     // this.cloudId = track.cloudId
-//     this.title = track.title
-//     this.path = track.path
-//     this.cloudURL = track.cloudURL
-//     this.duration = track.duration
-//     this.listened = track.listened
-//     // this.period = track.period
-//     // this.genre = track.genre
-//     this.artist = track.artist
-//     this.inAlbum = track.inAlbum
-//     this.inCompilations = track.inCompilations
-//     this.coverURL = track.coverURL
-
-//     if (order) {
-//       this.order = order
-//     }
-//   }
-// }
-
 class TrackView {
   _id: string
   title: string
@@ -102,8 +65,8 @@ export default class TrackViewFactory {
         track.cloudURL,
         order || Number(track.fileName.match(/^\d+/)?.[0]) || order || 0,
         track.artist,
-        track.listened,
         track.duration,
+        track.listened,
         track.inAlbum
       )
     }

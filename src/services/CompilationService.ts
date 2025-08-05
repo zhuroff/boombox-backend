@@ -1,7 +1,7 @@
 import { Request } from 'express'
 import { Types } from 'mongoose'
 import { TrackDocument } from '../models/track.model'
-import { CompilationRepository, GatheringCreatePayload, GatheringReorder, GatheringUpdatePayload, NewCompilationPayload } from '../types/gathering'
+import { CompilationRepository, GatheringCreatePayload, GatheringItem, GatheringReorder, GatheringUpdatePayload, NewCompilationPayload } from '../types/gathering'
 import { ListRequestConfig } from '../types/pagination'
 import { TrackRepository } from '../types/track'
 import Parser from '../utils/Parser'
@@ -16,9 +16,9 @@ export default class CompilationService {
   ) {}
 
   async createCompilation({ title, entityID }: GatheringCreatePayload) {
-    const compilations = await this.compilationRepository.getRawCompilations()
+    const rawCompilations = await this.compilationRepository.getRawCompilations()
 
-    if (compilations.some((col) => col.title === title)) {
+    if (rawCompilations.some((col) => col.title === title)) {
       throw new Error('compilations.exists')
     }
 
@@ -32,25 +32,50 @@ export default class CompilationService {
       ]
     }
 
-    const newCompilation = await this.compilationRepository.createCompilation(payload)
+    const {
+      id,
+      compilations: { totalDocs, totalPages, page, docs }
+    } = await this.compilationRepository.createCompilation(payload)
+
     await this.trackRepository.updateCompilationInTrack({
-      listID: newCompilation._id.toString(),
+      listID: id.toString(),
       itemID: entityID,
       inList: false
     })
 
-    return GatheringViewFactory.createGatheringItemView('compilation', newCompilation, newCompilation.tracks)
+    const pagination = PaginationViewFactory.create({ totalDocs, totalPages, page })
+
+    return {
+      pagination,
+      docs: docs.reduce<GatheringItem[]>((acc, next) => {
+        if (!!next) {
+          acc.push(GatheringViewFactory.createGatheringItemView('compilation', next, next.tracks))
+        }
+        return acc
+      }, [])
+    }
   }
 
   async updateCompilation(payload: GatheringUpdatePayload) {
-    await this.compilationRepository.updateCompilation(payload)
+    const updatedCompilation = await this.compilationRepository.updateCompilation(payload)
     await this.trackRepository.updateCompilationInTrack({
       listID: payload.gatheringID,
       itemID: payload.entityID,
       inList: payload.isInList
     })
 
-    return { message: payload.isInList ? 'compilations.removed' : 'compilations.added' }
+    const { totalDocs, totalPages, page, docs } = updatedCompilation
+    const pagination = PaginationViewFactory.create({ totalDocs, totalPages, page })
+
+    return {
+      pagination,
+      docs: docs.reduce<GatheringItem[]>((acc, next) => {
+        if (!!next) {
+          acc.push(GatheringViewFactory.createGatheringItemView('compilation', next, next.tracks))
+        }
+        return acc
+      }, [])
+    }
   }
 
   async removeCompilation(id: string) {
