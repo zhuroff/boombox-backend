@@ -16,15 +16,15 @@ const fileService = new FileService(fileRepository)
 const categoryService = new CategoryService(categoryRepository, albumRepository)
 
 const artistController = new CategoryController(categoryService, fileService)
-import upload from '../middleware/upload'
+import upload, { handleMulterError } from '../middleware/upload'
 
 const router = Router()
 
 router.get('/', authChecker, artistController.getCategories(Artist))
 router.get('/:id', authChecker, artistController.getCategory(Artist))
 router.post('/create', authChecker, artistController.createCategory(Artist))
-router.post('/:id/poster', authChecker, upload.single('poster'), artistController.updateModelFileLink(Artist))
-router.post('/:id/avatar', authChecker, upload.single('avatar'), artistController.updateModelFileLink(Artist))
+router.post('/:id/poster', authChecker, upload.single('poster'), handleMulterError, artistController.updateModelFileLink(Artist))
+router.post('/:id/avatar', authChecker, upload.single('avatar'), handleMulterError, artistController.updateModelFileLink(Artist))
 router.delete('/:id', authChecker, artistController.removeCategory)
 
 export default router

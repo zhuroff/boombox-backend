@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { authChecker } from '../middleware/auth.checker'
-import upload from '../middleware/upload'
+import upload, { handleMulterError } from '../middleware/upload'
 import CollectionRepositoryContract from '../repositories/CollectionRepository'
 import FileRepositoryContract from '../repositories/FileRepository'
 import AlbumRepositoryContract from '../repositories/AlbumRepository'
@@ -25,7 +25,7 @@ router.patch('/update', authChecker, collectionController.updateCollection)
 router.get('/:id', authChecker, collectionController.getCollection)
 router.patch('/:id/reorder', authChecker, collectionController.reorderCollections)
 router.delete('/:id', authChecker, collectionController.removeCollection)
-router.post('/:id/poster', authChecker, upload.single('poster'), collectionController.updateModelFileLink)
-router.post('/:id/avatar', authChecker, upload.single('avatar'), collectionController.updateModelFileLink)
+router.post('/:id/poster', authChecker, upload.single('poster'), handleMulterError, collectionController.updateModelFileLink)
+router.post('/:id/avatar', authChecker, upload.single('avatar'), handleMulterError, collectionController.updateModelFileLink)
 
 export default router
