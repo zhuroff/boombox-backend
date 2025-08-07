@@ -6,7 +6,7 @@ import TrackRepositoryContract from '../repositories/TrackRepository'
 import CompilationService from '../services/CompilationService'
 import FileService from '../services/FileService'
 import CompilationController from '../controllers/CompilationController'
-import upload from '../middleware/upload'
+import upload, { handleMulterError } from '../middleware/upload'
 
 const compilationRepository = new CompilationRepositoryContract()
 const fileRepository = new FileRepositoryContract()
@@ -25,7 +25,7 @@ router.patch('/update', authChecker, compilationController.updateCompilation)
 router.get('/:id', authChecker, compilationController.getCompilation)
 router.patch('/:id/reorder', authChecker, compilationController.reorderCompilationTracks)
 router.delete('/:id', authChecker, compilationController.removeCompilation)
-router.post('/:id/poster', authChecker, upload.single('poster'), compilationController.updateModelFileLink)
-router.post('/:id/avatar', authChecker, upload.single('avatar'), compilationController.updateModelFileLink)
+router.post('/:id/poster', authChecker, upload.single('poster'), handleMulterError, compilationController.updateModelFileLink)
+router.post('/:id/avatar', authChecker, upload.single('avatar'), handleMulterError, compilationController.updateModelFileLink)
 
 export default router
