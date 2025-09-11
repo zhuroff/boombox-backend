@@ -53,11 +53,6 @@ const schema = new Schema({
     type: Number,
     required: false
   },
-  listened: {
-    type: Number,
-    required: false,
-    default: 0
-  },
   inAlbum: {
     type: Schema.Types.ObjectId,
     ref: 'albums',
@@ -95,6 +90,7 @@ export interface TrackDocument extends Omit<
   TrackObjectIdKeys
 > {
   coverURL?: string
+  order?: number
   inAlbum: AlbumDocument
   inCompilations: CompilationDocument[]
   artist: ArtistDocument

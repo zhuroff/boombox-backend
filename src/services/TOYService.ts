@@ -9,7 +9,7 @@ import TrackViewFactory from '../views/TrackViewFactory'
 import Parser from '../utils/Parser'
 
 export default class TOYService {
-  #toyRoot = 'MelodyMap/TOY'
+  #root = 'MelodyMap/TOY'
   #shuffleArray<T>(array: T[]) {
     let length = array.length
     let index: number
@@ -56,19 +56,31 @@ export default class TOYService {
       throw new Error('Genre and year are required')
     }
 
-    const path = encodeURIComponent(`${this.#toyRoot}/${genre}/${year}`)
+    const path = encodeURIComponent(`${this.#root}/${genre}/${year}`)
     const { result, metadataContent, coverURL } = await this.toyRepository.getTOYAlbum(path)
     const tracks = result.items
       .filter((item) => item.mimeType?.startsWith('audio'))
-      .map((item) => TrackViewFactory.create(item))
+      .map((item, index) => TrackViewFactory.create(
+        {
+          ...item,
+          path: encodeURIComponent(`/${this.#root}/${genre}/${year}/${item.path}`),
+        },
+        {
+          order: ++index,
+          period: { title: year },
+          genre: { title: genre },
+          inAlbum: { title: `TOY: ${genre}` },
+          artist: { title: Parser.parseTrackArtistName(item.title) }
+        }
+      ))
 
     return new TOYView(genre, year, tracks, coverURL, metadataContent)
   }
 
   async getTOYRandomAlbum() {
-    const genres = await this.toyRepository.getTOYList(this.#toyRoot)
+    const genres = await this.toyRepository.getTOYList(this.#root)
     const years = await Promise.all(genres.map(async (genre) => {
-      const years = await this.toyRepository.getTOYList(`${this.#toyRoot}/${encodeURIComponent(genre.title)}`)
+      const years = await this.toyRepository.getTOYList(`${this.#root}/${encodeURIComponent(genre.title)}`)
       return years.reduce<Record<string, string>[]>((acc, next) => {
         if (!next.title.startsWith('-')) {
           acc.push({
@@ -92,11 +104,23 @@ export default class TOYService {
       throw new Error('Genre and year are required')
     }
 
-    const path = encodeURIComponent(`${this.#toyRoot}/${album['genre']}/${album['year']}`)
+    const path = encodeURIComponent(`${this.#root}/${album['genre']}/${album['year']}`)
     const { result, coverURL, metadataContent } = await this.toyRepository.getTOYAlbum(path)
     const tracks = result.items
       .filter((item) => item.mimeType?.startsWith('audio'))
-      .map((item) => TrackViewFactory.create(item))
+      .map((item, index) => TrackViewFactory.create(
+        {
+          ...item,
+          path: encodeURIComponent(`/${this.#root}/${album['genre']}/${album['year']}/${item.path}`),
+        },
+        {
+          order: ++index,
+          period: { title: album['year'] || 'N/A' },
+          genre: { title: album['genre'] || 'N/A' },
+          inAlbum: { title: `TOY: ${album['genre']}` },
+          artist: { title: Parser.parseTrackArtistName(item.title) }
+        }
+      ))
 
     return new TOYView(album['genre'], album['year'], tracks, coverURL, metadataContent)
   }
@@ -124,7 +148,7 @@ export default class TOYService {
   }
 
   async getTOYContent(req: Request) {
-    return await this.toyRepository.getTOYContent(this.#toyRoot, req)
+    return await this.toyRepository.getTOYContent(this.#root, req)
   }
 
   // async getRandomTracks(filter: CloudReqPayloadFilter & { years: string[] }) {

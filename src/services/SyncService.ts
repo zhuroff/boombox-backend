@@ -4,7 +4,7 @@ import { CloudEntity } from '../types/cloud'
 import AlbumService from './AlbumService'
 
 export default class SyncService {
-  #root = '/MelodyMap/Collection'
+  #root = 'MelodyMap/Collection'
 
   constructor(
     private repository: SyncRepository,
@@ -12,7 +12,7 @@ export default class SyncService {
   ) {}
 
   async synchronize() {
-    const cloudFoldersRes = await this.repository.fetchCloudFolders(this.#root)
+    const cloudFoldersRes = await this.repository.fetchCloudFolders(`/${this.#root}`)
     const dbFolders = await this.albumService.getAlbumDocs()
     const cloudFolders = cloudFoldersRes.flatMap((el) => el ?? [])
     return await this.dbUpdateSplitter(cloudFolders, dbFolders)

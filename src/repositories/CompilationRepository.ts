@@ -72,16 +72,13 @@ export default class CompilationRepositoryContract implements CompilationReposit
     return await Compilation.findById(id)
       .populate({
         path: 'tracks.track',
-        select: ['title', 'listened', 'duration', 'path', 'cloudURL'],
+        select: ['title', 'duration', 'path', 'cloudURL'],
         populate: [
-          {
-            path: 'artist',
-            select: ['title']
-          },
+          { path: 'artist', select: ['title'] },
+          { path: 'period', select: ['title'] },
           {
             path: 'inAlbum',
-            select: ['title', 'cloudURL'],
-            options: { lean: true }
+            select: ['title', 'cloudURL']
           }
         ]
       })

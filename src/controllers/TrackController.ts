@@ -4,16 +4,6 @@ import TrackService from '../services/TrackService'
 export default class TrackController {
   constructor(private trackService: TrackService) {}
 
-  incrementListeningCounter = async (req: Request, res: Response) => {
-    try {
-      await this.trackService.incrementListeningCounter(String(req.params['id']))
-      res.json({ message: 'success' })
-    } catch (error) {
-      console.error(error)
-      res.status(500).json(error)
-    }
-  }
-
   saveTrackDuration = async (req: Request, res: Response) => {
     try {
       await this.trackService.saveTrackDuration(String(req.params['id']), req.body.duration)
@@ -64,13 +54,13 @@ export default class TrackController {
     }
   }
 
-  getAudio = async (req: Request, res: Response) => {
+  getTrackAudio = async (req: Request, res: Response) => {
     try {
-      const response = await this.trackService.getAudio({
-        id: req.body['path'] || req.body['cloudId'],
-        path: '',
-        cloudURL: req.body['cloudURL']
-      })
+      if (!req.query['cloudURL'] || !req.params['path']) {
+        throw new Error('Cloud URL and path are required')
+      }
+
+      const response = await this.trackService.getTrackAudio(req.params['path'], String(req.query['cloudURL']))
       res.json(response)
     } catch (error) {
       console.error(error)

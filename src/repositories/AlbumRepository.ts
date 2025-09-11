@@ -87,10 +87,10 @@ export default class AlbumRepositoryContract implements AlbumRepository {
         path: 'tracks',
         populate: [
           { path: 'artist', select: ['title'] },
-          { path: 'genre', select: ['title'] },
           { path: 'period', select: ['title'] },
-          { path: 'inAlbum', select: ['title', 'folderName', 'cloudURL'] },
-          { path: 'inCompilations', select: ['title'] }
+          { path: 'genre', select: ['title'] },
+          { path: 'inCompilations', select: ['title'] },
+          { path: 'inAlbum', select: ['title', 'cloudURL'] }
         ]
       }
     ])

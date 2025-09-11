@@ -5,6 +5,7 @@ import { CategoryDocument } from '../types/category'
 import { AlbumItem } from '../types/album'
 import EntityBasicView from '../views/BasicEntityView'
 import AlbumViewFactory from '../views/AlbumViewFactory'
+import EmbeddedView from '../views/EmbeddedView'
 
 class CategoryItemView extends EntityBasicView {
   albums: number
@@ -28,13 +29,13 @@ class CategoryPageView extends EntityBasicView {
   poster?: string | null
   avatar?: string | null
   albums: AlbumItem[]
-  embeddedAlbums?: EmbeddedDocument[]
+  embeddedAlbums?: EmbeddedView[]
 
   constructor(
     _id: Types.ObjectId,
     title: string,
     albums: AlbumItem[],
-    embeddedAlbums: EmbeddedDocument[],
+    embeddedAlbums: EmbeddedView[],
     poster?: string | null,
     avatar?: string | null
   ) {
@@ -62,7 +63,7 @@ export default class CategoryViewFactory {
       category._id,
       category.title,
       category.albums.map((album) => AlbumViewFactory.createAlbumItemView(album)),
-      category.embeddedAlbums,
+      category.embeddedAlbums.map((embedded) => new EmbeddedView(embedded)),
       category.poster,
       category.avatar
     )

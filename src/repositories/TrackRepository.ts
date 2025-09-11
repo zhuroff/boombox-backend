@@ -2,7 +2,7 @@ import { Request } from 'express'
 import { PipelineStage, Types } from 'mongoose'
 import { Client } from 'genius-lyrics'
 import { AggregatedTrackDocument, Track, TrackDocument } from '../models/track.model'
-import { AudioRequestPayload, NewTrackPayload, TrackRepository } from '../types/track'
+import { NewTrackPayload, TrackRepository } from '../types/track'
 import { GatheringUpdateProps } from '../types/gathering'
 import { getCloudApi } from '..'
 import Parser from '../utils/Parser'
@@ -33,10 +33,6 @@ export default class TrackRepositoryContract implements TrackRepository {
     return await Track.deleteMany({ _id: { $in: tracks } })
   }
 
-  async incrementListeningCounter(id: string) {
-    return await Track.findByIdAndUpdate(id, { $inc: { listened: 1 } })
-  }
-
   async saveTrackDuration(id: string, duration: number) {
     return await Track.findByIdAndUpdate(id, { $set: { duration } })
   }
@@ -60,11 +56,11 @@ export default class TrackRepositoryContract implements TrackRepository {
     }))
   }
 
-  async getAudio(audioPayload: AudioRequestPayload) {
-    const cloudAPI = getCloudApi(audioPayload.cloudURL)
+  async getTrackAudio(path: string, cloudURL: string) {
+    const cloudAPI = getCloudApi(cloudURL)
 
     return await cloudAPI.getFile({
-      path: audioPayload.path,
+      path,
       fileType: 'audio'
     })
   }
@@ -90,6 +86,7 @@ export default class TrackRepositoryContract implements TrackRepository {
 
     await Track.findOneAndUpdate(query, update, options)
   }
+
   async getWave(req: Request) {
     const config: PipelineStage[] = [
       {

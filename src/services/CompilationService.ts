@@ -58,6 +58,7 @@ export default class CompilationService {
 
   async updateCompilation(payload: GatheringUpdatePayload) {
     const updatedCompilation = await this.compilationRepository.updateCompilation(payload)
+
     await this.trackRepository.updateCompilationInTrack({
       listID: payload.gatheringID,
       itemID: payload.entityID,
@@ -113,6 +114,7 @@ export default class CompilationService {
     })
 
     await this.compilationRepository.updateCompilationOrder(_id, targetCompilation.tracks)
+
     return { message: 'compilations.reordered' }
   }
 
@@ -144,7 +146,7 @@ export default class CompilationService {
       compilation,
       compilation.tracks.map(({ track, order }) => {
         const trackDoc = track as TrackDocument
-        return TrackViewFactory.create(trackDoc, order)
+        return TrackViewFactory.create({ ...trackDoc, order })
       })
     )
   }

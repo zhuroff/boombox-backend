@@ -2,7 +2,7 @@ import { Request } from 'express'
 import { Types } from 'mongoose'
 import { TrackDocument } from '../models/track.model'
 import { CompilationDocumentTrack } from '../models/compilation.model'
-import { AudioRequestPayload, NewTrackPayload, TrackRepository } from '../types/track'
+import { NewTrackPayload, TrackRepository } from '../types/track'
 import TrackViewFactory from '../views/TrackViewFactory'
 import Parser from '../utils/Parser'
 
@@ -21,10 +21,6 @@ export default class TrackService {
     return await this.trackRepository.removeTracks(tracks)
   }
 
-  async incrementListeningCounter(id: string) {
-    return await this.trackRepository.incrementListeningCounter(id)
-  }
-
   async saveTrackDuration(id: string, duration: number) {
     return await this.trackRepository.saveTrackDuration(id, duration)
   }
@@ -38,8 +34,8 @@ export default class TrackService {
     return await this.trackRepository.getTrackExternalLyrics(parsedQuery.query)
   }
 
-  async getAudio(audioPayload: AudioRequestPayload) {
-    return await this.trackRepository.getAudio(audioPayload)
+  async getTrackAudio(path: string, cloudURL: string) {
+    return await this.trackRepository.getTrackAudio(encodeURIComponent(path), cloudURL)
   }
 
   async getCoveredTracks(docs: TrackDocument[])  {

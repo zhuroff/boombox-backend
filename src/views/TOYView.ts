@@ -18,7 +18,7 @@ export default class TOYView {
     coverURL?: string,
     metadataContent?: Record<string, string>[] | null
   ) {
-    this._id = `${genre}-${year}`
+    this._id = `${genre}/${year}`
     this.title = `TOY: ${genre}, ${year}`
     this.genre = { title: genre }
     this.period = { title: year }

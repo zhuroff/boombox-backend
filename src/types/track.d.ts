@@ -22,21 +22,14 @@ export interface ExternalTrackLyricsResponse {
   lyrics: string
 }
 
-export interface AudioRequestPayload {
-  id: string
-  path: string
-  cloudURL: string
-}
-
 export interface TrackRepository {
   createTrack(trackPayload: NewTrackPayload): Promise<TrackDocument>
   updateTrack(trackPayload: Partial<TrackDocument>): Promise<TrackDocument | null>
   removeTracks(tracks: Array<string | Types.ObjectId>): Promise<DeleteResult>
-  incrementListeningCounter(id: string): Promise<TrackDocumentNullable>
   saveTrackDuration(id: string, duration: number): Promise<TrackDocumentNullable>
   getTrackLyrics(id: string): Promise<{ lyrics: string | null }>
   getTrackExternalLyrics(query: string): Promise<ExternalTrackLyricsResponse[]>
-  getAudio(audioPayload: AudioRequestPayload): Promise<string | undefined>
+  getTrackAudio(path: string, cloudURL: string): Promise<string | undefined>
   getCoveredTracks(docs: TrackDocument[]): Promise<TrackDocument[]>
   updateCompilationInTrack(payload: GatheringUpdateProps): Promise<void>
   getWave(req: Request): Promise<AggregatedTrackDocument[]>

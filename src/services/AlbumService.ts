@@ -19,7 +19,7 @@ import AlbumViewFactory from '../views/AlbumViewFactory'
 import PaginationViewFactory from '../views/PaginationViewFactory'
 
 export default class AlbumService {
-  #root = '/MelodyMap/Collection'
+  #root = 'MelodyMap/Collection'
 
   constructor(
     private albumRepository: AlbumRepository,
@@ -71,9 +71,9 @@ export default class AlbumService {
     }
 
     const cloudAPI = getCloudApi(album.cloudURL)
-    const albumPath = `${this.#root}/${encodeURIComponent(album.path)}`
+    const albumPath = `${this.#root}/${album.path}`
     const albumContent = await cloudAPI.getFolderContent({
-      path: albumPath,
+      path: encodeURIComponent(albumPath),
       fileType: 'audio'
     })
     
@@ -81,12 +81,18 @@ export default class AlbumService {
       folderName: album.title,
       cloudURL: album.cloudURL,
       cloudId: album.id,
-      path: albumPath,
+      path: encodeURIComponent(albumPath),
       title: Parser.parseAlbumTitle(album.title),
       artist: Parser.parseArtistName(album.title),
       genre: Parser.parseAlbumGenre(album.title),
       period: Parser.getAlbumReleaseYear(album.title),
-      tracks: FileFilter.fileFilter(albumContent.items, 'audioMimeTypes')
+      tracks: FileFilter.fileFilter(
+        albumContent.items.map((track) => ({
+          ...track,
+          path: encodeURIComponent(`${albumPath}/${track.path}`)
+        })),
+        'audioMimeTypes'
+      )
     }
   }
 

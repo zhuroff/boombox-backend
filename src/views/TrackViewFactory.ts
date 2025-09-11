@@ -4,6 +4,14 @@ import EntityBasicView from './BasicEntityView'
 import CloudEntityViewFactory from './CloudEntityViewFactory'
 import Parser from '../utils/Parser'
 
+type TrackMetadata = {
+  artist: Pick<EntityBasicView, 'title'>
+  period: Pick<EntityBasicView, 'title'>
+  genre: Pick<EntityBasicView, 'title'>
+  inAlbum: Pick<AlbumDocument, 'title'>
+  order: number
+}
+
 class TrackView {
   _id: string
   title: string
@@ -11,9 +19,10 @@ class TrackView {
   cloudURL: string
   order: number
   artist: Pick<EntityBasicView, 'title'>
+  period: Pick<EntityBasicView, 'title'>
+  genre: Pick<EntityBasicView, 'title'>
+  inAlbum: Pick<AlbumDocument, 'title'>
   duration?: number | null
-  listened?: number | null
-  inAlbum?: AlbumDocument
   inCompilations?: EntityBasicView[]
 
   constructor(
@@ -23,9 +32,10 @@ class TrackView {
     cloudURL: string,
     order: number,
     artist: Pick<EntityBasicView, 'title'>,
+    period: Pick<EntityBasicView, 'title'>,
+    genre: Pick<EntityBasicView, 'title'>,
+    inAlbum: Pick<AlbumDocument, 'title'>,
     duration?: number | null,
-    listened?: number | null,
-    inAlbum?: AlbumDocument,
     inCompilations?: EntityBasicView[]
   ) {
     this._id = _id
@@ -34,12 +44,10 @@ class TrackView {
     this.cloudURL = cloudURL
     this.order = order
     this.artist = artist
-    this.listened = listened
+    this.period = period
+    this.genre = genre
+    this.inAlbum = inAlbum
     this.duration = duration
-
-    if (inAlbum) {
-      this.inAlbum = inAlbum
-    }
 
     if (inCompilations) {
       this.inCompilations = inCompilations
@@ -49,25 +57,35 @@ class TrackView {
 
 export default class TrackViewFactory {
   static isTrackDocument(track: TrackDocument | ReturnType<typeof CloudEntityViewFactory.create>): track is TrackDocument {
-    return 'inAlbum' in track
+    return '_id' in track
   }
-
+  
   static isCloudEntity(track: TrackDocument | ReturnType<typeof CloudEntityViewFactory.create>): track is ReturnType<typeof CloudEntityViewFactory.create> {
     return 'mimeType' in track
   }
 
-  static create(track: TrackDocument | ReturnType<typeof CloudEntityViewFactory.create>, order?: number) {
+  static create(
+    track: TrackDocument | ReturnType<typeof CloudEntityViewFactory.create>,
+    metadata: TrackMetadata = {
+      artist: { title: 'Various Artists' },
+      period: { title: 'N/A' },
+      genre: { title: 'N/A' },
+      inAlbum: { title: 'N/A' },
+      order: 0
+    }
+  ) {
     if (this.isTrackDocument(track)) {
       return new TrackView(
         track._id.toString(),
         track.title,
         track.path,
         track.cloudURL,
-        order || Number(track.fileName.match(/^\d+/)?.[0]) || order || 0,
+        track.order || Number(track.fileName.match(/^\d+/)?.[0]) || 0,
         track.artist,
-        track.duration,
-        track.listened,
-        track.inAlbum
+        track.period,
+        track.genre,
+        track.inAlbum,
+        track.duration
       )
     }
 
@@ -76,8 +94,11 @@ export default class TrackViewFactory {
       Parser.parseTrackTitle(track.title),
       String(track.path),
       track.cloudURL,
-      order || 0,
-      { title: 'Various Artists' }
+      metadata.order,
+      metadata.artist,
+      metadata.period,
+      metadata.genre,
+      metadata.inAlbum
     )
   }
 }

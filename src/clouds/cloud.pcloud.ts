@@ -17,12 +17,6 @@ export default class PCloudApi implements Cloud {
   #login = process.env['PCLOUD_LOGIN']
   #password = process.env['PCLOUD_PASSWORD']
   #digest = ''
-  #fileTypesMap = new Map<string, string>([
-    ['audio', 'getaudiolink'],
-    ['video', 'getvideolink'],
-    ['image', 'getfilelink'],
-    ['file', 'getfilelink'],
-  ])
   #sha1 = (str?: string) => {
     return str ? createHash('sha1').update(str).digest('hex') : ''
   }
@@ -130,8 +124,7 @@ export default class PCloudApi implements Cloud {
     }
 
     this.#digest = await this.#getDigest()
-    const targetFileType = this.#fileTypesMap.get(fileType)
-    const query = this.#qBuilder(path, targetFileType)
+    const query = this.#qBuilder(`/${path}`, 'getfilelink')
 
     return await this.#client
       .get<PCloudFileResponse | PCloudResponseError>(query)

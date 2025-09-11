@@ -35,6 +35,15 @@ export default class Parser {
     return artistTitleResult
   }
 
+  static parseTrackArtistName(name: string) {
+    const withoutTrackNumber = name.replace(/^[0-9]+[\.\s-]+/, '')
+    const withoutExtension = withoutTrackNumber.replace(/\.[^.]+$/, '')
+    const parts = withoutExtension.split(' - ')
+    const artistName = parts[0] ? parts[0].trim() : 'unknown artist'
+    
+    return artistName
+  }
+
   static parseAlbumGenre(name: string) {
     const albumGenre = name.split('#')[1]
     return albumGenre || 'unknown genre'
