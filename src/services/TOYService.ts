@@ -151,39 +151,23 @@ export default class TOYService {
     return await this.toyRepository.getTOYContent(this.#root, req)
   }
 
-  // async getRandomTracks(filter: CloudReqPayloadFilter & { years: string[] }) {
-  //   const { id, path, cloudURL, limit = 5, years } = filter
+  async getTOYWave(req: Request) {
+    const parsedQuery = Parser.parseNestedQuery<ListRequestConfig>(req)
+    const tracks = await this.toyRepository.getTOYWave(this.#root, parsedQuery)
+    let shuffledTracks = []
 
-  //   const response = years.map(async (year) => (
-  //     await this.toyRepository.getFolderContent({
-  //       id,
-  //       path,
-  //       cloudURL
-  //     })
-  //   ))
+    if (!parsedQuery['limit'] || tracks.length <= parsedQuery['limit']) {
+      shuffledTracks = this.#shuffleArray(tracks)
+    } else {
+      let overLimit = tracks.length - parsedQuery['limit']
+      while (overLimit) {
+        const randomIndex = Math.floor(Math.random() * tracks.length)
+        tracks.splice(randomIndex, 1)
+        overLimit--
+      }
+      shuffledTracks = this.#shuffleArray(tracks)
+    }
 
-  //   const content = await Promise.all(response)
-
-  //   const allTracks =  content.reduce<CloudEntity[]>((acc, next) => {
-  //     acc.push(...next.items.filter((item) => (
-  //       item.mimeType && FileFilter.typesMap.audioMimeTypes.has(item.mimeType)
-  //     )))
-
-  //     return acc
-  //   }, [])
-
-  //   if (!limit || allTracks.length <= limit) {
-  //     return this.#shuffleArray(allTracks)
-  //   }
-
-  //   let overLimit = allTracks.length - limit
-
-  //   while (overLimit) {
-  //     const randomIndex = Math.floor(Math.random() * allTracks.length)
-  //     allTracks.splice(randomIndex, 1)
-  //     overLimit--
-  //   }
-
-  //   return this.#shuffleArray(allTracks)
-  // }
+    return shuffledTracks.map((track) => TrackViewFactory.create(track.track, track.metadata))
+  }
 }

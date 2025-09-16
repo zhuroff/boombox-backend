@@ -21,4 +21,5 @@ export interface TOYRepository {
   getTOYAlbum(path: string): Promise<TOYAlbumRes>
   getTOYListRandom(queryConfig: ListRequestConfig): Promise<TOYAlbumListItem[]>
   getTOYContent(root: string, req: Request): Promise<Array<string | undefined>>
+  getTOYWave(path: string, config: ListRequestConfig): Promise<{ track: CloudEntity, metadata: TrackMetadata }[]>
 }

@@ -32,5 +32,5 @@ export interface TrackRepository {
   getTrackAudio(path: string, cloudURL: string): Promise<string | undefined>
   getCoveredTracks(docs: TrackDocument[]): Promise<TrackDocument[]>
   updateCompilationInTrack(payload: GatheringUpdateProps): Promise<void>
-  getWave(req: Request): Promise<AggregatedTrackDocument[]>
+  getWave(config: ListRequestConfig): Promise<AggregatedTrackDocument[]>
 }

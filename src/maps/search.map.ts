@@ -96,12 +96,15 @@ const searchMap = new Map<SearchModelKey, SearchConfig>([
           select: ['title', 'folderName', 'albumCover', 'cloudURL', 'cloudId', 'path'],
           populate: {
             path: 'period',
-            model: Period,
             select: ['title']
           }
         },
         {
           path: 'artist',
+          select: ['title']
+        },
+        {
+          path: 'period',
           select: ['title']
         }
       ]

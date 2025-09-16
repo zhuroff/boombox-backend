@@ -1,9 +1,9 @@
-import { Request } from 'express'
 import { PipelineStage, Types } from 'mongoose'
 import { Client } from 'genius-lyrics'
 import { AggregatedTrackDocument, Track, TrackDocument } from '../models/track.model'
 import { NewTrackPayload, TrackRepository } from '../types/track'
 import { GatheringUpdateProps } from '../types/gathering'
+import { ListRequestConfig } from '../types/pagination'
 import { getCloudApi } from '..'
 import Parser from '../utils/Parser'
 
@@ -87,8 +87,12 @@ export default class TrackRepositoryContract implements TrackRepository {
     await Track.findOneAndUpdate(query, update, options)
   }
 
-  async getWave(req: Request) {
-    const config: PipelineStage[] = [
+  async getWave(config: ListRequestConfig) {
+    if (!config['filter']) {
+      throw new Error('Incorrect request options')
+    }
+
+    const queryConfig: PipelineStage[] = [
       {
         $lookup: {
           from: 'artists',
@@ -123,34 +127,36 @@ export default class TrackRepositoryContract implements TrackRepository {
       },
       {
         $match: {
-          [req.body['filter']['key']]: req.body['filter']['name']
+          [config['filter']['key']]: String(config['filter']['name'])
         }
       },
       {
         $sample: {
-          size: req.body['limit']
+          size: config['limit']
         }
       }
     ]
 
-    const waveTracks = await Track.aggregate<AggregatedTrackDocument>(config)
+    const waveTracks = await Track.aggregate<AggregatedTrackDocument>(queryConfig)
 
     return await Promise.all(waveTracks.map(async (track) => {
       const cloudURL = track.cloudURL
       const cloudId = track.cloudId
-      const folderName = track.inAlbum[0]?.folderName
+      const albumPath = track.inAlbum[0]?.path
 
-      if (!cloudURL || !cloudId || !folderName) {
+      if (!cloudURL || !cloudId) {
         throw new Error('Incorrect request options')
       }
 
       const cloudAPI = getCloudApi(cloudURL)
       return {
         ...track,
-        coverURL: await cloudAPI.getFile({
-          path: `${folderName}/cover.webp`,
-          fileType: 'image'
-        })
+        coverURL: albumPath
+          ? await cloudAPI.getFile({
+              path: `${albumPath}/cover.webp`,
+              fileType: 'image'
+            })
+          : undefined
       }
     }))
   }

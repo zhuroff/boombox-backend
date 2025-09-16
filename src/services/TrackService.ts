@@ -3,6 +3,7 @@ import { Types } from 'mongoose'
 import { TrackDocument } from '../models/track.model'
 import { CompilationDocumentTrack } from '../models/compilation.model'
 import { NewTrackPayload, TrackRepository } from '../types/track'
+import { ListRequestConfig } from '../types/pagination'
 import TrackViewFactory from '../views/TrackViewFactory'
 import Parser from '../utils/Parser'
 
@@ -55,7 +56,9 @@ export default class TrackService {
   }
 
   async getWave(req: Request) {
-    const waveTracks = await this.trackRepository.getWave(req)
+    const parsedQuery = Parser.parseNestedQuery<ListRequestConfig>(req)
+    const waveTracks = await this.trackRepository.getWave(parsedQuery)
+
     return waveTracks.map((track) => {
       const { artist, genre, period, inAlbum } = track
 

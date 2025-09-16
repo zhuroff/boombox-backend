@@ -10,6 +10,7 @@ type TrackMetadata = {
   genre: Pick<EntityBasicView, 'title'>
   inAlbum: Pick<AlbumDocument, 'title'>
   order: number
+  coverURL?: string
 }
 
 class TrackView {
@@ -24,6 +25,7 @@ class TrackView {
   inAlbum: Pick<AlbumDocument, 'title'>
   duration?: number | null
   inCompilations?: EntityBasicView[]
+  coverURL?: string
 
   constructor(
     _id: string,
@@ -35,8 +37,9 @@ class TrackView {
     period: Pick<EntityBasicView, 'title'>,
     genre: Pick<EntityBasicView, 'title'>,
     inAlbum: Pick<AlbumDocument, 'title'>,
+    coverURL?: string,
     duration?: number | null,
-    inCompilations?: EntityBasicView[]
+    inCompilations?: EntityBasicView[],
   ) {
     this._id = _id
     this.title = title
@@ -51,6 +54,10 @@ class TrackView {
 
     if (inCompilations) {
       this.inCompilations = inCompilations
+    }
+
+    if (coverURL) {
+      this.coverURL = coverURL
     }
   }
 }
@@ -85,6 +92,7 @@ export default class TrackViewFactory {
         track.period,
         track.genre,
         track.inAlbum,
+        track.coverURL,
         track.duration
       )
     }
@@ -98,7 +106,8 @@ export default class TrackViewFactory {
       metadata.artist,
       metadata.period,
       metadata.genre,
-      metadata.inAlbum
+      metadata.inAlbum,
+      metadata.coverURL
     )
   }
 }

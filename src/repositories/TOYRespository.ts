@@ -4,6 +4,7 @@ import { ListRequestConfig, RelatedAlbumsReqFilter } from '../types/pagination'
 import { getCloudApi } from '..'
 import { CloudApi } from '../types/cloud'
 import CloudEntityViewFactory from '../views/CloudEntityViewFactory'
+import FileFilter from '../utils/FileFilter'
 import Parser from '../utils/Parser'
 
 export default class TOYRepositoryContracts implements TOYRepository {
@@ -104,6 +105,52 @@ export default class TOYRepositoryContracts implements TOYRepository {
     const metadataContent = await this.#fetchTOYMetadata(path, metadataFile)
 
     return { result, coverURL, metadataContent }
+  }
+
+  async getTOYWave(path: string, config: ListRequestConfig) {
+    if (!config['filter']) {
+      throw new Error('Incorrect request options')
+    }
+
+    const url = `${path}/${config['filter']['name']}`
+    const cloudApi = getCloudApi(String(process.env['TOY_CLOUD_URL']))
+    const yearsResponse = await cloudApi.getFolderContent({ path: url })
+
+    const filteredYears = yearsResponse.items.filter((item) => (
+      item.type === 'dir' && !isNaN(Number(item.path))
+    ))
+
+    const waveTracks = await Promise.all(filteredYears.map(async (year) => {
+      const tracks = await cloudApi.getFolderContent({ path: `${url}/${year.path}` })
+      return await Promise.all(tracks.items
+        .filter((item) => (
+          item.mimeType && FileFilter.typesMap.audioMimeTypes.has(item.mimeType)
+        ))
+        .map(async (item) => {
+          const genre = decodeURIComponent(String(config['filter']?.['name']))
+
+          const coverURL = await cloudApi.getFile({
+            path: `${path}/${genre}/${year.path}/cover.webp`, 
+            fileType: 'image'
+          })
+
+          return {
+            track: {
+              ...item,
+              path: encodeURIComponent(`/${path}/${genre}/${year.path}/${item.path}`)
+            },
+            metadata: {
+              period: { title: year.path },
+              artist: { title: 'Various Artists' },
+              genre: { title: genre },
+              inAlbum: { title: `TOY: ${genre}` },
+              coverURL
+            }
+          }
+        }))
+    }))
+
+    return waveTracks.flat()
   }
 
   async getTOYListRandom(queryConfig: ListRequestConfig) {

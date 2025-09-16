@@ -12,8 +12,7 @@ const router = Router()
 router.get('/:id/lyrics', authChecker, trackController.getTrackLyrics)
 router.get('/audio/:path', authChecker, trackController.getTrackAudio)
 router.get('/lyrics/search', authChecker, trackController.getTrackExternalLyrics)
-
-router.post('/wave', authChecker, trackController.getWave)
+router.get('/wave', authChecker, trackController.getWave)
 router.patch('/update', authChecker, trackController.updateTrack)
 
 export default router
