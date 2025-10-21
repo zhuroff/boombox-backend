@@ -21,8 +21,7 @@
     "strictNullChecks": true,
     "noUnusedLocals": true,
     "noUncheckedIndexedAccess": true,
-    "emitDeclarationOnly": true,
-    "declaration": true,
+    "declaration": false,
     "noPropertyAccessFromIndexSignature": true,
     "baseUrl": ".",
     "esModuleInterop": true,
@@ -31,6 +30,7 @@
   },
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "*.config.ts"
   ]
 }

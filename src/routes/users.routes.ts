@@ -16,7 +16,7 @@ const userController = new UserController(userService)
 const router = Router()
 
 router.get('/', authValidator, userController.getRawUsers)
-router.post('/registration', authValidator, userController.registration)
+router.post('/create', authValidator, userController.registration)
 router.post('/login', userController.login)
 router.post('/logout', userController.logout)
 router.get('/refresh', authValidator, userController.refreshToken)
