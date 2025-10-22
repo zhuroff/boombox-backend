@@ -2,10 +2,9 @@ import { model, Schema, PaginateModel, InferSchemaType, Types } from 'mongoose'
 import { ArtistDocument } from './artist.model'
 import { GenreDocument } from './genre.model'
 import { PeriodDocument } from './period.model'
-import { CollectionDocument } from './collection.model'
 import paginate from 'mongoose-paginate-v2'
 
-type EmbeddedObjectIdKeys = 'artist' | 'genre' | 'period' | 'inCollections'
+type EmbeddedObjectIdKeys = 'artist' | 'genre' | 'period'
 
 const schema = new Schema({
 	title: {
@@ -34,14 +33,7 @@ const schema = new Schema({
 	frame: {
 		type: String,
 		required: true
-	},
-	inCollections: [
-		{
-			type: Schema.Types.ObjectId,
-			ref: 'collections',
-			required: false
-		}
-	]
+	}
 })
 
 schema.index({ title: 'text' })
@@ -54,7 +46,6 @@ export interface EmbeddedDocument extends Omit<
 	artist: ArtistDocument
 	genre: GenreDocument
 	period: PeriodDocument
-	inCollections: CollectionDocument
 }
 
 export const Embedded = model<EmbeddedDocument, PaginateModel<EmbeddedDocument>>('embedded', schema)

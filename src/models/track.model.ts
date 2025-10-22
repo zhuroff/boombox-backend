@@ -17,7 +17,15 @@ const schema = new Schema({
     type: String,
     required: true
   },
+  path: {
+    type: String,
+    required: true
+  },
   cloudURL: {
+    type: String,
+    required: true
+  },
+  cloudId: {
     type: String,
     required: true
   },
@@ -33,10 +41,6 @@ const schema = new Schema({
     type: Date,
     required: true
   },
-  path: {
-    type: String,
-    required: true
-  },
   mimeType: {
     type: String,
     required: true
@@ -48,11 +52,6 @@ const schema = new Schema({
   duration: {
     type: Number,
     required: false
-  },
-  listened: {
-    type: Number,
-    required: false,
-    default: 0
   },
   inAlbum: {
     type: Schema.Types.ObjectId,
@@ -91,11 +90,24 @@ export interface TrackDocument extends Omit<
   TrackObjectIdKeys
 > {
   coverURL?: string
+  order?: number
   inAlbum: AlbumDocument
   inCompilations: CompilationDocument[]
   artist: ArtistDocument
   genre: GenreDocument
   period: PeriodDocument
+}
+
+export interface AggregatedTrackDocument extends Omit<
+  InferSchemaType<typeof schema> & { _id: Types.ObjectId },
+  TrackObjectIdKeys
+> {
+  coverURL?: string
+  inAlbum: AlbumDocument[]
+  inCompilations: CompilationDocument[]
+  artist: ArtistDocument[]
+  genre: GenreDocument[]
+  period: PeriodDocument[]
 }
 
 export const Track = model<TrackDocument, PaginateModel<TrackDocument>>('tracks', schema)

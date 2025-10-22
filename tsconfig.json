@@ -9,8 +9,8 @@
       "esnext"
     ],
     "sourceMap": true,
-    "rootDir": "src",
-    "outDir": "dist",
+    "rootDir": "./src",
+    "outDir": "./dist",
     "resolveJsonModule": true,
     "removeComments": true,
     "noEmitOnError": false,
@@ -21,8 +21,7 @@
     "strictNullChecks": true,
     "noUnusedLocals": true,
     "noUncheckedIndexedAccess": true,
-    "emitDeclarationOnly": true,
-    "declaration": true,
+    "declaration": false,
     "noPropertyAccessFromIndexSignature": true,
     "baseUrl": ".",
     "esModuleInterop": true,
@@ -31,6 +30,7 @@
   },
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "*.config.ts"
   ]
 }

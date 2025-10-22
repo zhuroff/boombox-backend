@@ -1,0 +1,231 @@
+import { Request } from 'express'
+import { Document, PaginateOptions, PipelineStage, PopulateOptions, FilterQuery, Types } from 'mongoose'
+import { Album, AlbumDocument } from '../models/album.model'
+import { CollectionDocumentAlbum } from '../models/collection.model'
+import { AlbumAttrs, AlbumRepository } from '../types/album'
+import { ListRequestConfig } from '../types/pagination'
+import { GatheringUpdateProps } from '../types/gathering'
+import { getCloudApi } from '..'
+
+export default class AlbumRepositoryContract implements AlbumRepository {
+  getAlbumRandom(): Promise<AlbumDocument> {
+    throw new Error('Method not implemented.')
+  }
+
+  async fetchAlbumDocs(): Promise<AlbumDocument[]> {
+    return await (
+      Album.find({}, {
+        folderName: true,
+        cloudURL: true,
+        cloudId: true,
+      })
+      .populate({
+        path: 'tracks',
+        select: ['fileName', 'mimeType']
+      })
+    )
+  }
+
+  async saveNewAlbum(newAlbum: Document<AlbumDocument>, attrs: AlbumAttrs) {
+    const dateOfCreation = new Date()
+    const { artist, genre, period, tracks } = attrs
+
+    newAlbum.$set({ artist })
+    newAlbum.$set({ genre })
+    newAlbum.$set({ period })
+    newAlbum.$set({ tracks })
+    newAlbum.$set({ created: dateOfCreation })
+    newAlbum.$set({ modified: dateOfCreation })
+
+    return await newAlbum.save()
+  }
+
+  async updateAlbumsClouds(albums: AlbumDocument[]) {
+    return await Promise.all(albums.map(async (album) => (
+      await Album.findOneAndUpdate(
+        { _id: album._id },
+        { $set: { modified: new Date(), cloudURL: album.cloudURL } },
+        { new: true }
+      )
+    )))
+  }
+
+  async updateCollectionsInAlbum({ listID, itemID, inList }: GatheringUpdateProps) {
+    const query = { _id: itemID }
+    const update = inList
+      ? { $pull: { inCollections: listID } }
+      : { $push: { inCollections: listID } }
+    const options = { new: true }
+
+    await Album.findOneAndUpdate(query, update, options)
+  }
+
+  async cleanAlbumCollections(albums: CollectionDocumentAlbum[], listID: string | Types.ObjectId) {
+    const cleanProcess = albums.map(async (album) => {
+      const query: FilterQuery<AlbumDocument> = { _id: new Types.ObjectId(album.album.toString()) }
+      const update = { $pull: { inCollections: listID } }
+      const options = { new: true }
+
+      return await Album.findOneAndUpdate(query, update, options)
+    })
+
+    return await Promise.all(cleanProcess)
+  }
+
+  async getAlbum(id: Types.ObjectId | 'random') {
+    const album = await (
+      id === 'random'
+        ? Album.findOne<AlbumDocument>().skip(Math.floor(Math.random() * await Album.countDocuments()))
+        : Album.findById(id)
+    )
+    .populate([
+      { path: 'artist', select: ['title'] },
+      { path: 'genre', select: ['title'] },
+      { path: 'period', select: ['title'] },
+      { path: 'inCollections', select: ['title'] },
+      {
+        path: 'tracks',
+        populate: [
+          { path: 'artist', select: ['title'] },
+          { path: 'period', select: ['title'] },
+          { path: 'genre', select: ['title'] },
+          { path: 'inCompilations', select: ['title'] },
+          { path: 'inAlbum', select: ['title', 'cloudURL'] }
+        ]
+      }
+    ])
+    .lean()
+
+    if (!album) {
+      throw new Error('Incorrect request options')
+    }
+    
+    return album
+  }
+
+  async getAlbums(body: ListRequestConfig) {
+    const populate: PopulateOptions[] = [
+      { path: 'artist', select: ['title'] },
+      { path: 'genre', select: ['title'] },
+      { path: 'period', select: ['title'] },
+    ]
+
+    const options: PaginateOptions = {
+      page: body.page,
+      limit: body.limit,
+      sort: body.sort,
+      populate,
+      lean: true,
+      select: {
+        title: true,
+        path: true,
+        cloudURL: true
+      }
+    }
+
+    return await Album.paginate({}, options)
+  }
+
+  async getAlbumsRandom(limit: number, filter?: ListRequestConfig['filter']) {
+    const basicConfig: PipelineStage[] = [
+      {
+        $lookup: {
+          from: 'artists',
+          localField: 'artist',
+          foreignField: '_id',
+          as: 'artist'
+        }
+      },
+      {
+        $lookup: {
+          from: 'genres',
+          localField: 'genre',
+          foreignField: '_id',
+          as: 'genre'
+        }
+      },
+      {
+        $lookup: {
+          from: 'periods',
+          localField: 'period',
+          foreignField: '_id',
+          as: 'period'
+        }
+      },
+      {
+        $sample: {
+          size: limit
+        }
+      }
+    ]
+
+    const aggregateConfig: PipelineStage[] = []
+
+    for (const stage of basicConfig) {
+      aggregateConfig.push(stage)
+
+      if (!filter || !('value' in filter)) continue
+
+      if (filter.from === (stage as PipelineStage.Lookup).$lookup?.from) {
+        aggregateConfig.push({
+          $match: {
+            [String(filter['key'])]: new Types.ObjectId(String(filter['value']))
+          }
+        })
+
+        if (filter['excluded']) {
+          const lastProp = aggregateConfig.at(-1) as PipelineStage.Match | undefined
+          if (lastProp) {
+            Object.entries(filter['excluded']).forEach(([key, value]) => {
+              const joinedKey = key.split('>').join('.')
+              lastProp.$match[joinedKey] = { $ne: new Types.ObjectId(String(value)) }
+            })
+          }
+        }
+      }
+    }
+
+    return await Album.aggregate<AlbumDocument>(aggregateConfig)
+  }
+
+  async deleteAlbum(id: Types.ObjectId | string) {
+    return await Album.findByIdAndDelete(id)
+  }
+
+  async getCoveredAlbums(docs: AlbumDocument[]) {
+    return await Promise.all(docs.map(async (album) => {
+      const cover = await this.fetchAlbumCover(album)
+      return { album, cover }
+    }))
+  }
+
+  async fetchAlbumCover(album: AlbumDocument) {
+    const cloudAPI = getCloudApi(album.cloudURL)
+    return await cloudAPI.getFile({
+      path: `${album.path}/cover.webp`,
+      fileType: 'image'
+    })
+  }
+
+  async getAlbumContent(req: Request) {
+    const { id, folder } = req.params
+    const { limit, offset, fileType } = req.query
+    const query = `limit=${limit}&offset=${offset}`
+
+    const album = await Album.findById(id).select(['cloudURL', 'path'])
+
+    if (!album) {
+      throw new Error('Album not found')
+    }
+
+    const cloudApi = getCloudApi(album.cloudURL)
+    const result = await cloudApi.getFolderContent({ path: `${album.path}/${folder}`, query })
+    const items = result.items.filter((item) => !!item.mimeType?.includes(String(fileType)))
+    return await Promise.all(items.map(async (item) => {
+      return await cloudApi.getFile({
+        path: `${album.path}/${folder}/${item.title}`,
+        fileType: String(fileType)
+      })
+    }))
+  }
+}

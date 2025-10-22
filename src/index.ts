@@ -18,11 +18,10 @@ import searchRoutes from './routes/search.routes'
 import collectionsRoutes from './routes/collections.routes'
 import backupRoutes from './routes/backup.routes'
 import synchronizeRoutes from './routes/sync.routes'
-import cloudRoutes from './routes/cloud.routes'
-import { CloudApi } from './types/cloud.types'
-import { PCloudApi } from './clouds/cloud.pcloud'
-import { YandexCloudApi } from './clouds/cloud.yandex'
-// import { cleanEverything } from './utils/clean'
+import toyRoutes from './routes/toy.routes'
+import PCloudApi from './clouds/cloud.pcloud'
+import YandexCloudApi from './clouds/cloud.yandex'
+import { CloudApi } from './types/cloud'
 
 dotenv.config()
 
@@ -35,11 +34,10 @@ const corsConfig = {
     : process.env['CLIENT_URL_PROD']
 }
 export const rootDir = path.resolve(__dirname, '../')
-export const cloudRootPath = `${process.env['COLLECTION_ROOT']}`
 
 export const cloudsMap = new Map<string, CloudApi>([
-  ['https://eapi.pcloud.com', new PCloudApi(cloudRootPath)],
-  ['https://cloud-api.yandex.net', new YandexCloudApi(cloudRootPath)]
+  ['https://eapi.pcloud.com', new PCloudApi()],
+  ['https://cloud-api.yandex.net', new YandexCloudApi()]
 ])
 
 export const getCloudApi = (url: string) => cloudsMap.get(url) as CloudApi
@@ -47,9 +45,8 @@ export const getCloudApi = (url: string) => cloudsMap.get(url) as CloudApi
 mongoose.connect(process.env['MONGO_URI'] as string)
   .then(() => {
     console.log('MongoDB connected')
-    // cleanEverything().then(() => console.log('Everything cleaned'))
   })
-  .catch((error) => console.log(error))
+  .catch((error) => console.error(error))
 
 app.use(cors(corsConfig))
 app.use(express.urlencoded({ extended: true }))
@@ -69,7 +66,7 @@ app.use('/api/compilations', compilationsRoutes)
 app.use('/api/collections', collectionsRoutes)
 app.use('/api/backup', backupRoutes)
 app.use('/api/sync', synchronizeRoutes)
-app.use('/api/cloud', cloudRoutes)
+app.use('/api/toy', toyRoutes)
 app.use('/api/search', searchRoutes)
 app.use('/backups', express.static(rootDir + '/backups'))
 app.use('/uploads', express.static(rootDir + '/uploads'))

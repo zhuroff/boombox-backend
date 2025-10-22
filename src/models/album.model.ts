@@ -13,7 +13,15 @@ const schema = new Schema({
     type: String,
     required: true
   },
+  cloudId: {
+    type: String,
+    required: true
+  },
   folderName: {
+    type: String,
+    required: true
+  },
+  path: {
     type: String,
     required: true
   },
