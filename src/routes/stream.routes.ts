@@ -14,11 +14,18 @@ router.get('/proxy', (req: Request, res: Response): void => {
     }
 
     const protocol = url.startsWith('https') ? https : http
+    const rangeHeader = req.headers.range
+
+    const requestHeaders: Record<string, string> = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    }
+
+    if (rangeHeader) {
+      requestHeaders['Range'] = rangeHeader
+    }
 
     protocol.get(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      }
+      headers: requestHeaders
     }, (proxyRes) => {
       if (proxyRes.statusCode && [301, 302, 307, 308].includes(proxyRes.statusCode)) {
         const redirectUrl = proxyRes.headers.location
@@ -30,23 +37,28 @@ router.get('/proxy', (req: Request, res: Response): void => {
         const redirectProtocol = redirectUrl.startsWith('https') ? https : http
         
         redirectProtocol.get(redirectUrl, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-          }
+          headers: requestHeaders
         }, (finalRes) => {
-          if (finalRes.statusCode !== 200) {
-            res.status(finalRes.statusCode || 500).json({ 
+          const statusCode = finalRes.statusCode || 200
+          
+          if (statusCode !== 200 && statusCode !== 206) {
+            res.status(statusCode).json({ 
               error: 'Failed to fetch file after redirect',
-              statusCode: finalRes.statusCode 
+              statusCode 
             })
             return
           }
+
+          res.status(statusCode)
 
           if (finalRes.headers['content-type']) {
             res.set('Content-Type', finalRes.headers['content-type'])
           }
           if (finalRes.headers['content-length']) {
             res.set('Content-Length', finalRes.headers['content-length'])
+          }
+          if (finalRes.headers['content-range']) {
+            res.set('Content-Range', finalRes.headers['content-range'])
           }
           if (finalRes.headers['accept-ranges']) {
             res.set('Accept-Ranges', finalRes.headers['accept-ranges'])
@@ -65,19 +77,26 @@ router.get('/proxy', (req: Request, res: Response): void => {
         return
       }
 
-      if (proxyRes.statusCode !== 200) {
-        res.status(proxyRes.statusCode || 500).json({ 
+      const statusCode = proxyRes.statusCode || 200
+
+      if (statusCode !== 200 && statusCode !== 206) {
+        res.status(statusCode).json({ 
           error: 'Failed to fetch file',
-          statusCode: proxyRes.statusCode 
+          statusCode 
         })
         return
       }
+
+      res.status(statusCode)
 
       if (proxyRes.headers['content-type']) {
         res.set('Content-Type', proxyRes.headers['content-type'])
       }
       if (proxyRes.headers['content-length']) {
         res.set('Content-Length', proxyRes.headers['content-length'])
+      }
+      if (proxyRes.headers['content-range']) {
+        res.set('Content-Range', proxyRes.headers['content-range'])
       }
       if (proxyRes.headers['accept-ranges']) {
         res.set('Accept-Ranges', proxyRes.headers['accept-ranges'])
