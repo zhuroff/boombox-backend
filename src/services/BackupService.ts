@@ -61,6 +61,11 @@ export default class BackupService {
 
   async save() {
     const timestamp = String(new Date().getTime())
+    
+    const backupsDir = path.join(rootDir, 'backups')
+    if (!fs.existsSync(backupsDir)) {
+      fs.mkdirSync(backupsDir, { recursive: true })
+    }
 
     await this.createFolder(timestamp)
     const backuping = [...this.modelsDictMap].map(async ([key, model]) => {
@@ -69,10 +74,18 @@ export default class BackupService {
     })
 
     await Promise.all(backuping)
+    
+    return { message: 'Backup created successfully', timestamp }
   }
 
   get() {
-    return fs.readdirSync(path.join(rootDir, 'backups'))
+    const backupsDir = path.join(rootDir, 'backups')
+    if (!fs.existsSync(backupsDir)) {
+      fs.mkdirSync(backupsDir, { recursive: true })
+      return []
+    }
+    
+    return fs.readdirSync(backupsDir)
   }
 
   async recover(date: string) {
