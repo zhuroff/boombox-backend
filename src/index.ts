@@ -23,6 +23,7 @@ import streamRoutes from './routes/stream.routes'
 import PCloudApi from './clouds/cloud.pcloud'
 import YandexCloudApi from './clouds/cloud.yandex'
 import { CloudApi } from './types/cloud'
+import { noIndexMiddleware } from './middleware/noindex'
 
 dotenv.config()
 
@@ -54,6 +55,13 @@ app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 app.use(json({ limit: '1000kb' }))
 app.use(morgan('tiny'))
+
+app.use(noIndexMiddleware)
+
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain')
+  res.send('User-agent: *\nDisallow: /')
+})
 
 app.use('/api/users', usersRoutes)
 app.use('/api/albums', albumsRoutes)
