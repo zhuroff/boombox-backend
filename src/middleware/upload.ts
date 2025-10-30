@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import path from 'path'
 import multer, { FileFilterCallback, MulterError } from 'multer'
+import { rootDir } from '../index'
 
 type MulterCallback = {
   (error: Error | null, destination: string): void
@@ -12,7 +13,7 @@ const filenameSlugify = (filename: string) => {
 
 const storage = multer.diskStorage({
   destination (_: Request, __: Express.Multer.File, callback: MulterCallback) {
-    callback(null, path.resolve(__dirname, '../../', 'uploads'))
+    callback(null, path.join(rootDir, 'uploads'))
   },
 
   filename (_: Request, file: Express.Multer.File, callback: MulterCallback) {
