@@ -27,7 +27,7 @@ export default class BackupService {
   private async createFolder(folderName: string) {
     return new Promise((resolve, reject) => {
       fs.mkdir(
-        path.join(rootDir, './backups', folderName),
+        path.join(rootDir, 'backups', folderName),
         (error) => {
           error ? reject(error) : resolve(true)
         }
@@ -38,7 +38,7 @@ export default class BackupService {
   private async writeFile(fileName: string, folderName: string, data: Document<unknown>[]) {
     return new Promise((resolve, reject) => {
       fs.writeFile(
-        path.join(rootDir, './backups', folderName, fileName),
+        path.join(rootDir, 'backups', folderName, fileName),
         JSON.stringify(data),
         (error) => {
           error ? reject(error) : resolve(true)
@@ -50,7 +50,7 @@ export default class BackupService {
   private async readFile(folderName: string, fileName: string) {
     return new Promise((resolve, reject) => {
       fs.readFile(
-        path.join(rootDir, './backups', folderName, fileName),
+        path.join(rootDir, 'backups', folderName, fileName),
         'utf8',
         (error, data) => (
           error ? reject(error) : resolve(JSON.parse(data))
@@ -72,7 +72,7 @@ export default class BackupService {
   }
 
   get() {
-    return fs.readdirSync(path.join(rootDir, '.', 'backups'))
+    return fs.readdirSync(path.join(rootDir, 'backups'))
   }
 
   async recover(date: string) {
@@ -89,7 +89,7 @@ export default class BackupService {
   async remove(folderName: string) {
     return new Promise((resolve, reject) => {
       fs.rm(
-        path.join(rootDir, './backups', folderName),
+        path.join(rootDir, 'backups', folderName),
         { recursive: true },
         (error) => {
           error
