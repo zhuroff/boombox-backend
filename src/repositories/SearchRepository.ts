@@ -37,8 +37,7 @@ export default class SearchRepositoryContract implements SearchRepository {
   async searchEntry<T>(params: SearchParams, Model: SearchConfig) {
     return await Model.instance
       .find(params, Model.options)
-      // @ts-expect-error: type conflict
-      .populate(Model.populates)
+      .populate(Model.populates || [])
       .lean() as T
   }
 }
