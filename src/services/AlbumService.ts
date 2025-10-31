@@ -47,6 +47,8 @@ export default class AlbumService {
 
     const { validShapes, invalidShapes } = this.validateAlbumShapes(albumShapes)
 
+    await this.preCreateCategories(validShapes)
+
     const savedAlbums = await Promise.all(validShapes.map(async (shape) => (
       await this.createAlbum(shape)
     )))
@@ -58,6 +60,30 @@ export default class AlbumService {
       invalid: invalidFolders.length > 0 ? invalidFolders : [],
       updated: [],
       deleted: []
+    }
+  }
+
+  async preCreateCategories(shapes: AlbumShape[]) {
+    const uniqueArtists = new Set<string>()
+    const uniqueGenres = new Set<string>()
+    const uniquePeriods = new Set<string>()
+
+    shapes.forEach((shape) => {
+      uniqueArtists.add(shape.artist)
+      uniqueGenres.add(shape.genre)
+      uniquePeriods.add(shape.period)
+    })
+
+    for (const artist of uniqueArtists) {
+      await this.categoryService.createCategory<ArtistDocument>(Artist, artist)
+    }
+
+    for (const genre of uniqueGenres) {
+      await this.categoryService.createCategory<GenreDocument>(Genre, genre)
+    }
+
+    for (const period of uniquePeriods) {
+      await this.categoryService.createCategory<PeriodDocument>(Period, period)
     }
   }
 
