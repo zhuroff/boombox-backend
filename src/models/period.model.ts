@@ -37,6 +37,7 @@ const schema = new Schema({
 })
 
 schema.index({ title: 'text' })
+schema.index({ title: 1 }, { unique: true })
 schema.plugin(paginate)
 
 export interface PeriodDocument extends Omit<

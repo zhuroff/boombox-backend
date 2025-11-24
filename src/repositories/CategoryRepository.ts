@@ -10,7 +10,14 @@ export default class CategoryRepositoryContract implements CategoryRepository {
     const update = { $push: { albums: _id } }
     const options = { upsert: true, new: true, setDefaultsOnInsert: true }
 
-    return await Model.findOneAndUpdate(query, update, options)
+    try {
+      return await Model.findOneAndUpdate(query, update, options)
+    } catch (error: any) {
+      if (error.code === 11000) {
+        return await Model.findOneAndUpdate(query, update, { new: true })
+      }
+      throw error
+    }
   }
 
   async removeCategory<T>(Model: PaginateModel<T>, _id: string) {
