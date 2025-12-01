@@ -29,6 +29,10 @@ const schema = new Schema({
       order: {
         type: Number,
         required: true
+      },
+      post: {
+        type: String,
+        required: false
       }
     }
   ]
@@ -40,6 +44,7 @@ schema.plugin(paginate)
 export interface CollectionDocumentAlbum {
   album: AlbumDocument | Types.ObjectId
   order: number
+  post?: string
 }
 
 export interface CollectionDocument extends Omit<

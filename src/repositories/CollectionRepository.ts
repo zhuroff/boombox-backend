@@ -1,6 +1,6 @@
 import { PaginateOptions, Types } from 'mongoose'
 import { Collection, CollectionDocumentAlbum } from '../models/collection.model'
-import { CollectionRepository, GatheringUpdatePayload, NewCollectionPayload } from '../types/gathering'
+import { CollectionPostPayload, CollectionRepository, GatheringUpdatePayload, NewCollectionPayload } from '../types/gathering'
 import { ListRequestConfig } from '../types/pagination'
 
 export default class CollectionRepositoryContract implements CollectionRepository {
@@ -49,6 +49,9 @@ export default class CollectionRepositoryContract implements CollectionRepositor
           { path: 'inCollections', select: ['title'] }
         ]
       })
+      .populate({
+        path: 'albums.post'
+      })
       .lean()
   }
 
@@ -68,7 +71,12 @@ export default class CollectionRepositoryContract implements CollectionRepositor
     }
   }
 
-  async updateCollection({ entityID, gatheringID, isInList, order }: GatheringUpdatePayload) {
+  async updateCollection({
+    entityID,
+    gatheringID,
+    isInList,
+    order
+  }: GatheringUpdatePayload) {
     const query = { _id: gatheringID }
     const update = isInList
       ? { $pull: { albums: { album: entityID } } }
@@ -82,6 +90,17 @@ export default class CollectionRepositoryContract implements CollectionRepositor
       sort: { title: 1 },
       page: 1
     })
+  }
+
+  async updatePost(_id: string, { albumId, post }: CollectionPostPayload) {
+    const query = { _id }
+    const update = { $set: { 'albums.$[elem].post': post } }
+    const options = { 
+      new: true,
+      arrayFilters: [{ 'elem.album': albumId }]
+    }
+
+    return await Collection.findOneAndUpdate(query, update, options)
   }
 
   async updateCollectionOrder(_id: Types.ObjectId | string, albums: CollectionDocumentAlbum[]) {
