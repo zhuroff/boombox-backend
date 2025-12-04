@@ -9,8 +9,12 @@ export default class BackupController {
       const response = await this.backupService.save()
       res.status(201).json(response)
     } catch (error) {
-      console.error(error)
-      res.status(500).json(error)
+      console.error('Backup save error:', error)
+      res.status(500).json({ 
+        error: 'Failed to create backup',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        details: error
+      })
     }
   }
 
@@ -19,8 +23,12 @@ export default class BackupController {
       const response = this.backupService.get()
       res.json(response)
     } catch (error) {
-      console.error(error)
-      res.status(500).json(error)
+      console.error('Backup get error:', error)
+      res.status(500).json({ 
+        error: 'Failed to get backups',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        details: error
+      })
     }
   }
 
@@ -29,8 +37,12 @@ export default class BackupController {
       const response = await this.backupService.recover(String(req.params['date']))
       res.status(201).json(response)
     } catch (error) {
-      console.error(error)
-      res.status(500).json(error)
+      console.error('Backup recover error:', error)
+      res.status(500).json({ 
+        error: 'Failed to recover backup',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        details: error
+      })
     }
   }
 
@@ -39,8 +51,12 @@ export default class BackupController {
       const response = await this.backupService.remove(String(req.params['date']))
       res.status(204).json(response)
     } catch (error) {
-      console.error(error)
-      res.status(500).json(error)
+      console.error('Backup remove error:', error)
+      res.status(500).json({ 
+        error: 'Failed to remove backup',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        details: error
+      })
     }
   }
 }

@@ -19,9 +19,11 @@ import collectionsRoutes from './routes/collections.routes'
 import backupRoutes from './routes/backup.routes'
 import synchronizeRoutes from './routes/sync.routes'
 import toyRoutes from './routes/toy.routes'
+import streamRoutes from './routes/stream.routes'
 import PCloudApi from './clouds/cloud.pcloud'
 import YandexCloudApi from './clouds/cloud.yandex'
 import { CloudApi } from './types/cloud'
+import { noIndexMiddleware } from './middleware/noindex'
 
 dotenv.config()
 
@@ -54,6 +56,13 @@ app.use(cookieParser())
 app.use(json({ limit: '1000kb' }))
 app.use(morgan('tiny'))
 
+app.use(noIndexMiddleware)
+
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain')
+  res.send('User-agent: *\nDisallow: /')
+})
+
 app.use('/api/users', usersRoutes)
 app.use('/api/albums', albumsRoutes)
 app.use('/api/discogs', discogsRoutes)
@@ -68,7 +77,8 @@ app.use('/api/backup', backupRoutes)
 app.use('/api/sync', synchronizeRoutes)
 app.use('/api/toy', toyRoutes)
 app.use('/api/search', searchRoutes)
-app.use('/backups', express.static(rootDir + '/backups'))
-app.use('/uploads', express.static(rootDir + '/uploads'))
+app.use('/api', streamRoutes)
+app.use('/backups', express.static(path.join(rootDir, 'backups')))
+app.use('/uploads', express.static(path.join(rootDir, 'uploads')))
 
 app.listen(PORT, () => console.log(`App listening at http://localhost:${PORT}`))

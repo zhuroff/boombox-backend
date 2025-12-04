@@ -85,7 +85,7 @@ export default class PCloudApi implements Cloud {
     }
 
     this.#digest = await this.#getDigest()
-    const query = this.#qBuilder(path)
+    const query = this.#qBuilder(`/${path}`)
 
     return await this.#client
       .get<PCloudResponse<PCloudEntity> | PCloudResponseError>(query)

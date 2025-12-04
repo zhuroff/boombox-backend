@@ -1,9 +1,17 @@
 import { Request } from 'express'
 import { Types } from 'mongoose'
 import { AlbumDocument } from '../models/album.model'
-import { NewCollectionPayload, CollectionRepository, GatheringCreatePayload, GatheringReorder, GatheringUpdatePayload, GatheringItem } from '../types/gathering'
 import { AlbumRepository } from '../types/album'
 import { ListRequestConfig } from '../types/pagination'
+import {
+  NewCollectionPayload,
+  CollectionRepository,
+  GatheringCreatePayload,
+  GatheringReorder,
+  GatheringUpdatePayload,
+  CollectionPostPayload,
+  GatheringItem
+} from '../types/gathering'
 import AlbumViewFactory from '../views/AlbumViewFactory'
 import GatheringViewFactory from '../views/GatheringViewFactory'
 import PaginationViewFactory from '../views/PaginationViewFactory'
@@ -85,32 +93,27 @@ export default class CollectionService {
       throw new Error('Incorrect request options or collection not found')
     }
 
-    const coveredAlbums = await Promise.all(collection.albums.map(async ({ album, order }) => {
+    const coveredAlbums = await Promise.all(collection.albums.map(async ({ album, order, post }) => {
       const item = album as AlbumDocument
       const cover = await this.albumRepository.fetchAlbumCover(item)
-      return { album: item, cover, order }
+      return { album: item, cover, order, post }
     }))
 
     return GatheringViewFactory.createCollectionPageView(
       collection,
-      coveredAlbums.map(({ album, cover, order }) => (
-        AlbumViewFactory.createAlbumItemView(album, cover, order)
+      coveredAlbums.map(({ album, cover, order, post }) => (
+        AlbumViewFactory.createAlbumItemView(album, cover, order, post)
       ))
     )
   }
 
-  async updateCollection({ entityID, gatheringID, isInList, order }: GatheringUpdatePayload) {
-    const updatedCollections = await this.collectionRepository.updateCollection({
-      entityID,
-      gatheringID,
-      isInList,
-      order
-    })
+  async updateCollection(payload: GatheringUpdatePayload) {
+    const updatedCollections = await this.collectionRepository.updateCollection(payload)
 
     await this.albumRepository.updateCollectionsInAlbum({
-      listID: gatheringID,
-      itemID: entityID,
-      inList: isInList
+      listID: payload.gatheringID,
+      itemID: payload.entityID,
+      inList: payload.isInList
     })
 
     const { totalDocs, totalPages, page, docs } = updatedCollections
@@ -125,6 +128,16 @@ export default class CollectionService {
         return acc
       }, [])
     }
+  }
+
+  async updatePost(id: string, payload: CollectionPostPayload) {
+    const collection = await this.collectionRepository.updatePost(id, payload)
+
+    if (!collection) {
+      throw new Error('Something went wrong')
+    }
+
+    return GatheringViewFactory.createGatheringItemView('collection', collection, collection.albums)
   }
 
   async removeCollection(id: Types.ObjectId | string) {

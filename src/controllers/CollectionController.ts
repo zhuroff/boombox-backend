@@ -43,7 +43,21 @@ export default class CollectionController {
   updateCollection = async (req: Request, res: Response) => {
     try {
       const response = await this.collectionService.updateCollection(req.body)
-      res.status(201).json(response)
+      res.status(200).json(response)
+    } catch (error) {
+      console.error(error)
+      res.status(500).json(error)
+    }
+  }
+
+  updatePost = async (req: Request, res: Response) => {
+    try {
+      if (!req.params['id']) {
+        throw new Error('Collection ID has not been passed')
+      }
+
+      const response = await this.collectionService.updatePost(req.params['id'], req.body)
+      res.status(200).json(response)
     } catch (error) {
       console.error(error)
       res.status(500).json(error)
@@ -53,7 +67,7 @@ export default class CollectionController {
   removeCollection = async (req: Request, res: Response) => {
     try {
       const response = await this.collectionService.removeCollection(String(req.params['id']))
-      res.status(201).json(response)
+      res.status(204).json(response)
     } catch (error) {
       console.error(error)
       res.status(500).json(error)
@@ -63,7 +77,7 @@ export default class CollectionController {
   reorderCollections = async (req: Request, res: Response) => {
     try {
       const response = await this.collectionService.reorderCollections(req.body, String(req.params['id']))
-      res.status(201).json(response)
+      res.status(200).json(response)
     } catch (error) {
       console.error(error)
       res.status(500).json(error)

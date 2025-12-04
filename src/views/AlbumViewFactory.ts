@@ -10,6 +10,7 @@ class AlbumItemView extends EntityBasicView {
   period: EntityBasicView
   coverURL?: string
   order?: number
+  post?: string
   kind = 'album'
 
   constructor(
@@ -21,7 +22,8 @@ class AlbumItemView extends EntityBasicView {
     genre: EntityBasicView,
     period: EntityBasicView,
     coverURL?: string,
-    order?: number
+    order?: number,
+    post?: string
   ) {
     super(_id, title, cloudURL)
     this.path = path
@@ -32,6 +34,10 @@ class AlbumItemView extends EntityBasicView {
 
     if (order) {
       this.order = order
+    }
+
+    if (post) {
+      this.post = post
     }
   }
 }
@@ -66,7 +72,7 @@ export default class AlbumViewFactory {
     return new EntityBasicView(entity._id, entity.title, entity.cloudURL)
   }
 
-  static createAlbumItemView(album: AlbumDocument, albumCover?: string, order?: number) {
+  static createAlbumItemView(album: AlbumDocument, albumCover?: string, order?: number, post?: string) {
     return new AlbumItemView(
       album._id,
       album.title,
@@ -76,7 +82,8 @@ export default class AlbumViewFactory {
       this.createBasicView(album.genre),
       this.createBasicView(album.period),
       albumCover || album.cover,
-      order
+      order,
+      post
     )
   }
 

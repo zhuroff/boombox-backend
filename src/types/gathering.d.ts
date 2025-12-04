@@ -16,6 +16,11 @@ export interface GatheringUpdatePayload {
   order: number
 }
 
+export interface CollectionPostPayload {
+  albumId: string
+  post: string
+}
+
 export interface GatheringUpdateProps {
   itemID: string | Types.ObjectId
   inList: boolean
@@ -75,6 +80,7 @@ export interface CollectionRepository {
   getPopulatedCollection(id: string): Promise<CollectionDocument | null>
   createCollection(payload: NewCollectionPayload): Promise<CreatedCollectionRes>
   updateCollection(payload: GatheringUpdatePayload): Promise<PaginateResult<CollectionDocument | null>>
+  updatePost(_id: string, payload: CollectionPostPayload): Promise<CollectionDocument | null>
   updateCollectionOrder(_id: Types.ObjectId | string, albums: CollectionDocumentAlbum[]): Promise<void>
   removeCollection(id: Types.ObjectId | string): Promise<CollectionDocument | null>
   cleanCollection(collectionIds: Types.ObjectId[], albumId: Types.ObjectId | string): Promise<UpdateWriteOpResult>

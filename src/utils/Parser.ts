@@ -64,7 +64,7 @@ export default class Parser {
 
       if (!rawValue) continue
 
-      const value = this.parseValue(rawValue)
+      const value = this.parseValue(rawValue as string | ParsedQs | string[] | ParsedQs[])
   
       const parts = key.split('.')
       let current = result

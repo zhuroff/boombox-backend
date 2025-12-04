@@ -1,6 +1,7 @@
 import { Request } from 'express'
 import { Model } from 'mongoose'
 import { FileRepository } from '../types/file'
+import { rootDir } from '../index'
 import fs from 'fs'
 import path from 'path'
 
@@ -21,7 +22,7 @@ export default class FileService {
 
   remove(files: string[]) {
     files.map((link) => (
-      fs.unlinkSync(path.join(__dirname, '../', encodeURI(link)))
+      fs.unlinkSync(path.join(rootDir, encodeURI(link)))
     ))
   }
 }
