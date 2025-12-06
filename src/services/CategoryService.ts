@@ -31,7 +31,7 @@ export default class CategoryService {
     categoryId: Types.ObjectId,
     albumId: Types.ObjectId | string
   ) {
-    await this.categoryRepository.cleanAlbums(Model, categoryId, albumId)
+    return await this.categoryRepository.cleanAlbums(Model, categoryId, albumId)
   }
 
   async getCategory(Model: PaginateModel<CategoryDocument>, req: Request) {

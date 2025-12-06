@@ -28,7 +28,7 @@ export interface CategoryRepository {
     Model: PaginateModel<CategoryDocument>,
     categoryId: Types.ObjectId,
     albumId: Types.ObjectId | string
-  ): Promise<void>
+  ): Promise<CategoryDocument | null>
   updateCategory(
     Model: PaginateModel<CategoryDocument>,
     filter: FilterQuery<CategoryDocument>,
