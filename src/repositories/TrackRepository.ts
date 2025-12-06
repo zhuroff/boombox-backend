@@ -1,6 +1,7 @@
 import { PipelineStage, Types } from 'mongoose'
 import { Client } from 'genius-lyrics'
 import { AggregatedTrackDocument, Track, TrackDocument } from '../models/track.model'
+import { Collection } from '../models/collection.model'
 import { NewTrackPayload, TrackRepository } from '../types/track'
 import { GatheringUpdateProps } from '../types/gathering'
 import { ListRequestConfig } from '../types/pagination'
@@ -9,6 +10,96 @@ import Parser from '../utils/Parser'
 
 export default class TrackRepositoryContract implements TrackRepository {
   private GClient = new Client(process.env['GENIUS_SECRET'])
+
+  private async enrichTracksWithCovers(tracks: AggregatedTrackDocument[]): Promise<AggregatedTrackDocument[]> {
+    return await Promise.all(tracks.map(async (track) => {
+      const cloudURL = track.cloudURL
+      const cloudId = track.cloudId
+      const albumPath = track.inAlbum[0]?.path
+
+      if (!cloudURL || !cloudId) {
+        throw new Error('Incorrect request options')
+      }
+
+      const cloudAPI = getCloudApi(cloudURL)
+      return {
+        ...track,
+        coverURL: albumPath
+          ? await cloudAPI.getFile({
+              path: `${albumPath}/cover.webp`,
+              fileType: 'image'
+            })
+          : undefined
+      }
+    }))
+  }
+
+  private async getWaveByCollection(collectionTitle: string, limit: number): Promise<AggregatedTrackDocument[]> {
+    const collection = await Collection.findOne({ title: collectionTitle })
+    
+    if (!collection) {
+      return []
+    }
+
+    const albumIds = collection.albums.map((item) => item.album as Types.ObjectId)
+
+    if (albumIds.length === 0) {
+      return []
+    }
+
+    const queryConfig: PipelineStage[] = [
+      {
+        $match: {
+          inAlbum: { $in: albumIds }
+        }
+      },
+      ...this.buildCommonLookupStages(),
+      {
+        $sample: {
+          size: limit
+        }
+      }
+    ]
+
+    return await Track.aggregate<AggregatedTrackDocument>(queryConfig)
+  }
+
+  private buildCommonLookupStages(): PipelineStage[] {
+    return [
+      {
+        $lookup: {
+          from: 'artists',
+          localField: 'artist',
+          foreignField: '_id',
+          as: 'artist'
+        }
+      },
+      {
+        $lookup: {
+          from: 'genres',
+          localField: 'genre',
+          foreignField: '_id',
+          as: 'genre'
+        }
+      },
+      {
+        $lookup: {
+          from: 'periods',
+          localField: 'period',
+          foreignField: '_id',
+          as: 'period'
+        }
+      },
+      {
+        $lookup: {
+          from: 'albums',
+          localField: 'inAlbum',
+          foreignField: '_id',
+          as: 'inAlbum'
+        }
+      }
+    ]
+  }
 
   async createTrack(trackPayload: NewTrackPayload) {
     const newTrack = new Track({
@@ -92,39 +183,16 @@ export default class TrackRepositoryContract implements TrackRepository {
       throw new Error('Incorrect request options')
     }
 
+    // Special handling for collection filter
+    if (config['filter']['key'] === 'collection.title') {
+      const collectionTitle = String(config['filter']['name'])
+      const waveTracks = await this.getWaveByCollection(collectionTitle, config['limit'])
+      return await this.enrichTracksWithCovers(waveTracks)
+    }
+
+    // Standard filter for artist, genre, period
     const queryConfig: PipelineStage[] = [
-      {
-        $lookup: {
-          from: 'artists',
-          localField: 'artist',
-          foreignField: '_id',
-          as: 'artist'
-        }
-      },
-      {
-        $lookup: {
-          from: 'genres',
-          localField: 'genre',
-          foreignField: '_id',
-          as: 'genre'
-        }
-      },
-      {
-        $lookup: {
-          from: 'periods',
-          localField: 'period',
-          foreignField: '_id',
-          as: 'period'
-        }
-      },
-      {
-        $lookup: {
-          from: 'albums',
-          localField: 'inAlbum',
-          foreignField: '_id',
-          as: 'inAlbum'
-        }
-      },
+      ...this.buildCommonLookupStages(),
       {
         $match: {
           [config['filter']['key']]: String(config['filter']['name'])
@@ -138,26 +206,6 @@ export default class TrackRepositoryContract implements TrackRepository {
     ]
 
     const waveTracks = await Track.aggregate<AggregatedTrackDocument>(queryConfig)
-
-    return await Promise.all(waveTracks.map(async (track) => {
-      const cloudURL = track.cloudURL
-      const cloudId = track.cloudId
-      const albumPath = track.inAlbum[0]?.path
-
-      if (!cloudURL || !cloudId) {
-        throw new Error('Incorrect request options')
-      }
-
-      const cloudAPI = getCloudApi(cloudURL)
-      return {
-        ...track,
-        coverURL: albumPath
-          ? await cloudAPI.getFile({
-              path: `${albumPath}/cover.webp`,
-              fileType: 'image'
-            })
-          : undefined
-      }
-    }))
+    return await this.enrichTracksWithCovers(waveTracks)
   }
 }
