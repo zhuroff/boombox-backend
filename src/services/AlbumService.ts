@@ -210,9 +210,22 @@ export default class AlbumService {
       return acc
     }, new Map())
 
-    await this.categoryService.cleanAlbums(Artist, album.artist._id, _id)
-    await this.categoryService.cleanAlbums(Genre, album.genre._id, _id)
-    await this.categoryService.cleanAlbums(Period, album.period._id, _id)
+    const updatedArtist = await this.categoryService.cleanAlbums(Artist, album.artist._id, _id)
+    const updatedGenre = await this.categoryService.cleanAlbums(Genre, album.genre._id, _id)
+    const updatedPeriod = await this.categoryService.cleanAlbums(Period, album.period._id, _id)
+    
+    if (updatedArtist && !updatedArtist.albums?.length) {
+      await this.categoryService.removeCategory(Artist, updatedArtist._id.toString())
+    }
+    
+    if (updatedGenre && !updatedGenre.albums?.length) {
+      await this.categoryService.removeCategory(Genre, updatedGenre._id.toString())
+    }
+    
+    if (updatedPeriod && !updatedPeriod.albums?.length) {
+      await this.categoryService.removeCategory(Period, updatedPeriod._id.toString())
+    }
+    
     await this.trackService.removeTracks(album.tracks.map(({ _id }) => _id))
 
     if (collections?.length) {

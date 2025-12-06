@@ -31,7 +31,7 @@ export default class CategoryRepositoryContract implements CategoryRepository {
   ) {
     const query = { _id: categoryId }
     const update = { $pull: { albums: albumId } }
-    await Model.findOneAndUpdate(query, update)
+    return await Model.findOneAndUpdate(query, update, { new: true })
   }
 
   async getPopulatedCategory(Model: PaginateModel<CategoryDocument>, req: Request) {
