@@ -18,11 +18,11 @@ const collectionService = new CollectionService(collectionRepository, albumRepos
 const collectionController = new CollectionController(collectionService, fileService)
 const router = Router()
 
-// router.patch('/:id/rename', controller.rename)
 router.get('/', authChecker, collectionController.getCollections)
 router.post('/create', authChecker, collectionController.createCollection)
 router.patch('/update', authChecker, collectionController.updateCollection)
 router.put('/:id/post', authChecker, collectionController.updatePost)
+router.put('/:id/title', authChecker, collectionController.updateTitle)
 router.get('/:id', authChecker, collectionController.getCollection)
 router.patch('/:id/reorder', authChecker, collectionController.reorderCollections)
 router.delete('/:id', authChecker, collectionController.removeCollection)

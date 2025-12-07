@@ -103,6 +103,14 @@ export default class CollectionRepositoryContract implements CollectionRepositor
     return await Collection.findOneAndUpdate(query, update, options)
   }
 
+  async updateTitle(id: string, payload: { title: string }) {
+    return await Collection.findByIdAndUpdate(
+      id,
+      { $set: { title: payload.title } },
+      { new: true }
+    )
+  }
+
   async updateCollectionOrder(_id: Types.ObjectId | string, albums: CollectionDocumentAlbum[]) {
     await Collection.updateOne({ _id }, { $set: { albums } })
   }
