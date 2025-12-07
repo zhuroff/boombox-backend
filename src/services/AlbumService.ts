@@ -214,15 +214,27 @@ export default class AlbumService {
     const updatedGenre = await this.categoryService.cleanAlbums(Genre, album.genre._id, _id)
     const updatedPeriod = await this.categoryService.cleanAlbums(Period, album.period._id, _id)
     
-    if (updatedArtist && !updatedArtist.albums?.length) {
+    if (
+      updatedArtist
+      && !updatedArtist.albums?.length
+      && !updatedArtist.embeddedAlbums?.length
+    ) {
       await this.categoryService.removeCategory(Artist, updatedArtist._id.toString())
     }
     
-    if (updatedGenre && !updatedGenre.albums?.length) {
+    if (
+      updatedGenre
+      && !updatedGenre.albums?.length
+      && !updatedGenre.embeddedAlbums?.length
+    ) {
       await this.categoryService.removeCategory(Genre, updatedGenre._id.toString())
     }
     
-    if (updatedPeriod && !updatedPeriod.albums?.length) {
+    if (
+      updatedPeriod
+      && !updatedPeriod.albums?.length
+      && !updatedPeriod.embeddedAlbums?.length
+    ) {
       await this.categoryService.removeCategory(Period, updatedPeriod._id.toString())
     }
     

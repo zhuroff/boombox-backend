@@ -80,13 +80,23 @@ export default class EmbeddedService {
     ])
 
     await Promise.all(categoryUpdateMap.entries()
-      .map(async ([Model, filter]) => (
-        await this.categoryRepository.updateCategory(
+      .map(async ([Model, filter]) => {
+        const updatedCategory = await this.categoryRepository.updateCategory(
           Model,
           filter,
           { $pull: { embeddedAlbums: deletedEmbedded._id } }
         )
-      ))
+
+        if (
+          updatedCategory
+          && !updatedCategory.albums?.length
+          && !updatedCategory.embeddedAlbums?.length
+        ) {
+          await this.categoryRepository.removeCategory(Model, updatedCategory._id.toString())
+        }
+
+        return updatedCategory
+      })
     )
 
     return { message: 'deletedEmbeddedMessage' }

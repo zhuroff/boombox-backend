@@ -81,6 +81,7 @@ export interface CollectionRepository {
   createCollection(payload: NewCollectionPayload): Promise<CreatedCollectionRes>
   updateCollection(payload: GatheringUpdatePayload): Promise<PaginateResult<CollectionDocument | null>>
   updatePost(_id: string, payload: CollectionPostPayload): Promise<CollectionDocument | null>
+  updateTitle(id: string, payload: { title: string }): Promise<CollectionDocument | null>
   updateCollectionOrder(_id: Types.ObjectId | string, albums: CollectionDocumentAlbum[]): Promise<void>
   removeCollection(id: Types.ObjectId | string): Promise<CollectionDocument | null>
   cleanCollection(collectionIds: Types.ObjectId[], albumId: Types.ObjectId | string): Promise<UpdateWriteOpResult>
