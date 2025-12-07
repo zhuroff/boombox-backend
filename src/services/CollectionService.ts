@@ -140,6 +140,16 @@ export default class CollectionService {
     return GatheringViewFactory.createGatheringItemView('collection', collection, collection.albums)
   }
 
+  async updateTitle(id: string, payload: { title: string }) {
+    const collection = await this.collectionRepository.updateTitle(id, payload)
+
+    if (!collection) {
+      throw new Error('Something went wrong')
+    }
+
+    return { message: 'collections.titleUpdated' }
+  }
+
   async removeCollection(id: Types.ObjectId | string) {
     const response = await this.collectionRepository.removeCollection(id)
 
