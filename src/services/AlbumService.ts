@@ -100,8 +100,17 @@ export default class AlbumService {
     const albumPath = `${this.#root}/${album.path}`
     const albumContent = await cloudAPI.getFolderContent({
       path: encodeURIComponent(albumPath),
-      fileType: 'audio'
+      fileType: 'audio',
+      query: 'limit=1000'
     })
+    
+    const filteredTracks = FileFilter.fileFilter(
+      albumContent.items.map((track) => ({
+        ...track,
+        path: encodeURIComponent(`${albumPath}/${track.path}`)
+      })),
+      'audioMimeTypes'
+    )
     
     return {
       folderName: album.title,
@@ -112,13 +121,7 @@ export default class AlbumService {
       artist: Parser.parseArtistName(album.title),
       genre: Parser.parseAlbumGenre(album.title),
       period: Parser.getAlbumReleaseYear(album.title),
-      tracks: FileFilter.fileFilter(
-        albumContent.items.map((track) => ({
-          ...track,
-          path: encodeURIComponent(`${albumPath}/${track.path}`)
-        })),
-        'audioMimeTypes'
-      )
+      tracks: filteredTracks
     }
   }
 

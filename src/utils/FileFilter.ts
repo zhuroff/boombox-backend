@@ -20,7 +20,8 @@ export default class FileFilter {
       'audio/wav',
       'audio/x-wav',
       'audio/webm',
-      'audio/x-ms-wma'
+      'audio/x-ms-wma',
+      'application/octet-stream'
     ]),
     imagesMimeTypes: new Set([
       'image/apng',
