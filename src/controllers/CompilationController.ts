@@ -52,8 +52,8 @@ export default class CompilationController {
 
   removeCompilation = async (req: Request, res: Response) => {
     try {
-      const response = await this.compilationService.removeCompilation(String(req.params['id']))
-      res.status(201).json(response)
+      await this.compilationService.removeCompilation(String(req.params['id']))
+      res.status(204).json()
     } catch (error) {
       console.error(error)
       res.status(500).json(error)

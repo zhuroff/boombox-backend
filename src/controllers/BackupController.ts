@@ -48,8 +48,8 @@ export default class BackupController {
 
   remove = async (req: Request, res: Response) => {
     try {
-      const response = await this.backupService.remove(String(req.params['date']))
-      res.status(204).json(response)
+      await this.backupService.remove(String(req.params['date']))
+      res.status(204).json()
     } catch (error) {
       console.error('Backup remove error:', error)
       res.status(500).json({ 

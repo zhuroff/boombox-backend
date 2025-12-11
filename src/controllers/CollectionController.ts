@@ -76,8 +76,8 @@ export default class CollectionController {
 
   removeCollection = async (req: Request, res: Response) => {
     try {
-      const response = await this.collectionService.removeCollection(String(req.params['id']))
-      res.status(204).json(response)
+      await this.collectionService.removeCollection(String(req.params['id']))
+      res.status(204).json()
     } catch (error) {
       console.error(error)
       res.status(500).json(error)
