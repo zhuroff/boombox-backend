@@ -44,6 +44,10 @@ const schema = new Schema({
     ref: 'periods',
     required: false
   },
+  note: {
+    type: String,
+    required: false
+  },
   dateCreated: {
     type: Date,
     default: Date.now

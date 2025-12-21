@@ -33,4 +33,14 @@ export default class AlbumsController {
       res.json([])
     }
   }
+
+  updateAlbumNote = async (req: Request, res: Response) => {
+    try {
+      const result = await this.albumService.updateAlbumNote(req)
+      res.json(result)
+    } catch (error) {
+      console.error(error)
+      res.status(500).json(error)
+    }
+  }
 }

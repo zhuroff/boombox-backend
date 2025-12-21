@@ -207,6 +207,12 @@ export default class AlbumRepositoryContract implements AlbumRepository {
     })
   }
 
+  async updateAlbumNote(req: Request) {
+    const { id } = req.params
+    const { note } = req.body
+    return await Album.findByIdAndUpdate(id, { $set: { note } }, { new: true })
+  }
+
   async getAlbumContent(req: Request) {
     const { id, folder } = req.params
     const { limit, offset, fileType } = req.query

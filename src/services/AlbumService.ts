@@ -328,4 +328,8 @@ export default class AlbumService {
   async getAlbumContent(req: Request) {
     return await this.albumRepository.getAlbumContent(req)
   }
+
+  async updateAlbumNote(req: Request) {
+    return await this.albumRepository.updateAlbumNote(req)
+  }
 }
