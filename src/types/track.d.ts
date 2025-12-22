@@ -12,7 +12,8 @@ export interface NewTrackPayload {
   artistId: Types.ObjectId,
   genreId: Types.ObjectId,
   periodId: Types.ObjectId,
-  cloudURL: string
+  cloudURL: string,
+  release?: string
 }
 
 export interface ExternalTrackLyricsResponse {

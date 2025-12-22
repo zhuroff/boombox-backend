@@ -7,6 +7,11 @@ import { ListRequestConfig } from './pagination'
 import { GatheringUpdateProps } from './gathering'
 import AlbumViewFactory from '../views/AlbumViewFactory'
 
+export interface AlbumTrack {
+  track: Required<CloudEntity>
+  release?: string
+}
+
 export interface AlbumShape {
   title: string
   folderName: string
@@ -16,7 +21,7 @@ export interface AlbumShape {
   genre: string
   period: string
   path: string
-  tracks: Array<Required<CloudEntity>>
+  tracks: AlbumTrack[]
 }
 
 export interface CoveredAlbum {

@@ -26,6 +26,7 @@ class TrackView {
   duration?: number | null
   inCompilations?: EntityBasicView[]
   coverURL?: string
+  release?: string
 
   constructor(
     _id: string,
@@ -40,6 +41,7 @@ class TrackView {
     coverURL?: string,
     duration?: number | null,
     inCompilations?: EntityBasicView[],
+    release?: string | null
   ) {
     this._id = _id
     this.title = title
@@ -58,6 +60,10 @@ class TrackView {
 
     if (coverURL) {
       this.coverURL = coverURL
+    }
+
+    if (release) {
+      this.release = release
     }
   }
 }
@@ -93,7 +99,9 @@ export default class TrackViewFactory {
         track.genre,
         track.inAlbum,
         track.coverURL,
-        track.duration
+        track.duration,
+        track.inCompilations,
+        track.release
       )
     }
 
