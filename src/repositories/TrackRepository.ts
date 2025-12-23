@@ -111,8 +111,10 @@ export default class TrackRepositoryContract implements TrackRepository {
       genre: trackPayload.genreId,
       period: trackPayload.periodId,
       cloudId: trackPayload.track.id,
-      cloudURL: trackPayload.cloudURL
+      cloudURL: trackPayload.cloudURL,
+      release: trackPayload.release
     })
+
     return await newTrack.save()
   }
 

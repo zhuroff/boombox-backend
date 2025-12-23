@@ -8,6 +8,7 @@ const discogsService = new DiscogsService(discogsRepository)
 const discogsController = new DiscogsController(discogsService)
 const router = Router()
 
-router.post('/', discogsController.getDiscogsData)
+router.get('/collection', discogsController.getCollection)
+router.get('/search', discogsController.searchDiscogsData)
 
 export default router

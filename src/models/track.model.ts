@@ -79,6 +79,10 @@ const schema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'periods',
     required: false
+  },
+  release: {
+    type: String,
+    required: false
   }
 })
 

@@ -7,6 +7,11 @@ import { ListRequestConfig } from './pagination'
 import { GatheringUpdateProps } from './gathering'
 import AlbumViewFactory from '../views/AlbumViewFactory'
 
+export interface AlbumTrack {
+  track: Required<CloudEntity>
+  release?: string
+}
+
 export interface AlbumShape {
   title: string
   folderName: string
@@ -16,7 +21,7 @@ export interface AlbumShape {
   genre: string
   period: string
   path: string
-  tracks: Array<Required<CloudEntity>>
+  tracks: AlbumTrack[]
 }
 
 export interface CoveredAlbum {
@@ -43,6 +48,7 @@ export interface AlbumRepository {
   getCoveredAlbums(docs: AlbumDocument[]): Promise<CoveredAlbum[]>
   fetchAlbumCover(album: AlbumDocument): Promise<string | undefined>
   getAlbumContent(req: Request): Promise<Array<string | undefined>>
+  updateAlbumNote(req: Request): Promise<AlbumDocument | null>
   cleanAlbumCollections(albums: CollectionDocumentAlbum[], listID: string | Types.ObjectId): Promise<void>
 }
 

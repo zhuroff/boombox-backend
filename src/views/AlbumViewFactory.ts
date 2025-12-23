@@ -45,11 +45,13 @@ class AlbumItemView extends EntityBasicView {
 class AlbumPageView extends AlbumItemView {
   inCollections: EntityBasicView[]
   tracks: ReturnType<typeof TrackViewFactory.create>[]
+  note: string
 
   constructor(
     album: AlbumItemView,
     tracks: ReturnType<typeof TrackViewFactory.create>[],
-    inCollections: EntityBasicView[]
+    inCollections: EntityBasicView[],
+    note?: string | null
   ) {
     super(
       album._id,
@@ -64,6 +66,7 @@ class AlbumPageView extends AlbumItemView {
     )
     this.tracks = tracks
     this.inCollections = inCollections
+    this.note = note || ''
   }
 }
 
@@ -90,10 +93,13 @@ export default class AlbumViewFactory {
   static createAlbumPageView(album: AlbumDocument, albumCover?: string) {
     const albumItem = this.createAlbumItemView(album, albumCover)
     const tracks = album.tracks.map((track) => TrackViewFactory.create(track))
+    const note = album.note
+
     return new AlbumPageView(
       albumItem,
       tracks,
-      album.inCollections?.map(this.createBasicView).filter(Boolean) || []
+      album.inCollections?.map(this.createBasicView).filter(Boolean) || [],
+      note
     )
   }
 }
