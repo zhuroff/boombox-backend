@@ -9,16 +9,16 @@ export default class DiscogsRepositoryContract implements DiscogsRepository {
 
   async getCollectionFolders(query: string, folderName?: string) {
     try {
-      const response = await axios.get<DiscogsFoldersResponse>(query, {
+      const response = await axios.get<DiscogsFoldersResponse | null>(query, {
         headers: {
           ...this.#headers,
           'Authorization': `Discogs token=${process.env['DISCOGS_ACCESS_TOKEN']}`
         }
       })
 
-      return response.data.folders.filter((folder) => (
+      return response?.data?.folders?.filter((folder) => (
         folder.id > 1 && (folderName ? folder.name === folderName : true)
-      ))
+      )) ?? []
     } catch(error) {
       console.error(error)
       return []
