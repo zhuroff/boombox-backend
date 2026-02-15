@@ -69,7 +69,7 @@ export default class AlbumRepositoryContract implements AlbumRepository {
       return await Album.findOneAndUpdate(query, update, options)
     })
 
-    return await Promise.all(cleanProcess)
+    await Promise.all(cleanProcess)
   }
 
   async getAlbum(id: Types.ObjectId | 'random') {
@@ -205,6 +205,12 @@ export default class AlbumRepositoryContract implements AlbumRepository {
       path: `${album.path}/cover.webp`,
       fileType: 'image'
     })
+  }
+
+  async updateAlbumNote(req: Request) {
+    const { id } = req.params
+    const { note } = req.body
+    return await Album.findByIdAndUpdate(id, { $set: { note } }, { new: true })
   }
 
   async getAlbumContent(req: Request) {

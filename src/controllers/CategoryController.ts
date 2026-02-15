@@ -52,8 +52,8 @@ export default class CategoryController {
 
   removeCategory = (model: PaginateModel<CategoryDocument>) => async (req: Request, res: Response) => {
     try {
-      const response = await this.categoryService.removeCategory(model, String(req.params['id']))
-      res.json(response)
+      await this.categoryService.removeCategory(model, String(req.params['id']))
+      res.status(204).json()
     } catch (error) {
       console.error(error)
       res.status(500).json(error)

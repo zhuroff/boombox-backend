@@ -5,7 +5,7 @@ import { Artist, ArtistDocument } from '../models/artist.model'
 import { Genre, GenreDocument } from '../models/genre.model'
 import { Period, PeriodDocument } from '../models/period.model'
 import { ListRequestConfig } from '../types/pagination'
-import { AlbumRepository, AlbumShape } from '../types/album'
+import { AlbumRepository, AlbumShape, AlbumTrack } from '../types/album'
 import { CloudEntity } from '../types/cloud'
 import { getCloudApi } from '..'
 import Parser from '../utils/Parser'
@@ -17,6 +17,7 @@ import CollectionService from './CollectionService'
 import CompilationService from './CompilationService'
 import AlbumViewFactory from '../views/AlbumViewFactory'
 import PaginationViewFactory from '../views/PaginationViewFactory'
+import { releaseSubfolder } from '../globals'
 
 export default class AlbumService {
   #root = 'MelodyMap/Collection'
@@ -98,10 +99,61 @@ export default class AlbumService {
 
     const cloudAPI = getCloudApi(album.cloudURL)
     const albumPath = `${this.#root}/${album.path}`
+    
     const albumContent = await cloudAPI.getFolderContent({
       path: encodeURIComponent(albumPath),
-      fileType: 'audio'
+      query: 'limit=1000'
     })
+    
+    const folders = albumContent.items.filter((item) => 
+      item.type === 'dir' || !item.mimeType
+    )
+
+    const files = albumContent.items.filter((item) => 
+      item.type !== 'dir' && !!item.mimeType
+    )
+    
+    const rootTracks = FileFilter.fileFilter(
+      files.map((track) => ({
+        ...track,
+        path: encodeURIComponent(`${albumPath}/${track.path}`)
+      })),
+      'audioMimeTypes'
+    )
+    
+    let allTracks: AlbumTrack[] = []
+    
+    if (rootTracks.length > 0) {
+      allTracks = rootTracks.map((track) => ({ track }))
+    } else {
+      const releaseFolders = folders.filter((folder) => 
+        folder.title.startsWith(releaseSubfolder)
+      )
+      
+      for (const releaseFolder of releaseFolders) {
+        const releaseName = releaseFolder.title.substring(releaseSubfolder.length).trim()
+        const releaseFolderPath = `${albumPath}/${releaseFolder.title}`
+        
+        const releaseContent = await cloudAPI.getFolderContent({
+          path: encodeURIComponent(releaseFolderPath),
+          fileType: 'audio',
+          query: 'limit=1000'
+        })
+        
+        const releaseTracks = FileFilter.fileFilter(
+          releaseContent.items.map((track) => ({
+            ...track,
+            path: encodeURIComponent(`${releaseFolderPath}/${track.path}`)
+          })),
+          'audioMimeTypes'
+        )
+        
+        allTracks.push(...releaseTracks.map((track) => ({
+          track,
+          release: releaseName
+        })))
+      }
+    }
     
     return {
       folderName: album.title,
@@ -112,13 +164,7 @@ export default class AlbumService {
       artist: Parser.parseArtistName(album.title),
       genre: Parser.parseAlbumGenre(album.title),
       period: Parser.getAlbumReleaseYear(album.title),
-      tracks: FileFilter.fileFilter(
-        albumContent.items.map((track) => ({
-          ...track,
-          path: encodeURIComponent(`${albumPath}/${track.path}`)
-        })),
-        'audioMimeTypes'
-      )
+      tracks: allTracks
     }
   }
 
@@ -135,7 +181,7 @@ export default class AlbumService {
           cloud: next.cloudURL,
           reason: 'no_tracks'
         })
-      } else if (!next.tracks.every(({ title }) => Validator.isTrackFilenameValid(title))) {
+      } else if (!next.tracks.every(({ track }) => Validator.isTrackFilenameValid(track.title))) {
         acc.invalidShapes.push({
           album: next.title,
           cloud: next.cloudURL,
@@ -155,9 +201,10 @@ export default class AlbumService {
     const newPeriod = await this.categoryService.createCategory<PeriodDocument>(Period, shape.period, newAlbum._id)
 
     if (newArtist && newGenre && newPeriod) {
-      const albumTracks = await Promise.all(shape.tracks.map(async (track) => (
+      const albumTracks = await Promise.all(shape.tracks.map(async ({ track, release }) => (
         await this.trackService.createTrack({
           track,
+          release,
           albumId: newAlbum._id,
           artistId: newArtist._id,
           genreId: newGenre._id,
@@ -324,5 +371,9 @@ export default class AlbumService {
 
   async getAlbumContent(req: Request) {
     return await this.albumRepository.getAlbumContent(req)
+  }
+
+  async updateAlbumNote(req: Request) {
+    return await this.albumRepository.updateAlbumNote(req)
   }
 }

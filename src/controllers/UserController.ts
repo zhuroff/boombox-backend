@@ -84,7 +84,7 @@ export default class UserController {
   removeUser = async (req: Request, res: Response) => {
     try {
       await this.userService.removeUser(req, res)
-      res.status(200).json({ message: 'success' })
+      res.status(204).json()
     } catch (error) {
       console.error(error)
       res.status(400).json(error)
