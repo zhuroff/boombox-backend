@@ -16,8 +16,7 @@ export default class AlbumRepositoryContract implements AlbumRepository {
     return await (
       Album.find({}, {
         folderName: true,
-        cloudURL: true,
-        cloudId: true,
+        cloudURL: true
       })
       .populate({
         path: 'tracks',

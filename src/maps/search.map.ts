@@ -22,7 +22,6 @@ const searchMap = new Map<SearchModelKey, SearchConfig>([
         period: true,
         folderName: true,
         cloudURL: true,
-        cloudId: true,
         path: true
       },
       populates: [
@@ -93,7 +92,7 @@ const searchMap = new Map<SearchModelKey, SearchConfig>([
       populates: [
         {
           path: 'inAlbum',
-          select: ['title', 'folderName', 'albumCover', 'cloudURL', 'cloudId', 'path'],
+          select: ['title', 'folderName', 'albumCover', 'cloudURL', 'path'],
           populate: {
             path: 'period',
             select: ['title']

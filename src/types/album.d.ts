@@ -15,7 +15,6 @@ export interface AlbumTrack {
 export interface AlbumShape {
   title: string
   folderName: string
-  cloudId: string
   cloudURL: string
   artist: string
   genre: string

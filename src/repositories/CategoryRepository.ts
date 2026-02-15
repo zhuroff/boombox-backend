@@ -38,7 +38,7 @@ export default class CategoryRepositoryContract implements CategoryRepository {
     return await Model.findById(req.params['id'])
       .populate({
         path: 'albums',
-        select: ['title', 'folderName', 'cloudURL', 'cloudId', 'path'],
+        select: ['title', 'folderName', 'cloudURL', 'path'],
         populate: [
           { path: 'artist', select: ['title', '_id'] },
           { path: 'genre', select: ['title', '_id'] },

@@ -89,7 +89,11 @@ export default class AlbumService {
   }
 
   async updateAlbumsClouds(albums: AlbumDocument[]) {
-    return await this.albumRepository.updateAlbumsClouds(albums)
+    const updatedAlbums = await this.albumRepository.updateAlbumsClouds(albums)
+    await Promise.all(albums.map((album) =>
+      this.trackService.updateTracksCloudURLByAlbum(album._id, album.cloudURL)
+    ))
+    return updatedAlbums
   }
 
   async createAlbumShape(album: CloudEntity): Promise<AlbumShape> {
@@ -158,7 +162,6 @@ export default class AlbumService {
     return {
       folderName: album.title,
       cloudURL: album.cloudURL,
-      cloudId: album.id,
       path: encodeURIComponent(albumPath),
       title: Parser.parseAlbumTitle(album.title),
       artist: Parser.parseArtistName(album.title),
