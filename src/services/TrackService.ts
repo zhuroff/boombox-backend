@@ -18,6 +18,10 @@ export default class TrackService {
     return await this.trackRepository.updateTrack(trackPayload)
   }
 
+  async updateTracksCloudURLByAlbum(albumId: Types.ObjectId, cloudURL: string) {
+    return await this.trackRepository.updateTracksCloudURLByAlbum(albumId, cloudURL)
+  }
+
   async removeTracks(tracks: Array<string | Types.ObjectId>) {
     return await this.trackRepository.removeTracks(tracks)
   }

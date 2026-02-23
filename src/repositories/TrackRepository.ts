@@ -14,10 +14,9 @@ export default class TrackRepositoryContract implements TrackRepository {
   private async enrichTracksWithCovers(tracks: AggregatedTrackDocument[]): Promise<AggregatedTrackDocument[]> {
     return await Promise.all(tracks.map(async (track) => {
       const cloudURL = track.cloudURL
-      const cloudId = track.cloudId
       const albumPath = track.inAlbum[0]?.path
 
-      if (!cloudURL || !cloudId) {
+      if (!cloudURL) {
         throw new Error('Incorrect request options')
       }
 
@@ -110,7 +109,6 @@ export default class TrackRepositoryContract implements TrackRepository {
       artist: trackPayload.artistId,
       genre: trackPayload.genreId,
       period: trackPayload.periodId,
-      cloudId: trackPayload.track.id,
       cloudURL: trackPayload.cloudURL,
       release: trackPayload.release
     })
@@ -120,6 +118,13 @@ export default class TrackRepositoryContract implements TrackRepository {
 
   async updateTrack(trackPayload: Partial<TrackDocument>) {
     return await Track.findByIdAndUpdate(trackPayload._id, trackPayload, { new: true })
+  }
+
+  async updateTracksCloudURLByAlbum(albumId: Types.ObjectId, cloudURL: string) {
+    return await Track.updateMany(
+      { inAlbum: albumId },
+      { $set: { modified: new Date(), cloudURL } }
+    )
   }
 
   async removeTracks(tracks: Array<string | Types.ObjectId>) {

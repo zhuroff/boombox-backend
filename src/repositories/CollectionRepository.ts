@@ -34,7 +34,7 @@ export default class CollectionRepositoryContract implements CollectionRepositor
         path: 'albums.album',
         select: [
           'title',
-          'artist',
+          'artists',
           'genre',
           'period',
           'albumCover',
@@ -43,7 +43,7 @@ export default class CollectionRepositoryContract implements CollectionRepositor
           'path'
         ],
         populate: [
-          { path: 'artist', select: ['title'] },
+          { path: 'artists', select: ['title'] },
           { path: 'genre', select: ['title'] },
           { path: 'period', select: ['title'] },
           { path: 'inCollections', select: ['title'] }

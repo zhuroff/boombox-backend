@@ -26,6 +26,7 @@ export interface ExternalTrackLyricsResponse {
 export interface TrackRepository {
   createTrack(trackPayload: NewTrackPayload): Promise<TrackDocument>
   updateTrack(trackPayload: Partial<TrackDocument>): Promise<TrackDocument | null>
+  updateTracksCloudURLByAlbum(albumId: Types.ObjectId, cloudURL: string): Promise<import('mongoose').UpdateResult>
   removeTracks(tracks: Array<string | Types.ObjectId>): Promise<DeleteResult>
   saveTrackDuration(id: string, duration: number): Promise<TrackDocumentNullable>
   getTrackLyrics(id: string): Promise<{ lyrics: string | null }>

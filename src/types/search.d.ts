@@ -5,7 +5,6 @@ import { AlbumItem } from './album'
 
 export type ModelKeys =
   | 'albums'
-  | 'embedded'
   | 'artists'
   | 'genres'
   | 'periods'
@@ -20,7 +19,7 @@ export interface SearchPayload {
   key?: SearchModelKey
 }
 
-export type SearchModelKey = Omit<ModelKeys, 'users' | 'tokens' | 'toys'>
+export type SearchModelKey = Omit<ModelKeys, 'users' | 'tokens'>
 
 export type SearchParams = Record<'$text', { '$search': string }>
 

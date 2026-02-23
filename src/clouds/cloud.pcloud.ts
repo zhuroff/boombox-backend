@@ -73,7 +73,8 @@ export default class PCloudApi implements Cloud {
         ))
       })
       .catch((error: AxiosError) => {
-        throw error
+        console.error(error)
+        return []
       })
   }
 

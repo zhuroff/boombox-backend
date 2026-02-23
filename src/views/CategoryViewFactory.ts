@@ -1,11 +1,9 @@
 import { Types } from 'mongoose'
 import { AlbumDocument } from '../models/album.model'
-import { EmbeddedDocument } from '../models/embedded.model'
 import { CategoryDocument } from '../types/category'
 import { AlbumItem } from '../types/album'
 import EntityBasicView from '../views/BasicEntityView'
 import AlbumViewFactory from '../views/AlbumViewFactory'
-import EmbeddedView from '../views/EmbeddedView'
 
 class CategoryItemView extends EntityBasicView {
   albums: number
@@ -16,11 +14,10 @@ class CategoryItemView extends EntityBasicView {
     _id: Types.ObjectId,
     title: string,
     albums: AlbumDocument[],
-    embeddedAlbums: EmbeddedDocument[],
     avatar?: string | null
   ) {
     super(_id, title)
-    this.albums = albums.length + embeddedAlbums.length
+    this.albums = albums.length
     this.avatar = avatar
   }
 }
@@ -29,13 +26,11 @@ class CategoryPageView extends EntityBasicView {
   poster?: string | null
   avatar?: string | null
   albums: AlbumItem[]
-  embeddedAlbums?: EmbeddedView[]
 
   constructor(
     _id: Types.ObjectId,
     title: string,
     albums: AlbumItem[],
-    embeddedAlbums: EmbeddedView[],
     poster?: string | null,
     avatar?: string | null
   ) {
@@ -43,7 +38,6 @@ class CategoryPageView extends EntityBasicView {
     this.poster = poster
     this.avatar = avatar
     this.albums = albums
-    this.embeddedAlbums = embeddedAlbums
   }
 }
 
@@ -53,7 +47,6 @@ export default class CategoryViewFactory {
       category._id,
       category.title,
       category.albums,
-      category.embeddedAlbums,
       category.avatar
     )
   }
@@ -63,7 +56,6 @@ export default class CategoryViewFactory {
       category._id,
       category.title,
       category.albums.map((album) => AlbumViewFactory.createAlbumItemView(album)),
-      category.embeddedAlbums.map((embedded) => new EmbeddedView(embedded)),
       category.poster,
       category.avatar
     )

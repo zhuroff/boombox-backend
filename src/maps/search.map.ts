@@ -1,5 +1,4 @@
 import { Album } from '../models/album.model'
-import { Embedded } from '../models/embedded.model'
 import { Artist } from '../models/artist.model'
 import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
@@ -16,35 +15,16 @@ const searchMap = new Map<SearchModelKey, SearchConfig>([
       options: {
         _id: true,
         title: true,
-        artist: true,
+        artists: true,
         genre: true,
         albumCover: true,
         period: true,
         folderName: true,
         cloudURL: true,
-        cloudId: true,
         path: true
       },
       populates: [
-        { path: 'artist', select: ['title'] },
-        { path: 'genre', select: ['title'] },
-        { path: 'period', select: ['title'] }
-      ]
-    }
-  ],
-  [
-    'embedded',
-    {
-      instance: Embedded,
-      options: {
-        _id: true,
-        title: true,
-        artist: true,
-        genre: true,
-        period: true
-      },
-      populates: [
-        { path: 'artist', select: ['title'] },
+        { path: 'artists', select: ['title'] },
         { path: 'genre', select: ['title'] },
         { path: 'period', select: ['title'] }
       ]
@@ -93,7 +73,7 @@ const searchMap = new Map<SearchModelKey, SearchConfig>([
       populates: [
         {
           path: 'inAlbum',
-          select: ['title', 'folderName', 'albumCover', 'cloudURL', 'cloudId', 'path'],
+          select: ['title', 'folderName', 'albumCover', 'cloudURL', 'path'],
           populate: {
             path: 'period',
             select: ['title']

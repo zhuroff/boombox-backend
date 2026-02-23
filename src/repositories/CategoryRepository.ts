@@ -1,6 +1,5 @@
 import { Request } from 'express'
 import { Types, PaginateModel, FilterQuery, PaginateOptions, UpdateQuery, QueryOptions } from 'mongoose'
-import { Embedded } from '../models/embedded.model'
 import { CategoryDocument, CategoryRepository } from '../types/category'
 import { ListRequestConfig } from '../types/pagination'
 
@@ -38,21 +37,12 @@ export default class CategoryRepositoryContract implements CategoryRepository {
     return await Model.findById(req.params['id'])
       .populate({
         path: 'albums',
-        select: ['title', 'folderName', 'cloudURL', 'cloudId', 'path'],
+        select: ['title', 'folderName', 'cloudURL', 'path'],
         populate: [
-          { path: 'artist', select: ['title', '_id'] },
+          { path: 'artists', select: ['title', '_id'] },
           { path: 'genre', select: ['title', '_id'] },
           { path: 'period', select: ['title', '_id'] },
           { path: 'inCollections', select: ['title', '_id'] }
-        ]
-      })
-      .populate({
-        path: 'embeddedAlbums',
-        select: ['title', 'frame'],
-        populate: [
-          { path: 'artist', select: ['title', '_id'] },
-          { path: 'genre', select: ['title', '_id'] },
-          { path: 'period', select: ['title', '_id'] }
         ]
       })
       .lean()
@@ -63,8 +53,7 @@ export default class CategoryRepositoryContract implements CategoryRepository {
     body: ListRequestConfig
   ) {
     const populates = [
-      { path: 'albums', select: ['_id'] },
-      { path: 'embeddedAlbums', select: ['_id'], model: Embedded }
+      { path: 'albums', select: ['_id'] }
     ]
 
     const options: PaginateOptions = {

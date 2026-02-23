@@ -29,10 +29,16 @@ export default class Parser {
     return albumTitleResult
   }
 
-  static parseArtistName(name: string) {
+  static getArtistsString(name: string) {
     const albumArtist = name.split('\[')[0]
     const artistTitleResult = albumArtist ? albumArtist.trim() : 'unknown artist'
     return artistTitleResult
+  }
+
+  static parseArtistNames(name: string): string[] {
+    const raw = this.getArtistsString(name)
+    const parts = raw.split(/\s*;\s*/).map((s) => s.trim()).filter(Boolean)
+    return parts.length ? parts : [raw]
   }
 
   static parseTrackArtistName(name: string) {
@@ -82,22 +88,5 @@ export default class Parser {
     }
   
     return result as T
-  }
-
-  static parseTOYMetadata(albumStrings: string[]): Record<string, string>[] {
-    return albumStrings.map((str) => {      
-      const withoutTrackNumber = str.replace(/^\d+\.\s*/, '')      
-      const withoutDateAndLabel = withoutTrackNumber.replace(/\s+\d{2}\.\d{2},.*$/, '')      
-      const parts = withoutDateAndLabel.split(/[–-]/).map(s => s.trim())      
-      const albumArtist = String(parts[0])
-      const rest = parts[1] || ''      
-      const lastParenthesesMatch = rest.match(/\(([^)]+)\)[^)]*$/)      
-      const albumTitle = lastParenthesesMatch?.[1]?.trim() || rest.trim()
-      
-      return {
-        albumArtist,
-        albumTitle
-      }
-    })
   }
 }
