@@ -27,9 +27,9 @@ export default class AlbumRepositoryContract implements AlbumRepository {
 
   async saveNewAlbum(newAlbum: Document<AlbumDocument>, attrs: AlbumAttrs) {
     const dateOfCreation = new Date()
-    const { artist, genre, period, tracks } = attrs
+    const { artists, genre, period, tracks } = attrs
 
-    newAlbum.$set({ artist })
+    newAlbum.$set({ artists })
     newAlbum.$set({ genre })
     newAlbum.$set({ period })
     newAlbum.$set({ tracks })
@@ -78,7 +78,7 @@ export default class AlbumRepositoryContract implements AlbumRepository {
         : Album.findById(id)
     )
     .populate([
-      { path: 'artist', select: ['title'] },
+      { path: 'artists', select: ['title'] },
       { path: 'genre', select: ['title'] },
       { path: 'period', select: ['title'] },
       { path: 'inCollections', select: ['title'] },
@@ -104,7 +104,7 @@ export default class AlbumRepositoryContract implements AlbumRepository {
 
   async getAlbums(body: ListRequestConfig) {
     const populate: PopulateOptions[] = [
-      { path: 'artist', select: ['title'] },
+      { path: 'artists', select: ['title'] },
       { path: 'genre', select: ['title'] },
       { path: 'period', select: ['title'] },
     ]
@@ -130,9 +130,9 @@ export default class AlbumRepositoryContract implements AlbumRepository {
       {
         $lookup: {
           from: 'artists',
-          localField: 'artist',
+          localField: 'artists',
           foreignField: '_id',
-          as: 'artist'
+          as: 'artists'
         }
       },
       {
@@ -166,9 +166,11 @@ export default class AlbumRepositoryContract implements AlbumRepository {
       if (!filter || !('value' in filter)) continue
 
       if (filter.from === (stage as PipelineStage.Lookup).$lookup?.from) {
+        const filterValue = new Types.ObjectId(String(filter['value']))
+        const matchKey = String(filter['key'])
         aggregateConfig.push({
           $match: {
-            [String(filter['key'])]: new Types.ObjectId(String(filter['value']))
+            [matchKey]: filterValue
           }
         })
 
@@ -176,8 +178,9 @@ export default class AlbumRepositoryContract implements AlbumRepository {
           const lastProp = aggregateConfig.at(-1) as PipelineStage.Match | undefined
           if (lastProp) {
             Object.entries(filter['excluded']).forEach(([key, value]) => {
-              const joinedKey = key.split('>').join('.')
-              lastProp.$match[joinedKey] = { $ne: new Types.ObjectId(String(value)) }
+              const objId = new Types.ObjectId(String(value))
+              const excludedKey = key.split('>').join('.')
+              lastProp.$match[excludedKey] = { $ne: objId }
             })
           }
         }

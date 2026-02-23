@@ -5,7 +5,6 @@ import { AlbumItem } from './album'
 
 export type ModelKeys =
   | 'albums'
-  | 'embedded'
   | 'artists'
   | 'genres'
   | 'periods'

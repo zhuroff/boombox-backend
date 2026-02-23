@@ -29,10 +29,16 @@ export default class Parser {
     return albumTitleResult
   }
 
-  static parseArtistName(name: string) {
+  static getArtistsString(name: string) {
     const albumArtist = name.split('\[')[0]
     const artistTitleResult = albumArtist ? albumArtist.trim() : 'unknown artist'
     return artistTitleResult
+  }
+
+  static parseArtistNames(name: string): string[] {
+    const raw = this.getArtistsString(name)
+    const parts = raw.split(/\s*;\s*/).map((s) => s.trim()).filter(Boolean)
+    return parts.length ? parts : [raw]
   }
 
   static parseTrackArtistName(name: string) {
