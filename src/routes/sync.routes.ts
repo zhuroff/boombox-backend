@@ -32,6 +32,5 @@ const syncController = new SyncController(syncService)
 const router = Router()
 
 router.post('/', authChecker, syncController.sync)
-// router.post('/migrate', authChecker, syncController.migrate)
 
 export default router
