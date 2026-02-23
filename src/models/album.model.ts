@@ -6,7 +6,7 @@ import { PeriodDocument } from './period.model'
 import { CollectionDocument } from './collection.model'
 import paginate from 'mongoose-paginate-v2'
 
-type AlbumObjectIdKeys = 'artist' | 'genre' | 'period' | 'tracks' | 'inCollections'
+type AlbumObjectIdKeys = 'artists' | 'genre' | 'period' | 'tracks' | 'inCollections'
 
 const schema = new Schema({
   title: {
@@ -25,11 +25,13 @@ const schema = new Schema({
     type: String,
     required: true
   },
-  artist: {
-    type: Schema.Types.ObjectId,
-    ref: 'artists',
-    required: false
-  },
+  artists: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'artists',
+      required: false
+    }
+  ],
   genre: {
     type: Schema.Types.ObjectId,
     ref: 'genres',
@@ -80,7 +82,7 @@ export interface AlbumDocument extends Omit<
   AlbumObjectIdKeys
 > {
   cover?: string
-  artist: ArtistDocument
+  artists: ArtistDocument[]
   genre: GenreDocument
   period: PeriodDocument
   tracks: TrackDocument[]

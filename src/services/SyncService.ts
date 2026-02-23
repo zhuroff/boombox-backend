@@ -1,4 +1,5 @@
-import { AlbumDocument } from '../models/album.model'
+import mongoose from 'mongoose'
+import { Album, AlbumDocument } from '../models/album.model'
 import { SyncRepository } from '../types/sync'
 import { CloudEntity } from '../types/cloud'
 import AlbumService from './AlbumService'
@@ -76,6 +77,33 @@ export default class SyncService {
       ...addedAlbums,
       updated: fixedAlbums,
       deleted: deletedAlbums
+    }
+  }
+
+  async migrateAlbumArtistsToArray() {
+    const albumResult = await Album.updateMany(
+      { artist: { $exists: true, $ne: null } },
+      [{ $set: { artists: ['$artist'] } }, { $unset: 'artist' }]
+    )
+
+    const db = mongoose.connection.db
+    if (!db) throw new Error('Database connection is not established')
+
+    const embeddedsCollection = db.collection('embeddeds')
+    const embeddedsDropped = await embeddedsCollection.drop().catch(() => false)
+
+    const [artistResult, genreResult, periodResult] = await Promise.all([
+      db.collection('artists').updateMany({}, { $unset: { embeddedAlbums: '' } }),
+      db.collection('genres').updateMany({}, { $unset: { embeddedAlbums: '' } }),
+      db.collection('periods').updateMany({}, { $unset: { embeddedAlbums: '' } })
+    ])
+
+    return {
+      albums: { modifiedCount: albumResult.modifiedCount, matchedCount: albumResult.matchedCount },
+      embeddeds: { dropped: embeddedsDropped },
+      artists: { modifiedCount: artistResult.modifiedCount, matchedCount: artistResult.matchedCount },
+      genres: { modifiedCount: genreResult.modifiedCount, matchedCount: genreResult.matchedCount },
+      periods: { modifiedCount: periodResult.modifiedCount, matchedCount: periodResult.matchedCount }
     }
   }
 }

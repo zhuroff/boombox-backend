@@ -3,7 +3,6 @@ import { rootDir } from '..'
 import { Album } from '../models/album.model'
 import { Artist } from '../models/artist.model'
 import { Collection } from '../models/collection.model'
-import { Embedded } from '../models/embedded.model'
 import { Genre } from '../models/genre.model'
 import { Period } from '../models/period.model'
 import { Compilation } from '../models/compilation.model'
@@ -17,7 +16,6 @@ export default class BackupService {
     ['albums', Album],
     ['artists', Artist],
     ['collections', Collection],
-    ['embedded', Embedded],
     ['genres', Genre],
     ['periods', Period],
     ['compilations', Compilation],

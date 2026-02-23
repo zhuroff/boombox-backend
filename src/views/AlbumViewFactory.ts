@@ -5,7 +5,7 @@ import TrackViewFactory from './TrackViewFactory'
 
 class AlbumItemView extends EntityBasicView {
   path: string
-  artist: EntityBasicView
+  artists: EntityBasicView[]
   genre: EntityBasicView
   period: EntityBasicView
   coverURL?: string
@@ -18,7 +18,7 @@ class AlbumItemView extends EntityBasicView {
     title: string,
     cloudURL: string | undefined,
     path: string,
-    artist: EntityBasicView,
+    artists: EntityBasicView[],
     genre: EntityBasicView,
     period: EntityBasicView,
     coverURL?: string,
@@ -27,7 +27,7 @@ class AlbumItemView extends EntityBasicView {
   ) {
     super(_id, title, cloudURL)
     this.path = path
-    this.artist = artist
+    this.artists = artists
     this.genre = genre
     this.period = period
     this.coverURL = coverURL
@@ -58,7 +58,7 @@ class AlbumPageView extends AlbumItemView {
       album.title,
       album.cloudURL,
       album.path,
-      album.artist,
+      album.artists,
       album.genre,
       album.period,
       album.coverURL,
@@ -76,12 +76,14 @@ export default class AlbumViewFactory {
   }
 
   static createAlbumItemView(album: AlbumDocument, albumCover?: string, order?: number, post?: string) {
+    const artistRefs = (album as { artists?: { _id: Types.ObjectId; title?: string }[]; artist?: { _id: Types.ObjectId; title?: string } }).artists ?? (album as { artist?: { _id: Types.ObjectId; title?: string } }).artist
+    const artists = Array.isArray(artistRefs) ? artistRefs : artistRefs ? [artistRefs] : []
     return new AlbumItemView(
       album._id,
       album.title,
       album.cloudURL,
       album.path,
-      this.createBasicView(album.artist),
+      artists.map((a) => this.createBasicView({ _id: a._id, title: a.title ?? '', cloudURL: undefined })),
       this.createBasicView(album.genre),
       this.createBasicView(album.period),
       albumCover || album.cover,

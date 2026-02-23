@@ -16,7 +16,7 @@ export interface AlbumShape {
   title: string
   folderName: string
   cloudURL: string
-  artist: string
+  artists: string[]
   genre: string
   period: string
   path: string
@@ -29,7 +29,7 @@ export interface CoveredAlbum {
 }
 
 export interface AlbumAttrs {
-  artist: Types.ObjectId
+  artists: Types.ObjectId[]
   genre: Types.ObjectId
   period: Types.ObjectId
   tracks: Types.ObjectId[]

@@ -70,7 +70,7 @@ export default class AlbumService {
     const uniquePeriods = new Set<string>()
 
     shapes.forEach((shape) => {
-      uniqueArtists.add(shape.artist)
+      shape.artists.forEach((a) => uniqueArtists.add(a))
       uniqueGenres.add(shape.genre)
       uniquePeriods.add(shape.period)
     })
@@ -164,7 +164,7 @@ export default class AlbumService {
       cloudURL: album.cloudURL,
       path: encodeURIComponent(albumPath),
       title: Parser.parseAlbumTitle(album.title),
-      artist: Parser.parseArtistName(album.title),
+      artists: Parser.parseArtistNames(album.title),
       genre: Parser.parseAlbumGenre(album.title),
       period: Parser.getAlbumReleaseYear(album.title),
       tracks: allTracks
@@ -198,18 +198,22 @@ export default class AlbumService {
   }
 
   async createAlbum(shape: AlbumShape) {
-    const newAlbum = new Album(shape)
-    const newArtist = await this.categoryService.createCategory<ArtistDocument>(Artist, shape.artist, newAlbum._id)
+    const { artists: _artists, tracks: _tracks, ...albumFields } = shape
+    const newAlbum = new Album({ ...albumFields, artists: [], tracks: [] })
+    const newArtists = (await Promise.all(
+      shape.artists.map((name) => this.categoryService.createCategory<ArtistDocument>(Artist, name, newAlbum._id))
+    )).filter((a): a is NonNullable<typeof a> => !!a)
     const newGenre = await this.categoryService.createCategory<GenreDocument>(Genre, shape.genre, newAlbum._id)
     const newPeriod = await this.categoryService.createCategory<PeriodDocument>(Period, shape.period, newAlbum._id)
 
-    if (newArtist && newGenre && newPeriod) {
+    const primaryArtist = newArtists[0]
+    if (primaryArtist && newGenre && newPeriod) {
       const albumTracks = await Promise.all(shape.tracks.map(async ({ track, release }) => (
         await this.trackService.createTrack({
           track,
           release,
           albumId: newAlbum._id,
-          artistId: newArtist._id,
+          artistId: primaryArtist._id,
           genreId: newGenre._id,
           periodId: newPeriod._id,
           cloudURL: shape.cloudURL
@@ -217,15 +221,15 @@ export default class AlbumService {
       )))
 
       await this.albumRepository.saveNewAlbum(newAlbum, {
-        artist: newArtist._id,
+        artists: newArtists.map((a) => a._id),
         genre: newGenre._id,
         period: newPeriod._id,
-        tracks: albumTracks.map(({ _id }) => _id)
+        tracks: albumTracks.map((t) => t._id).filter((id): id is Types.ObjectId => id != null)
       })
 
       return {
         ...newAlbum.toObject(),
-        artist: newArtist,
+        artists: newArtists,
         genre: newGenre,
         period: newPeriod
       }
@@ -260,22 +264,25 @@ export default class AlbumService {
       return acc
     }, new Map())
 
-    const updatedArtist = await this.categoryService.cleanAlbums(Artist, album.artist._id, _id)
+    const artistRefs = (album as { artists?: unknown; artist?: unknown }).artists ?? (album as { artist?: unknown }).artist
+    const artistIds = (Array.isArray(artistRefs) ? artistRefs : artistRefs ? [artistRefs] : [])
+      .map((a) => (typeof a === 'object' && a && '_id' in a ? (a as { _id: Types.ObjectId })._id : a))
+      .filter(Boolean) as Types.ObjectId[]
+    for (const artistId of artistIds) {
+      const updatedArtist = await this.categoryService.cleanAlbums(Artist, artistId, _id)
+      if (
+        updatedArtist
+        && !updatedArtist.albums?.length
+      ) {
+        await this.categoryService.removeCategory(Artist, updatedArtist._id.toString())
+      }
+    }
     const updatedGenre = await this.categoryService.cleanAlbums(Genre, album.genre._id, _id)
     const updatedPeriod = await this.categoryService.cleanAlbums(Period, album.period._id, _id)
     
     if (
-      updatedArtist
-      && !updatedArtist.albums?.length
-      && !updatedArtist.embeddedAlbums?.length
-    ) {
-      await this.categoryService.removeCategory(Artist, updatedArtist._id.toString())
-    }
-    
-    if (
       updatedGenre
       && !updatedGenre.albums?.length
-      && !updatedGenre.embeddedAlbums?.length
     ) {
       await this.categoryService.removeCategory(Genre, updatedGenre._id.toString())
     }
@@ -283,7 +290,6 @@ export default class AlbumService {
     if (
       updatedPeriod
       && !updatedPeriod.albums?.length
-      && !updatedPeriod.embeddedAlbums?.length
     ) {
       await this.categoryService.removeCategory(Period, updatedPeriod._id.toString())
     }
@@ -356,10 +362,10 @@ export default class AlbumService {
         if (!next) return acc
         acc.push({
           ...next,
-          artist: Array.isArray(next.artist) ? next.artist[0] : next.artist,
+          artists: Array.isArray(next.artists) ? next.artists : [],
           genre: Array.isArray(next.genre) ? next.genre[0] : next.genre,
           period: Array.isArray(next.period) ? next.period[0] : next.period
-        })
+        } as AlbumDocument)
         return acc
       }, [])
     )

@@ -12,7 +12,6 @@ import tracksRoutes from './routes/tracks.routes'
 import artistsRoutes from './routes/artists.routes'
 import genresRoutes from './routes/genres.routes'
 import periodsRoutes from './routes/periods.routes'
-import embeddedRoutes from './routes/embedded.routes'
 import compilationsRoutes from './routes/compilations.routes'
 import searchRoutes from './routes/search.routes'
 import collectionsRoutes from './routes/collections.routes'
@@ -69,7 +68,6 @@ app.use('/api/tracks', tracksRoutes)
 app.use('/api/artists', artistsRoutes)
 app.use('/api/genres', genresRoutes)
 app.use('/api/periods', periodsRoutes)
-app.use('/api/embedded', embeddedRoutes)
 app.use('/api/compilations', compilationsRoutes)
 app.use('/api/collections', collectionsRoutes)
 app.use('/api/backup', backupRoutes)
