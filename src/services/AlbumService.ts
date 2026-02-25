@@ -243,9 +243,15 @@ export default class AlbumService {
   }
 
   async removeAlbums(albumsIds: Types.ObjectId[]) {
-    return await Promise.all(albumsIds.map(async (id) => (
+    const result = await Promise.all(albumsIds.map(async (id) => (
       await this.removeAlbum(id)
     )))
+
+    if (albumsIds.length) {
+      await this.categoryService.cleanupEmptyCategories()
+    }
+
+    return result
   }
 
   async removeAlbum(_id: Types.ObjectId | string) {
@@ -255,19 +261,22 @@ export default class AlbumService {
     const compilations = preparedAlbum.tracks.reduce<Map<string, string[]>>((acc, next) => {
       const compilationsIds = next.inCompilations?.map(({ _id }) => _id)
       if (compilationsIds?.length) {
-        compilationsIds.forEach((key) => {
-          acc.has(key.toString())
-            ? acc.get(key.toString())?.push(next._id)
-            : acc.set(key.toString(), [next._id])
+        compilationsIds.forEach((compilationId) => {
+          const key = compilationId.toString()
+          acc.has(key)
+            ? acc.get(key)?.push(next._id)
+            : acc.set(key, [next._id])
         })
       }
       return acc
     }, new Map())
 
-    const artistRefs = (album as { artists?: unknown; artist?: unknown }).artists ?? (album as { artist?: unknown }).artist
-    const artistIds = (Array.isArray(artistRefs) ? artistRefs : artistRefs ? [artistRefs] : [])
-      .map((a) => (typeof a === 'object' && a && '_id' in a ? (a as { _id: Types.ObjectId })._id : a))
-      .filter(Boolean) as Types.ObjectId[]
+    const artistIds = [...new Set(
+      (album.artists ?? [])
+        .map((a) => (typeof a === 'object' && a && '_id' in a ? (a as { _id: Types.ObjectId })._id : a))
+        .filter(Boolean) as Types.ObjectId[]
+    )]
+
     for (const artistId of artistIds) {
       const updatedArtist = await this.categoryService.cleanAlbums(Artist, artistId, _id)
       if (
@@ -277,21 +286,19 @@ export default class AlbumService {
         await this.categoryService.removeCategory(Artist, updatedArtist._id.toString())
       }
     }
-    const updatedGenre = await this.categoryService.cleanAlbums(Genre, album.genre._id, _id)
-    const updatedPeriod = await this.categoryService.cleanAlbums(Period, album.period._id, _id)
-    
-    if (
-      updatedGenre
-      && !updatedGenre.albums?.length
-    ) {
-      await this.categoryService.removeCategory(Genre, updatedGenre._id.toString())
+
+    if (album.genre) {
+      const updatedGenre = await this.categoryService.cleanAlbums(Genre, album.genre._id, _id)
+      if (updatedGenre && !updatedGenre.albums?.length) {
+        await this.categoryService.removeCategory(Genre, updatedGenre._id.toString())
+      }
     }
-    
-    if (
-      updatedPeriod
-      && !updatedPeriod.albums?.length
-    ) {
-      await this.categoryService.removeCategory(Period, updatedPeriod._id.toString())
+
+    if (album.period) {
+      const updatedPeriod = await this.categoryService.cleanAlbums(Period, album.period._id, _id)
+      if (updatedPeriod && !updatedPeriod.albums?.length) {
+        await this.categoryService.removeCategory(Period, updatedPeriod._id.toString())
+      }
     }
     
     await this.trackService.removeTracks(album.tracks.map(({ _id }) => _id))

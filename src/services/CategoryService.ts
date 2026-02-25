@@ -1,5 +1,8 @@
 import { Request } from 'express'
 import { Types, PaginateModel } from 'mongoose'
+import { Artist } from '../models/artist.model'
+import { Genre } from '../models/genre.model'
+import { Period } from '../models/period.model'
 import { AlbumRepository } from '../types/album'
 import { CategoryDocument, CategoryRepository } from '../types/category'
 import { ListRequestConfig } from '../types/pagination'
@@ -32,6 +35,15 @@ export default class CategoryService {
     albumId: Types.ObjectId | string
   ) {
     return await this.categoryRepository.cleanAlbums(Model, categoryId, albumId)
+  }
+
+  async cleanupEmptyCategories() {
+    const empty = { $or: [{ albums: { $size: 0 } }, { albums: { $exists: false } }] }
+    await Promise.all([
+      Artist.deleteMany(empty),
+      Genre.deleteMany(empty),
+      Period.deleteMany(empty)
+    ])
   }
 
   async getCategory(Model: PaginateModel<CategoryDocument>, req: Request) {
