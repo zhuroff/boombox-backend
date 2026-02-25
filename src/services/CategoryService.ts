@@ -38,11 +38,24 @@ export default class CategoryService {
   }
 
   async cleanupEmptyCategories() {
-    const empty = { $or: [{ albums: { $size: 0 } }, { albums: { $exists: false } }] }
+    const emptyOrOrphaned = [
+      { $lookup: { from: 'albums', localField: 'albums', foreignField: '_id', as: 'existingAlbums' } },
+      { $match: { $expr: { $eq: [{ $size: '$existingAlbums' }, 0] } } },
+      { $project: { _id: 1 } }
+    ]
+
+    const [orphanArtists, orphanGenres, orphanPeriods] = await Promise.all([
+      Artist.aggregate<{ _id: Types.ObjectId }>(emptyOrOrphaned),
+      Genre.aggregate<{ _id: Types.ObjectId }>(emptyOrOrphaned),
+      Period.aggregate<{ _id: Types.ObjectId }>(emptyOrOrphaned)
+    ])
+
+    const ids = (arr: { _id: Types.ObjectId }[]) => arr.map((d) => d._id)
+
     await Promise.all([
-      Artist.deleteMany(empty),
-      Genre.deleteMany(empty),
-      Period.deleteMany(empty)
+      Artist.deleteMany({ _id: { $in: ids(orphanArtists) } }),
+      Genre.deleteMany({ _id: { $in: ids(orphanGenres) } }),
+      Period.deleteMany({ _id: { $in: ids(orphanPeriods) } })
     ])
   }
 
