@@ -29,7 +29,8 @@ export default class CategoryRepositoryContract implements CategoryRepository {
     albumId: Types.ObjectId | string
   ) {
     const query = { _id: categoryId }
-    const update = { $pull: { albums: albumId } }
+    const normalizedAlbumId = new Types.ObjectId(albumId)
+    const update = { $pull: { albums: normalizedAlbumId } }
     return await Model.findOneAndUpdate(query, update, { new: true })
   }
 
