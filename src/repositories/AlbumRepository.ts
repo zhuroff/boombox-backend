@@ -112,7 +112,8 @@ export default class AlbumRepositoryContract implements AlbumRepository {
     const options: PaginateOptions = {
       page: body.page,
       limit: body.limit,
-      sort: body.sort,
+      // sort: body.sort,
+      sort: { created: -1 },
       populate,
       lean: true,
       select: {
