@@ -25,7 +25,19 @@ router.post('/create', authChecker, compilationController.createCompilation)
 router.patch('/update', authChecker, compilationController.updateCompilation)
 router.patch('/:id/reorder', authChecker, compilationController.reorderCompilationTracks)
 router.delete('/:id', authChecker, compilationController.removeCompilation)
-router.post('/:id/poster', authChecker, upload.single('poster'), handleMulterError, compilationController.updateModelFileLink)
-router.post('/:id/avatar', authChecker, upload.single('avatar'), handleMulterError, compilationController.updateModelFileLink)
+router.post(
+  '/:id/poster',
+  authChecker,
+  upload.single('poster'),
+  handleMulterError,
+  compilationController.updateModelFileLink
+)
+router.post(
+  '/:id/avatar',
+  authChecker,
+  upload.single('avatar'),
+  handleMulterError,
+  compilationController.updateModelFileLink
+)
 
 export default router

@@ -23,8 +23,20 @@ const router = Router()
 router.get('/', authChecker, periodController.getCategories(Period))
 router.get('/:id', authChecker, periodController.getCategory(Period))
 router.post('/create', authChecker, periodController.createCategory(Period))
-router.post('/:id/poster', authChecker, upload.single('poster'), handleMulterError, periodController.updateModelFileLink(Period))
-router.post('/:id/avatar', authChecker, upload.single('avatar'), handleMulterError, periodController.updateModelFileLink(Period))
+router.post(
+  '/:id/poster',
+  authChecker,
+  upload.single('poster'),
+  handleMulterError,
+  periodController.updateModelFileLink(Period)
+)
+router.post(
+  '/:id/avatar',
+  authChecker,
+  upload.single('avatar'),
+  handleMulterError,
+  periodController.updateModelFileLink(Period)
+)
 router.delete('/:id', authChecker, periodController.removeCategory)
 
 export default router

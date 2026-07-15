@@ -1,4 +1,4 @@
-import { Types, RootFilterQuery } from 'mongoose'
+import { Types, QueryFilter } from 'mongoose'
 import { UserDocument } from '../models/user.model'
 import UserView from '../views/UserView'
 
@@ -16,7 +16,7 @@ export interface UserResponse {
 }
 
 export interface UserRepository {
-  findUser(payload: RootFilterQuery<UserDocument>): Promise<UserDocument | null>
+  findUser(payload: QueryFilter<UserDocument>): Promise<UserDocument | null>
   createUser(payload: UserDataPayload): Promise<UserDocument>
   getRawUsers(): Promise<UserDocument[]>
   removeUser(_id: string | Types.ObjectId): Promise<void>

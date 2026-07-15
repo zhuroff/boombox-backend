@@ -4,15 +4,7 @@ import { CategoryDocument } from './category'
 import { AlbumItem } from './album'
 
 export type ModelKeys =
-  | 'albums'
-  | 'artists'
-  | 'genres'
-  | 'periods'
-  | 'collections'
-  | 'compilations'
-  | 'tracks'
-  | 'users'
-  | 'tokens'
+  'albums' | 'artists' | 'genres' | 'periods' | 'collections' | 'compilations' | 'tracks' | 'users' | 'tokens'
 
 export interface SearchPayload {
   query: string
@@ -21,7 +13,7 @@ export interface SearchPayload {
 
 export type SearchModelKey = Omit<ModelKeys, 'users' | 'tokens'>
 
-export type SearchParams = Record<'$text', { '$search': string }>
+export type SearchParams = Record<'$text', { $search: string }>
 
 export interface SearchResult {
   key: SearchModelKey
@@ -35,6 +27,9 @@ export interface SearchConfig {
 }
 
 export interface SearchRepository {
-  splitSearch(payload: SearchPayload, config?: SearchConfig): Promise<TrackDocument[] | CategoryDocument[] | AlbumItem[]>
+  splitSearch(
+    payload: SearchPayload,
+    config?: SearchConfig
+  ): Promise<TrackDocument[] | CategoryDocument[] | AlbumItem[]>
   searchEntry<T>(params: SearchParams, Model: SearchConfig): Promise<T>
 }

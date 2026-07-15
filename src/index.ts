@@ -29,9 +29,7 @@ const app = express()
 const PORT = 3001
 const corsConfig = {
   credentials: true,
-  origin: process.env['NODE_ENV'] === 'development'
-    ? process.env['CLIENT_URL_DEV']
-    : process.env['CLIENT_URL_PROD']
+  origin: process.env['NODE_ENV'] === 'development' ? process.env['CLIENT_URL_DEV'] : process.env['CLIENT_URL_PROD']
 }
 export const rootDir = path.resolve(__dirname, '../')
 
@@ -42,7 +40,8 @@ export const cloudsMap = new Map<string, CloudApi>([
 
 export const getCloudApi = (url: string) => cloudsMap.get(url) as CloudApi
 
-mongoose.connect(process.env['MONGO_URI'] as string)
+mongoose
+  .connect(process.env['MONGO_URI'] as string)
   .then(() => {
     console.log('MongoDB connected')
   })

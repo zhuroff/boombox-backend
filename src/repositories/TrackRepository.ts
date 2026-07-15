@@ -1,4 +1,4 @@
-import { PipelineStage, Types } from 'mongoose'
+import { PipelineStage, QueryFilter, Types } from 'mongoose'
 import { Client } from 'genius-lyrics'
 import { AggregatedTrackDocument, Track, TrackDocument } from '../models/track.model'
 import { Collection } from '../models/collection.model'
@@ -12,30 +12,32 @@ export default class TrackRepositoryContract implements TrackRepository {
   private GClient = new Client(process.env['GENIUS_SECRET'])
 
   private async enrichTracksWithCovers(tracks: AggregatedTrackDocument[]): Promise<AggregatedTrackDocument[]> {
-    return await Promise.all(tracks.map(async (track) => {
-      const cloudURL = track.cloudURL
-      const albumPath = track.inAlbum[0]?.path
+    return await Promise.all(
+      tracks.map(async (track) => {
+        const cloudURL = track.cloudURL
+        const albumPath = track.inAlbum[0]?.path
 
-      if (!cloudURL) {
-        throw new Error('Incorrect request options')
-      }
+        if (!cloudURL) {
+          throw new Error('Incorrect request options')
+        }
 
-      const cloudAPI = getCloudApi(cloudURL)
-      return {
-        ...track,
-        coverURL: albumPath
-          ? await cloudAPI.getFile({
-              path: `${albumPath}/cover.webp`,
-              fileType: 'image'
-            })
-          : undefined
-      }
-    }))
+        const cloudAPI = getCloudApi(cloudURL)
+        return {
+          ...track,
+          coverURL: albumPath
+            ? await cloudAPI.getFile({
+                path: `${albumPath}/cover.webp`,
+                fileType: 'image'
+              })
+            : undefined
+        }
+      })
+    )
   }
 
   private async getWaveByCollection(collectionTitle: string, limit: number): Promise<AggregatedTrackDocument[]> {
     const collection = await Collection.findOne({ title: collectionTitle })
-    
+
     if (!collection) {
       return []
     }
@@ -101,16 +103,21 @@ export default class TrackRepositoryContract implements TrackRepository {
   }
 
   async createTrack(trackPayload: NewTrackPayload) {
+    const { track, albumId, artistId, genreId, periodId, cloudURL, release } = trackPayload
+
     const newTrack = new Track({
-      ...trackPayload.track,
-      title: Parser.parseTrackTitle(trackPayload.track.title),
-      fileName: trackPayload.track.title,
-      inAlbum: trackPayload.albumId,
-      artist: trackPayload.artistId,
-      genre: trackPayload.genreId,
-      period: trackPayload.periodId,
-      cloudURL: trackPayload.cloudURL,
-      release: trackPayload.release
+      title: Parser.parseTrackTitle(track.title),
+      fileName: track.title,
+      path: track.path ?? track.title,
+      mimeType: track.mimeType,
+      inAlbum: albumId,
+      artist: artistId,
+      genre: genreId,
+      period: periodId,
+      cloudURL,
+      release,
+      dateCreated: track.created,
+      modified: track.modified
     })
 
     return await newTrack.save()
@@ -121,10 +128,9 @@ export default class TrackRepositoryContract implements TrackRepository {
   }
 
   async updateTracksCloudURLByAlbum(albumId: Types.ObjectId, cloudURL: string) {
-    return await Track.updateMany(
-      { inAlbum: albumId },
-      { $set: { modified: new Date(), cloudURL } }
-    )
+    return await Track.updateMany({ inAlbum: albumId } as unknown as QueryFilter<TrackDocument>, {
+      $set: { modified: new Date(), cloudURL }
+    })
   }
 
   async removeTracks(tracks: Array<string | Types.ObjectId>) {
@@ -142,16 +148,18 @@ export default class TrackRepositoryContract implements TrackRepository {
 
   async getTrackExternalLyrics(query: string) {
     const searches = await this.GClient.songs.search(query)
-    return await Promise.all(searches.map(async (el) => {
-      const lyrics = await el.lyrics() || ''
+    return await Promise.all(
+      searches.map(async (el) => {
+        const lyrics = (await el.lyrics()) || ''
 
-      return {
-        title: el.title,
-        thumbnail: el.thumbnail,
-        artist: el.artist.name,
-        lyrics
-      }
-    }))
+        return {
+          title: el.title,
+          thumbnail: el.thumbnail,
+          artist: el.artist.name,
+          lyrics
+        }
+      })
+    )
   }
 
   async getTrackAudio(path: string, cloudURL: string) {
@@ -164,22 +172,22 @@ export default class TrackRepositoryContract implements TrackRepository {
   }
 
   async getCoveredTracks(docs: TrackDocument[]) {
-    return await Promise.all(docs.map(async (track) => {
-      const cloudAPI = getCloudApi(track.cloudURL)
-      const cover = await cloudAPI.getFile({
-        path: `${track.inAlbum.path}/cover.webp`,
-        fileType: 'image'
+    return await Promise.all(
+      docs.map(async (track) => {
+        const cloudAPI = getCloudApi(track.cloudURL)
+        const cover = await cloudAPI.getFile({
+          path: `${track.inAlbum.path}/cover.webp`,
+          fileType: 'image'
+        })
+        if (cover) track.coverURL = cover
+        return track
       })
-      if (cover) track.coverURL = cover
-      return track
-    }))
+    )
   }
 
   async updateCompilationInTrack({ listID, itemID, inList }: GatheringUpdateProps) {
     const query = { _id: itemID }
-    const update = inList
-      ? { $pull: { inCompilations: listID } }
-      : { $push: { inCompilations: listID } }
+    const update = inList ? { $pull: { inCompilations: listID } } : { $push: { inCompilations: listID } }
     const options = { new: true }
 
     await Track.findOneAndUpdate(query, update, options)

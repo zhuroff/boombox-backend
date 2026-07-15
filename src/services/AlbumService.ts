@@ -33,26 +33,26 @@ export default class AlbumService {
   async createAlbums(albums: CloudEntity[]) {
     const invalidFolders: Record<string, string>[] = []
 
-    const albumShapes = await Promise.all(albums.map(async (album) => {
-      if (!Validator.isAlbumFolderNameValid(album.title)) {
-        invalidFolders.push({
-          album: album.title,
-          cloud: album.cloudURL,
-          reason: 'invalid_folder_name'
-        })
-        return Promise.resolve(null)
-      } else {
-        return await this.createAlbumShape(album)
-      }
-    }))
+    const albumShapes = await Promise.all(
+      albums.map(async (album) => {
+        if (!Validator.isAlbumFolderNameValid(album.title)) {
+          invalidFolders.push({
+            album: album.title,
+            cloud: album.cloudURL,
+            reason: 'invalid_folder_name'
+          })
+          return Promise.resolve(null)
+        } else {
+          return await this.createAlbumShape(album)
+        }
+      })
+    )
 
     const { validShapes, invalidShapes } = this.validateAlbumShapes(albumShapes)
 
     await this.preCreateCategories(validShapes)
 
-    const savedAlbums = await Promise.all(validShapes.map(async (shape) => (
-      await this.createAlbum(shape)
-    )))
+    const savedAlbums = await Promise.all(validShapes.map(async (shape) => await this.createAlbum(shape)))
 
     invalidFolders.push(...invalidShapes)
 
@@ -90,9 +90,7 @@ export default class AlbumService {
 
   async updateAlbumsClouds(albums: AlbumDocument[]) {
     const updatedAlbums = await this.albumRepository.updateAlbumsClouds(albums)
-    await Promise.all(albums.map((album) =>
-      this.trackService.updateTracksCloudURLByAlbum(album._id, album.cloudURL)
-    ))
+    await Promise.all(albums.map((album) => this.trackService.updateTracksCloudURLByAlbum(album._id, album.cloudURL)))
     return updatedAlbums
   }
 
@@ -103,20 +101,16 @@ export default class AlbumService {
 
     const cloudAPI = getCloudApi(album.cloudURL)
     const albumPath = `${this.#root}/${album.path}`
-    
+
     const albumContent = await cloudAPI.getFolderContent({
       path: encodeURIComponent(albumPath),
       query: 'limit=1000'
     })
-    
-    const folders = albumContent.items.filter((item) => 
-      item.type === 'dir' || !item.mimeType
-    )
 
-    const files = albumContent.items.filter((item) => 
-      item.type !== 'dir' && !!item.mimeType
-    )
-    
+    const folders = albumContent.items.filter((item) => item.type === 'dir' || !item.mimeType)
+
+    const files = albumContent.items.filter((item) => item.type !== 'dir' && !!item.mimeType)
+
     const rootTracks = FileFilter.fileFilter(
       files.map((track) => ({
         ...track,
@@ -124,26 +118,24 @@ export default class AlbumService {
       })),
       'audioMimeTypes'
     )
-    
+
     let allTracks: AlbumTrack[] = []
-    
+
     if (rootTracks.length > 0) {
       allTracks = rootTracks.map((track) => ({ track }))
     } else {
-      const releaseFolders = folders.filter((folder) => 
-        folder.title.startsWith(releaseSubfolder)
-      )
-      
+      const releaseFolders = folders.filter((folder) => folder.title.startsWith(releaseSubfolder))
+
       for (const releaseFolder of releaseFolders) {
         const releaseName = releaseFolder.title.substring(releaseSubfolder.length).trim()
         const releaseFolderPath = `${albumPath}/${releaseFolder.title}`
-        
+
         const releaseContent = await cloudAPI.getFolderContent({
           path: encodeURIComponent(releaseFolderPath),
           fileType: 'audio',
           query: 'limit=1000'
         })
-        
+
         const releaseTracks = FileFilter.fileFilter(
           releaseContent.items.map((track) => ({
             ...track,
@@ -151,14 +143,16 @@ export default class AlbumService {
           })),
           'audioMimeTypes'
         )
-        
-        allTracks.push(...releaseTracks.map((track) => ({
-          track,
-          release: releaseName
-        })))
+
+        allTracks.push(
+          ...releaseTracks.map((track) => ({
+            track,
+            release: releaseName
+          }))
+        )
       }
     }
-    
+
     return {
       folderName: album.title,
       cloudURL: album.cloudURL,
@@ -173,52 +167,60 @@ export default class AlbumService {
 
   validateAlbumShapes(shapes: Array<AlbumShape | null>) {
     return shapes.reduce<{
-      validShapes: AlbumShape[],
+      validShapes: AlbumShape[]
       invalidShapes: Record<string, string>[]
-    }>((acc, next) => {
-      if (!next) return acc
+    }>(
+      (acc, next) => {
+        if (!next) return acc
 
-      if (!next.tracks?.length) {
-        acc.invalidShapes.push({
-          album: next.title,
-          cloud: next.cloudURL,
-          reason: 'no_tracks'
-        })
-      } else if (!next.tracks.every(({ track }) => Validator.isTrackFilenameValid(track.title))) {
-        acc.invalidShapes.push({
-          album: next.title,
-          cloud: next.cloudURL,
-          reason: 'invalid_tracks_names'
-        })
-      } else {
-        acc.validShapes.push(next)
-      }
-      return acc
-    }, { validShapes: [], invalidShapes: [] })
+        if (!next.tracks?.length) {
+          acc.invalidShapes.push({
+            album: next.title,
+            cloud: next.cloudURL,
+            reason: 'no_tracks'
+          })
+        } else if (!next.tracks.every(({ track }) => Validator.isTrackFilenameValid(track.title))) {
+          acc.invalidShapes.push({
+            album: next.title,
+            cloud: next.cloudURL,
+            reason: 'invalid_tracks_names'
+          })
+        } else {
+          acc.validShapes.push(next)
+        }
+        return acc
+      },
+      { validShapes: [], invalidShapes: [] }
+    )
   }
 
   async createAlbum(shape: AlbumShape) {
     const { artists: _artists, tracks: _tracks, ...albumFields } = shape
     const newAlbum = new Album({ ...albumFields, artists: [], tracks: [] })
-    const newArtists = (await Promise.all(
-      shape.artists.map((name) => this.categoryService.createCategory<ArtistDocument>(Artist, name, newAlbum._id))
-    )).filter((a): a is NonNullable<typeof a> => !!a)
+    const newArtists = (
+      await Promise.all(
+        shape.artists.map((name) => this.categoryService.createCategory<ArtistDocument>(Artist, name, newAlbum._id))
+      )
+    ).filter((a): a is NonNullable<typeof a> => !!a)
     const newGenre = await this.categoryService.createCategory<GenreDocument>(Genre, shape.genre, newAlbum._id)
     const newPeriod = await this.categoryService.createCategory<PeriodDocument>(Period, shape.period, newAlbum._id)
 
     const primaryArtist = newArtists[0]
     if (primaryArtist && newGenre && newPeriod) {
-      const albumTracks = await Promise.all(shape.tracks.map(async ({ track, release }) => (
-        await this.trackService.createTrack({
-          track,
-          release,
-          albumId: newAlbum._id,
-          artistId: primaryArtist._id,
-          genreId: newGenre._id,
-          periodId: newPeriod._id,
-          cloudURL: shape.cloudURL
-        })
-      )))
+      const albumTracks = await Promise.all(
+        shape.tracks.map(
+          async ({ track, release }) =>
+            await this.trackService.createTrack({
+              track,
+              release,
+              albumId: newAlbum._id,
+              artistId: primaryArtist._id,
+              genreId: newGenre._id,
+              periodId: newPeriod._id,
+              cloudURL: shape.cloudURL
+            })
+        )
+      )
 
       await this.albumRepository.saveNewAlbum(newAlbum, {
         artists: newArtists.map((a) => a._id),
@@ -243,9 +245,7 @@ export default class AlbumService {
   }
 
   async removeAlbums(albumsIds: Types.ObjectId[]) {
-    const result = await Promise.all(albumsIds.map(async (id) => (
-      await this.removeAlbum(id)
-    )))
+    const result = await Promise.all(albumsIds.map(async (id) => await this.removeAlbum(id)))
 
     if (albumsIds.length) {
       await this.categoryService.cleanupEmptyCategories()
@@ -263,26 +263,23 @@ export default class AlbumService {
       if (compilationsIds?.length) {
         compilationsIds.forEach((compilationId) => {
           const key = compilationId.toString()
-          acc.has(key)
-            ? acc.get(key)?.push(next._id)
-            : acc.set(key, [next._id])
+          acc.has(key) ? acc.get(key)?.push(next._id) : acc.set(key, [next._id])
         })
       }
       return acc
     }, new Map())
 
-    const artistIds = [...new Set(
-      (album.artists ?? [])
-        .map((a) => (typeof a === 'object' && a && '_id' in a ? (a as { _id: Types.ObjectId })._id : a))
-        .filter(Boolean) as Types.ObjectId[]
-    )]
+    const artistIds = [
+      ...new Set(
+        (album.artists ?? [])
+          .map((a) => (typeof a === 'object' && a && '_id' in a ? (a as { _id: Types.ObjectId })._id : a))
+          .filter(Boolean) as Types.ObjectId[]
+      )
+    ]
 
     for (const artistId of artistIds) {
       const updatedArtist = await this.categoryService.cleanAlbums(Artist, artistId, _id)
-      if (
-        updatedArtist
-        && !updatedArtist.albums?.length
-      ) {
+      if (updatedArtist && !updatedArtist.albums?.length) {
         await this.categoryService.removeCategory(Artist, updatedArtist._id.toString())
       }
     }
@@ -300,13 +297,13 @@ export default class AlbumService {
         await this.categoryService.removeCategory(Period, updatedPeriod._id.toString())
       }
     }
-    
+
     await this.trackService.removeTracks(album.tracks.map(({ _id }) => _id))
 
     if (collections?.length) {
       await this.collectionService.cleanCollection(collections, _id)
     }
-    
+
     if (compilations.size > 0) {
       await this.compilationService.cleanCompilation(compilations)
     }
@@ -323,11 +320,13 @@ export default class AlbumService {
     }
 
     const cloudAPI = getCloudApi(album.cloudURL)
-    const cover = withCover ? await cloudAPI.getFile({
-      path: `${album.path}/cover.webp`,
-      fileType: 'image'
-    }) : undefined
-    
+    const cover = withCover
+      ? await cloudAPI.getFile({
+          path: `${album.path}/cover.webp`,
+          fileType: 'image'
+        })
+      : undefined
+
     return AlbumViewFactory.createAlbumPageView(album, cover)
   }
 
@@ -335,10 +334,7 @@ export default class AlbumService {
     const parsedQuery = Parser.parseNestedQuery<ListRequestConfig>(req)
 
     if (!!parsedQuery['isRandom']) {
-      return await this.getAlbumsRandom(
-        Number(parsedQuery['limit']),
-        parsedQuery['filter']
-      )
+      return await this.getAlbumsRandom(Number(parsedQuery['limit']), parsedQuery['filter'])
     }
 
     const dbList = await this.albumRepository.getAlbums(parsedQuery)
@@ -379,9 +375,7 @@ export default class AlbumService {
 
     const albums = await Promise.all(coveredAlbums)
     return {
-      docs: albums.map(({ album, cover }) => (
-        AlbumViewFactory.createAlbumItemView(album, cover)
-      ))
+      docs: albums.map(({ album, cover }) => AlbumViewFactory.createAlbumItemView(album, cover))
     }
   }
 
@@ -391,5 +385,9 @@ export default class AlbumService {
 
   async updateAlbumNote(req: Request) {
     return await this.albumRepository.updateAlbumNote(req)
+  }
+
+  async updateAlbumVinylAvailability(req: Request) {
+    return await this.albumRepository.updateAlbumVinylAvailability(req)
   }
 }

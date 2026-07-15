@@ -4,25 +4,17 @@ import UserService from '../services/UserService'
 
 export default class UserController {
   private cookieSetter = (res: Response, payload: UserResponse) => {
-    res.cookie(
-      'refreshToken',
-      payload?.refreshToken,
-      {
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-        httpOnly: true,
-        secure: process.env['NODE_ENV'] === 'production'
-      }
-    )
+    res.cookie('refreshToken', payload?.refreshToken, {
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      httpOnly: true,
+      secure: process.env['NODE_ENV'] === 'production'
+    })
 
-    res.cookie(
-      'accessToken',
-      payload?.accessToken,
-      {
-        maxAge: 24 * 60 * 60 * 1000,
-        httpOnly: true,
-        secure: process.env['NODE_ENV'] === 'production'
-      }
-    )
+    res.cookie('accessToken', payload?.accessToken, {
+      maxAge: 24 * 60 * 60 * 1000,
+      httpOnly: true,
+      secure: process.env['NODE_ENV'] === 'production'
+    })
   }
 
   constructor(private userService: UserService) {}

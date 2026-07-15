@@ -22,9 +22,9 @@ export default class SearchRepositoryContract implements SearchRepository {
     if (key === 'albums') {
       const albumRes = await this.searchEntry<AlbumDocument[]>(searchParams, config)
       const coveredAlbums = await this.albumRepository.getCoveredAlbums(albumRes)
-      return await Promise.all(coveredAlbums.map(({ album, cover }) => (
-        AlbumViewFactory.createAlbumItemView(album, cover)
-      )))
+      return await Promise.all(
+        coveredAlbums.map(({ album, cover }) => AlbumViewFactory.createAlbumItemView(album, cover))
+      )
     } else if (key === 'tracks') {
       const trackRes = await this.searchEntry<TrackDocument[]>(searchParams, config)
       const coveredTracks = await this.trackRepository.getCoveredTracks(trackRes)
@@ -35,9 +35,9 @@ export default class SearchRepositoryContract implements SearchRepository {
   }
 
   async searchEntry<T>(params: SearchParams, Model: SearchConfig) {
-    return await Model.instance
+    return (await Model.instance
       .find(params, Model.options)
       .populate(Model.populates || [])
-      .lean() as T
+      .lean()) as T
   }
 }

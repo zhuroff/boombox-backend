@@ -42,10 +42,7 @@ export interface CompilationDocumentTrack {
   order: number
 }
 
-export interface CompilationDocument extends Omit<
-  InferSchemaType<typeof schema> & { _id: Types.ObjectId },
-  'tracks'
-> {
+export interface CompilationDocument extends Omit<InferSchemaType<typeof schema> & { _id: Types.ObjectId }, 'tracks'> {
   tracks: CompilationDocumentTrack[]
 }
 

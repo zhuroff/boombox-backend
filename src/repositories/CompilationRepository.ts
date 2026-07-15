@@ -86,12 +86,12 @@ export default class CompilationRepositoryContract implements CompilationReposit
   }
 
   async cleanCompilation(compilations: Map<string, string[]>) {
-    await Promise.all(Array.from(compilations).map(async ([compilationId, trackIds]) => (
-      await Compilation.updateMany(
-        { _id: compilationId },
-        { $pull: { tracks: { track: { $in: trackIds } } } }
+    await Promise.all(
+      Array.from(compilations).map(
+        async ([compilationId, trackIds]) =>
+          await Compilation.updateMany({ _id: compilationId }, { $pull: { tracks: { track: { $in: trackIds } } } })
       )
-    )))
+    )
   }
 
   async renameCompilation(query: { _id: string }, update: { title: string }) {

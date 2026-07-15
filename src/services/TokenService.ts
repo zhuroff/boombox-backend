@@ -7,17 +7,9 @@ export default class TokenService {
   constructor(private tokenRepository: TokenRepository) {}
 
   generateTokens(payload: UserView) {
-    const accessToken = jwt.sign(
-      payload,
-      process.env['JWT_SECRET_TOKEN'] as string,
-      { expiresIn: '24h' }
-    )
+    const accessToken = jwt.sign(payload, process.env['JWT_SECRET_TOKEN'] as string, { expiresIn: '24h' })
 
-    const refreshToken = jwt.sign(
-      payload,
-      process.env['JWT_REFRESH_TOKEN'] as string,
-      { expiresIn: '24h' }
-    )
+    const refreshToken = jwt.sign(payload, process.env['JWT_REFRESH_TOKEN'] as string, { expiresIn: '24h' })
 
     return {
       accessToken,
@@ -31,7 +23,7 @@ export default class TokenService {
 
   async saveToken(userID: Types.ObjectId, refreshToken: string) {
     const dbToken = await this.tokenRepository.getToken({ user: userID })
-    
+
     if (dbToken) {
       dbToken.refreshToken = refreshToken
       return dbToken.save()

@@ -1,4 +1,5 @@
-import { PaginateResult, Types, UpdateWriteOpResult } from 'mongoose'
+import type { UpdateResult } from 'mongodb'
+import { PaginateResult, Types } from 'mongoose'
 import { CollectionDocument, CollectionDocumentAlbum } from '../models/collection.model'
 import { CompilationDocument, CompilationDocumentTrack } from '../models/compilation.model'
 import { ListRequestConfig } from './pagination'
@@ -50,12 +51,12 @@ export interface NewCompilationPayload {
 }
 
 export interface CreatedCollectionRes {
-  id: Types.ObjectId,
+  id: Types.ObjectId
   collections: PaginateResult<CollectionDocument | null>
 }
 
 export interface CreatedCompilationRes {
-  id: Types.ObjectId,
+  id: Types.ObjectId
   compilations: PaginateResult<CompilationDocument | null>
 }
 
@@ -84,7 +85,7 @@ export interface CollectionRepository {
   updateTitle(id: string, payload: { title: string }): Promise<CollectionDocument | null>
   updateCollectionOrder(_id: Types.ObjectId | string, albums: CollectionDocumentAlbum[]): Promise<void>
   removeCollection(id: Types.ObjectId | string): Promise<CollectionDocument | null>
-  cleanCollection(collectionIds: Types.ObjectId[], albumId: Types.ObjectId | string): Promise<UpdateWriteOpResult>
+  cleanCollection(collectionIds: Types.ObjectId[], albumId: Types.ObjectId | string): Promise<UpdateResult>
 }
 
 export type GatheringItem = ReturnType<typeof GatheringViewFactory.createGatheringItemView>

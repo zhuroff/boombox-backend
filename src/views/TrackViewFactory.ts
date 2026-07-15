@@ -69,11 +69,15 @@ class TrackView {
 }
 
 export default class TrackViewFactory {
-  static isTrackDocument(track: TrackDocument | ReturnType<typeof CloudEntityViewFactory.create>): track is TrackDocument {
+  static isTrackDocument(
+    track: TrackDocument | ReturnType<typeof CloudEntityViewFactory.create>
+  ): track is TrackDocument {
     return '_id' in track
   }
-  
-  static isCloudEntity(track: TrackDocument | ReturnType<typeof CloudEntityViewFactory.create>): track is ReturnType<typeof CloudEntityViewFactory.create> {
+
+  static isCloudEntity(
+    track: TrackDocument | ReturnType<typeof CloudEntityViewFactory.create>
+  ): track is ReturnType<typeof CloudEntityViewFactory.create> {
     return 'mimeType' in track
   }
 

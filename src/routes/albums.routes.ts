@@ -22,7 +22,13 @@ const trackService = new TrackService(trackRepository)
 const categoryService = new CategoryService(categoryRepository, albumRepository)
 const collectionService = new CollectionService(collectionRepository, albumRepository)
 const compilationService = new CompilationService(compilationRepository, trackRepository)
-const albumService = new AlbumService(albumRepository, categoryService, collectionService, compilationService, trackService)
+const albumService = new AlbumService(
+  albumRepository,
+  categoryService,
+  collectionService,
+  compilationService,
+  trackService
+)
 
 const albumController = new AlbumsController(albumService)
 const router = Router()
@@ -31,5 +37,6 @@ router.get('/', authChecker, albumController.getAlbums)
 router.get('/:id', authChecker, albumController.getAlbum)
 router.get('/:id/:folder', authChecker, albumController.getAlbumContent)
 router.put('/:id/note', authChecker, albumController.updateAlbumNote)
+router.put('/:id/vinyl', authChecker, albumController.updateAlbumVinylAvailability)
 
 export default router
