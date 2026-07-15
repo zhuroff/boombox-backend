@@ -10,9 +10,7 @@ export default class Parser {
     if (value === 'true') return true
     if (value === 'false') return false
 
-    return typeof value === 'string' && value.trim() !== '' && !isNaN(Number(value))
-      ? Number(value)
-      : value
+    return typeof value === 'string' && value.trim() !== '' && !isNaN(Number(value)) ? Number(value) : value
   }
 
   static parseTrackTitle(name: string) {
@@ -37,7 +35,10 @@ export default class Parser {
 
   static parseArtistNames(name: string): string[] {
     const raw = this.getArtistsString(name)
-    const parts = raw.split(/\s*;\s*/).map((s) => s.trim()).filter(Boolean)
+    const parts = raw
+      .split(/\s*;\s*/)
+      .map((s) => s.trim())
+      .filter(Boolean)
     return parts.length ? parts : [raw]
   }
 
@@ -46,7 +47,7 @@ export default class Parser {
     const withoutExtension = withoutTrackNumber.replace(/\.[^.]+$/, '')
     const parts = withoutExtension.split(' - ')
     const artistName = parts[0] ? parts[0].trim() : 'unknown artist'
-    
+
     return artistName
   }
 
@@ -64,17 +65,17 @@ export default class Parser {
 
   static parseNestedQuery<T>(req: Request): T {
     const result: typeof req.query | Record<string, number | boolean> = {}
-  
+
     for (const key in req.query) {
       const rawValue = req.query[key]
 
       if (!rawValue) continue
 
       const value = this.parseValue(rawValue as string | ParsedQs | string[] | ParsedQs[])
-  
+
       const parts = key.split('.')
       let current = result
-  
+
       parts.forEach((part, index) => {
         if (index === parts.length - 1) {
           current[part] = value
@@ -86,7 +87,7 @@ export default class Parser {
         }
       })
     }
-  
+
     return result as T
   }
 }

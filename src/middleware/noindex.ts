@@ -4,4 +4,3 @@ export const noIndexMiddleware = (req: Request, res: Response, next: NextFunctio
   res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet, noimageindex')
   next()
 }
-

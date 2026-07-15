@@ -1,21 +1,10 @@
 import { body } from 'express-validator'
 
 export const authValidator = [
-  body('login')
-    .exists()
-    .trim()
-    .withMessage('login.empty'),
-  body('email')
-    .exists()
-    .withMessage('email.empty')
-    .trim()
-    .isEmail()
-    .withMessage('email.invalid'),
-  body('role')
-    .exists()
-    .isIn(['admin', 'user', 'listener'])
-    .withMessage('role.invalid'),
-  body('password')  
+  body('login').exists().trim().withMessage('login.empty'),
+  body('email').exists().withMessage('email.empty').trim().isEmail().withMessage('email.invalid'),
+  body('role').exists().isIn(['admin', 'user', 'listener']).withMessage('role.invalid'),
+  body('password')
     .exists()
     .trim()
     .isLength({ min: 8 })

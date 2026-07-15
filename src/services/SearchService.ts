@@ -10,19 +10,18 @@ export default class SearchService {
   ) {}
 
   async search(payload: SearchPayload) {
-    const mappedResult = new Map<
-      SearchModelKey,
-      Partial<TrackDocument | CategoryDocument | AlbumItem>[]
-    >()
+    const mappedResult = new Map<SearchModelKey, Partial<TrackDocument | CategoryDocument | AlbumItem>[]>()
 
     if (payload.key) {
       const response = await this.searchRepository.splitSearch(payload, this.searchMap.get(payload.key))
 
       mappedResult.set(payload.key, response)
     } else {
-      await Promise.all([...this.searchMap].map(async ([key, config]) => (
-        mappedResult.set(key, await this.searchRepository.splitSearch({ query: payload.query, key }, config))
-      )))
+      await Promise.all(
+        [...this.searchMap].map(async ([key, config]) =>
+          mappedResult.set(key, await this.searchRepository.splitSearch({ query: payload.query, key }, config))
+        )
+      )
     }
 
     return [...mappedResult].reduce<SearchResult[]>((acc, [key, data]) => {

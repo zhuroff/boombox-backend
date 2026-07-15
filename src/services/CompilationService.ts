@@ -1,7 +1,14 @@
 import { Request } from 'express'
 import { Types } from 'mongoose'
 import { TrackDocument } from '../models/track.model'
-import { CompilationRepository, GatheringCreatePayload, GatheringItem, GatheringReorder, GatheringUpdatePayload, NewCompilationPayload } from '../types/gathering'
+import {
+  CompilationRepository,
+  GatheringCreatePayload,
+  GatheringItem,
+  GatheringReorder,
+  GatheringUpdatePayload,
+  NewCompilationPayload
+} from '../types/gathering'
 import { ListRequestConfig } from '../types/pagination'
 import { TrackRepository } from '../types/track'
 import Parser from '../utils/Parser'
@@ -86,12 +93,15 @@ export default class CompilationService {
       throw new Error('Incorrect request options')
     }
 
-    await Promise.all(response.tracks.map(async (track) => (
-      await this.trackRepository.updateCompilationInTrack({
-        listID: id,
-        inList: false,
-        itemID: track.track instanceof Types.ObjectId ? track.track : track.track._id
-      })))
+    await Promise.all(
+      response.tracks.map(
+        async (track) =>
+          await this.trackRepository.updateCompilationInTrack({
+            listID: id,
+            inList: false,
+            itemID: track.track instanceof Types.ObjectId ? track.track : track.track._id
+          })
+      )
     )
 
     return { message: 'compilations.drop' }
@@ -104,10 +114,7 @@ export default class CompilationService {
       throw new Error('Incorrect request options')
     }
 
-    targetCompilation.tracks.splice(
-      newOrder, 0,
-      ...targetCompilation.tracks.splice(oldOrder, 1)
-    )
+    targetCompilation.tracks.splice(newOrder, 0, ...targetCompilation.tracks.splice(oldOrder, 1))
 
     targetCompilation.tracks.forEach((el, index) => {
       el.order = index + 1
@@ -128,9 +135,9 @@ export default class CompilationService {
 
     const { totalDocs, totalPages, page } = compilations
     const pagination = PaginationViewFactory.create({ totalDocs, totalPages, page })
-    const docs = compilations.docs.map((compilation) => (
+    const docs = compilations.docs.map((compilation) =>
       GatheringViewFactory.createGatheringItemView('compilation', compilation, compilation.tracks)
-    ))
+    )
 
     return { docs, pagination }
   }

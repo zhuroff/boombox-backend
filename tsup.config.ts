@@ -3,7 +3,7 @@ import { defineConfig } from 'tsup'
 export default defineConfig({
   entry: ['src/index.ts'],
   outDir: 'dist',
-  target: 'node18',
+  target: 'node20',
   platform: 'node',
   format: ['cjs'],
   splitting: false,
@@ -13,5 +13,6 @@ export default defineConfig({
   shims: true,
   dts: false,
   noExternal: [],
+  ignoreWatch: ['src/ai-docs/**'],
 })
 

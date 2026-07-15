@@ -43,7 +43,7 @@ export default class TrackService {
     return await this.trackRepository.getTrackAudio(encodeURIComponent(path), cloudURL)
   }
 
-  async getCoveredTracks(docs: TrackDocument[])  {
+  async getCoveredTracks(docs: TrackDocument[]) {
     return await this.trackRepository.getCoveredTracks(docs)
   }
 

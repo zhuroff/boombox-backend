@@ -8,6 +8,10 @@ export interface RelatedAlbumsReqFilter {
   value: string
 }
 
+export type AlbumNoteFilter = 'all' | 'withReviews' | 'withoutReviews'
+
+export type AlbumVinylFilter = 'all' | 'onVinyl' | 'notOnVinyl'
+
 export interface ListRequestConfig {
   limit: number
   sort: SortingValue
@@ -15,6 +19,8 @@ export interface ListRequestConfig {
   isRandom?: true | 1
   filter?: RelatedAlbumsReqFilter
   path?: string
+  noteFilter?: AlbumNoteFilter
+  vinylFilter?: AlbumVinylFilter
 }
 
 export interface Pagination {

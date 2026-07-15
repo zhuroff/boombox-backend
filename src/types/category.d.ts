@@ -1,15 +1,12 @@
 import { Request } from 'express'
 import {
   Types,
-  Document,
-  Require_id,
-  Default__v,
-  IfAny,
   PaginateModel,
   PaginateResult,
-  FilterQuery,
+  QueryFilter,
   UpdateQuery,
-  QueryOptions
+  QueryOptions,
+  HydratedDocument
 } from 'mongoose'
 import { ArtistDocument } from '../models/artist.model'
 import { GenreDocument } from '../models/genre.model'
@@ -19,11 +16,7 @@ import { ListRequestConfig } from './pagination'
 export type CategoryDocument = ArtistDocument | GenreDocument | PeriodDocument
 
 export interface CategoryRepository {
-  createCategory<T>(
-    Model: PaginateModel<T>,
-    title: string,
-    _id?: Types.ObjectId
-  ): Promise<IfAny<T, any, Document<unknown, {}, T> & Default__v<Require_id<T>>> | null>,
+  createCategory<T>(Model: PaginateModel<T>, title: string, _id?: Types.ObjectId): Promise<HydratedDocument<T> | null>
   cleanAlbums(
     Model: PaginateModel<CategoryDocument>,
     categoryId: Types.ObjectId,
@@ -31,14 +24,11 @@ export interface CategoryRepository {
   ): Promise<CategoryDocument | null>
   updateCategory(
     Model: PaginateModel<CategoryDocument>,
-    filter: FilterQuery<CategoryDocument>,
+    filter: QueryFilter<CategoryDocument>,
     update: UpdateQuery<CategoryDocument>,
     options?: QueryOptions
   ): Promise<CategoryDocument | null>
-  getPopulatedCategory(
-    Model: PaginateModel<CategoryDocument>,
-    req: Request
-  ): Promise<CategoryDocument | null>
+  getPopulatedCategory(Model: PaginateModel<CategoryDocument>, req: Request): Promise<CategoryDocument | null>
   getPopulatedCategories(
     Model: PaginateModel<CategoryDocument>,
     body: ListRequestConfig

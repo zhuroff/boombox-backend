@@ -48,7 +48,7 @@ export default class SyncService {
 
     cloudFolders.forEach((folder) => {
       const dbFolder = dbFoldersMap.get(folder.title)
-      
+
       if (dbFolder) {
         if (dbFolder.cloudURL !== folder.cloudURL) {
           dbFolder.cloudURL = folder.cloudURL
@@ -64,9 +64,7 @@ export default class SyncService {
       ? await this.albumService.createAlbums(albumsToAdd)
       : { added: [], invalid: [] }
 
-    const fixedAlbums = albumsToFix.length
-      ? await this.albumService.updateAlbumsClouds(albumsToFix)
-      : []
+    const fixedAlbums = albumsToFix.length ? await this.albumService.updateAlbumsClouds(albumsToFix) : []
 
     const deletedAlbums = dbFoldersMap.size
       ? await this.albumService.removeAlbums([...dbFoldersMap].map(([, next]) => next._id))

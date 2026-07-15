@@ -8,11 +8,11 @@ import {
   CLoudQueryPayload
 } from '../types/cloud'
 import { createHash } from 'node:crypto'
-import axios, { AxiosError, AxiosInstance } from 'axios'
+import { HttpClient } from '../utils/http'
 import CloudEntityViewFactory from '../views/CloudEntityViewFactory'
 
 export default class PCloudApi implements Cloud {
-  #client: AxiosInstance
+  #client: HttpClient
   #domain = process.env['PCLOUD_DOMAIN']
   #login = process.env['PCLOUD_LOGIN']
   #password = process.env['PCLOUD_PASSWORD']
@@ -22,14 +22,17 @@ export default class PCloudApi implements Cloud {
   }
 
   constructor() {
-    this.#client = axios.create({})
+    this.#client = new HttpClient()
   }
 
-  async #getDigest() {
+  async #getDigest(): Promise<string> {
     return this.#client
-      .get(`${this.#domain}/getdigest`)
+      .get<{ digest: string }>(`${this.#domain}/getdigest`)
       .then(({ data }) => data.digest)
-      .catch(console.error)
+      .catch((error: unknown) => {
+        console.error(error)
+        return ''
+      })
   }
 
   #getFileLink(entity: PCloudFileResponse) {
@@ -37,14 +40,14 @@ export default class PCloudApi implements Cloud {
   }
 
   #qBuilder(path: string, qMethod?: string) {
-    return (`
+    return `
       ${this.#domain}/
       ${qMethod || 'listfolder'}?path=
       ${path}
       &username=${this.#login}
       &digest=${this.#digest}
       &passworddigest=${this.#sha1(this.#password + this.#sha1(this.#login) + this.#digest)}
-    `).replace(/\s{2,}/g, '')
+    `.replace(/\s{2,}/g, '')
   }
 
   async getFolders(payload: CLoudQueryPayload) {
@@ -59,7 +62,7 @@ export default class PCloudApi implements Cloud {
 
     return await this.#client
       .get<PCloudResponse<PCloudEntity> | PCloudResponseError>(query)
-      .then(({ config: { url }, data }) => {
+      .then(({ url, data }) => {
         if (!url) {
           throw new Error('"url" property is not found in cloud response')
         }
@@ -68,11 +71,9 @@ export default class PCloudApi implements Cloud {
           throw new Error(`${data.result}: ${data.error}`)
         }
 
-        return data.metadata.contents.map((item) => (
-          CloudEntityViewFactory.create(item, url)
-        ))
+        return data.metadata.contents.map((item) => CloudEntityViewFactory.create(item, url))
       })
-      .catch((error: AxiosError) => {
+      .catch((error: unknown) => {
         console.error(error)
         return []
       })
@@ -88,29 +89,22 @@ export default class PCloudApi implements Cloud {
     this.#digest = await this.#getDigest()
     const query = this.#qBuilder(`/${path}`)
 
-    return await this.#client
-      .get<PCloudResponse<PCloudEntity> | PCloudResponseError>(query)
-      .then(({ config: { url }, data }) => {
-        if (!url) {
-          throw new Error('"url" property is not found in cloud response')
-        }
+    return await this.#client.get<PCloudResponse<PCloudEntity> | PCloudResponseError>(query).then(({ url, data }) => {
+      if (!url) {
+        throw new Error('"url" property is not found in cloud response')
+      }
 
-        if ('error' in data) {
-          throw new Error(`${data.result}: ${data.error}`)
-        }
+      if ('error' in data) {
+        throw new Error(`${data.result}: ${data.error}`)
+      }
 
-        return {
-          limit: -1,
-          offset: 0,
-          total: data.metadata.contents.length,
-          items: data.metadata.contents.map((item) => (
-            CloudEntityViewFactory.create(item, url)
-          ))
-        }
-      })
-      .catch((error: AxiosError) => {
-        throw error
-      })
+      return {
+        limit: -1,
+        offset: 0,
+        total: data.metadata.contents.length,
+        items: data.metadata.contents.map((item) => CloudEntityViewFactory.create(item, url))
+      }
+    })
   }
 
   async getFile(payload: CLoudQueryPayload) {
@@ -136,7 +130,7 @@ export default class PCloudApi implements Cloud {
 
         return this.#getFileLink(data)
       })
-      .catch((error: AxiosError) => {
+      .catch((error: unknown) => {
         console.error(error)
         return undefined
       })

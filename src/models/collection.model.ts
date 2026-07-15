@@ -47,10 +47,7 @@ export interface CollectionDocumentAlbum {
   post?: string
 }
 
-export interface CollectionDocument extends Omit<
-  InferSchemaType<typeof schema> & { _id: Types.ObjectId },
-  'albums'
-> {
+export interface CollectionDocument extends Omit<InferSchemaType<typeof schema> & { _id: Types.ObjectId }, 'albums'> {
   albums: CollectionDocumentAlbum[]
 }
 

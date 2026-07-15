@@ -42,7 +42,7 @@ export default class CategoryController {
 
   updateModelFileLink = (model: PaginateModel<CategoryDocument>) => async (req: Request, res: Response) => {
     try {
-      const response = await this.fileService.updateModelFileLink<CategoryDocument, PaginateModel<CategoryDocument>>(model, req)
+      const response = await this.fileService.updateModelFileLink<CategoryDocument>(model, req)
       res.json(response)
     } catch (error) {
       console.error(error)

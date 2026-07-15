@@ -1,5 +1,4 @@
 import { Request, Response } from 'express'
-import { Model } from 'mongoose'
 import { Compilation, CompilationDocument } from '../models/compilation.model'
 import CompilationService from '../services/CompilationService'
 import FileService from '../services/FileService'
@@ -82,7 +81,7 @@ export default class CompilationController {
 
   updateModelFileLink = async (req: Request, res: Response) => {
     try {
-      const response = await this.fileService.updateModelFileLink<CompilationDocument, Model<CompilationDocument>>(Compilation, req)
+      const response = await this.fileService.updateModelFileLink<CompilationDocument>(Compilation, req)
       res.json(response)
     } catch (error) {
       console.error(error)

@@ -1,4 +1,9 @@
-import { DiscogsFolderItem, DiscogsReleasesResponse, DiscogsResponseItem, DiscogsResponsePagination } from '../types/discogs'
+import {
+  DiscogsFolderItem,
+  DiscogsReleasesResponse,
+  DiscogsResponseItem,
+  DiscogsResponsePagination
+} from '../types/discogs'
 
 export class DiscogsSearchView {
   id: number

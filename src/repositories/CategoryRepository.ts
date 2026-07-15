@@ -1,5 +1,5 @@
 import { Request } from 'express'
-import { Types, PaginateModel, FilterQuery, PaginateOptions, UpdateQuery, QueryOptions } from 'mongoose'
+import { Types, PaginateModel, QueryFilter, PaginateOptions, UpdateQuery, QueryOptions } from 'mongoose'
 import { CategoryDocument, CategoryRepository } from '../types/category'
 import { ListRequestConfig } from '../types/pagination'
 
@@ -20,7 +20,7 @@ export default class CategoryRepositoryContract implements CategoryRepository {
   }
 
   async removeCategory<T>(Model: PaginateModel<T>, _id: string) {
-    await Model.deleteOne({ _id } as FilterQuery<T>)
+    await Model.deleteOne({ _id } as QueryFilter<T>)
   }
 
   async cleanAlbums(
@@ -49,13 +49,8 @@ export default class CategoryRepositoryContract implements CategoryRepository {
       .lean()
   }
 
-  async getPopulatedCategories(
-    Model: PaginateModel<CategoryDocument>,
-    body: ListRequestConfig
-  ) {
-    const populates = [
-      { path: 'albums', select: ['_id'] }
-    ]
+  async getPopulatedCategories(Model: PaginateModel<CategoryDocument>, body: ListRequestConfig) {
+    const populates = [{ path: 'albums', select: ['_id'] }]
 
     const options: PaginateOptions = {
       page: body.page,
@@ -74,7 +69,7 @@ export default class CategoryRepositoryContract implements CategoryRepository {
 
   async updateCategory(
     Model: PaginateModel<CategoryDocument>,
-    filter: FilterQuery<CategoryDocument>,
+    filter: QueryFilter<CategoryDocument>,
     update: UpdateQuery<CategoryDocument>,
     options: QueryOptions = {}
   ) {

@@ -12,7 +12,7 @@ const collectionRepository = new CollectionRepositoryContract()
 const fileRepository = new FileRepositoryContract()
 const albumRepository = new AlbumRepositoryContract()
 
-const fileService  = new FileService(fileRepository)
+const fileService = new FileService(fileRepository)
 const collectionService = new CollectionService(collectionRepository, albumRepository)
 
 const collectionController = new CollectionController(collectionService, fileService)
@@ -26,7 +26,19 @@ router.put('/:id/title', authChecker, collectionController.updateTitle)
 router.get('/:id', authChecker, collectionController.getCollection)
 router.patch('/:id/reorder', authChecker, collectionController.reorderCollections)
 router.delete('/:id', authChecker, collectionController.removeCollection)
-router.post('/:id/poster', authChecker, upload.single('poster'), handleMulterError, collectionController.updateModelFileLink)
-router.post('/:id/avatar', authChecker, upload.single('avatar'), handleMulterError, collectionController.updateModelFileLink)
+router.post(
+  '/:id/poster',
+  authChecker,
+  upload.single('poster'),
+  handleMulterError,
+  collectionController.updateModelFileLink
+)
+router.post(
+  '/:id/avatar',
+  authChecker,
+  upload.single('avatar'),
+  handleMulterError,
+  collectionController.updateModelFileLink
+)
 
 export default router

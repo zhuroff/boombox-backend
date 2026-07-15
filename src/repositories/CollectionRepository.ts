@@ -1,6 +1,11 @@
 import { PaginateOptions, Types } from 'mongoose'
 import { Collection, CollectionDocumentAlbum } from '../models/collection.model'
-import { CollectionPostPayload, CollectionRepository, GatheringUpdatePayload, NewCollectionPayload } from '../types/gathering'
+import {
+  CollectionPostPayload,
+  CollectionRepository,
+  GatheringUpdatePayload,
+  NewCollectionPayload
+} from '../types/gathering'
 import { ListRequestConfig } from '../types/pagination'
 
 export default class CollectionRepositoryContract implements CollectionRepository {
@@ -32,16 +37,7 @@ export default class CollectionRepositoryContract implements CollectionRepositor
     return await Collection.findById(id)
       .populate({
         path: 'albums.album',
-        select: [
-          'title',
-          'artists',
-          'genre',
-          'period',
-          'albumCover',
-          'folderName',
-          'cloudURL',
-          'path'
-        ],
+        select: ['title', 'artists', 'genre', 'period', 'albumCover', 'folderName', 'cloudURL', 'path'],
         populate: [
           { path: 'artists', select: ['title'] },
           { path: 'genre', select: ['title'] },
@@ -71,12 +67,7 @@ export default class CollectionRepositoryContract implements CollectionRepositor
     }
   }
 
-  async updateCollection({
-    entityID,
-    gatheringID,
-    isInList,
-    order
-  }: GatheringUpdatePayload) {
+  async updateCollection({ entityID, gatheringID, isInList, order }: GatheringUpdatePayload) {
     const query = { _id: gatheringID }
     const update = isInList
       ? { $pull: { albums: { album: entityID } } }
@@ -95,7 +86,7 @@ export default class CollectionRepositoryContract implements CollectionRepositor
   async updatePost(_id: string, { albumId, post }: CollectionPostPayload) {
     const query = { _id }
     const update = { $set: { 'albums.$[elem].post': post } }
-    const options = { 
+    const options = {
       new: true,
       arrayFilters: [{ 'elem.album': albumId }]
     }
@@ -104,11 +95,7 @@ export default class CollectionRepositoryContract implements CollectionRepositor
   }
 
   async updateTitle(id: string, payload: { title: string }) {
-    return await Collection.findByIdAndUpdate(
-      id,
-      { $set: { title: payload.title } },
-      { new: true }
-    )
+    return await Collection.findByIdAndUpdate(id, { $set: { title: payload.title } }, { new: true })
   }
 
   async updateCollectionOrder(_id: Types.ObjectId | string, albums: CollectionDocumentAlbum[]) {
@@ -120,9 +107,6 @@ export default class CollectionRepositoryContract implements CollectionRepositor
   }
 
   async cleanCollection(collectionIds: Types.ObjectId[], albumId: Types.ObjectId | string) {
-    return await Collection.updateMany(
-      { _id: { $in: collectionIds } },
-      { $pull: { albums: { album: albumId } } }
-    )
+    return await Collection.updateMany({ _id: { $in: collectionIds } }, { $pull: { albums: { album: albumId } } })
   }
 }

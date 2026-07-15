@@ -25,7 +25,13 @@ const categoryService = new CategoryService(categoryRepository, albumRepository)
 const collectionService = new CollectionService(collectionRepository, albumRepository)
 const compilationService = new CompilationService(compilationRepository, trackRepository)
 const trackService = new TrackService(trackRepository)
-const albumService = new AlbumService(albumRepository, categoryService, collectionService, compilationService, trackService)
+const albumService = new AlbumService(
+  albumRepository,
+  categoryService,
+  collectionService,
+  compilationService,
+  trackService
+)
 const syncService = new SyncService(syncRepository, albumService)
 
 const syncController = new SyncController(syncService)

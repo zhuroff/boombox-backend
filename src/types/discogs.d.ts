@@ -32,8 +32,8 @@ export interface DiscogsCollectionItem {
     formats: {
       qty: string
       name: string
-      description: string[]    
-    },
+      description: string[]
+    }
     labels: {
       id: number
       name: string
@@ -69,7 +69,7 @@ export interface DiscogsReleaseItem {
   id: number
   date_added: string
   basic_information: {}
-  notes: { field_id: number, value: string }[]
+  notes: { field_id: number; value: string }[]
 }
 
 export interface DiscogsResponsePagination {
