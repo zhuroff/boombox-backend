@@ -79,7 +79,7 @@ export default class CategoryService {
           if (comparison === 0) {
             comparison = a.title.localeCompare(b.title)
           }
-          
+
           return comparison
         })
     })
@@ -95,9 +95,7 @@ export default class CategoryService {
 
     const { totalDocs, totalPages, page } = categories
     const pagination = PaginationViewFactory.create({ totalDocs, totalPages, page })
-    const docs = categories.docs.map((category) => (
-      CategoryViewFactory.createCategoryItemView(category)
-    ))
+    const docs = categories.docs.map((category) => CategoryViewFactory.createCategoryItemView(category))
 
     return { docs, pagination }
   }

@@ -1,5 +1,4 @@
 import { Request, Response } from 'express'
-import { PaginateModel } from 'mongoose'
 import { Collection, CollectionDocument } from '../models/collection.model'
 import CollectionService from '../services/CollectionService'
 import FileService from '../services/FileService'
@@ -96,10 +95,7 @@ export default class CollectionController {
 
   updateModelFileLink = async (req: Request, res: Response) => {
     try {
-      const response = await this.fileService.updateModelFileLink<
-        CollectionDocument,
-        PaginateModel<CollectionDocument>
-      >(Collection, req)
+      const response = await this.fileService.updateModelFileLink<CollectionDocument>(Collection, req)
 
       res.json(response)
     } catch (error) {

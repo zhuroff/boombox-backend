@@ -93,17 +93,19 @@ export default class CollectionService {
       throw new Error('Incorrect request options or collection not found')
     }
 
-    const coveredAlbums = await Promise.all(collection.albums.map(async ({ album, order, post }) => {
-      const item = album as AlbumDocument
-      const cover = await this.albumRepository.fetchAlbumCover(item)
-      return { album: item, cover, order, post }
-    }))
+    const coveredAlbums = await Promise.all(
+      collection.albums.map(async ({ album, order, post }) => {
+        const item = album as AlbumDocument
+        const cover = await this.albumRepository.fetchAlbumCover(item)
+        return { album: item, cover, order, post }
+      })
+    )
 
     return GatheringViewFactory.createCollectionPageView(
       collection,
-      coveredAlbums.map(({ album, cover, order, post }) => (
+      coveredAlbums.map(({ album, cover, order, post }) =>
         AlbumViewFactory.createAlbumItemView(album, cover, order, post)
-      ))
+      )
     )
   }
 
@@ -172,10 +174,7 @@ export default class CollectionService {
       throw new Error('Incorrect request options')
     }
 
-    targetCollection.albums.splice(
-      newOrder, 0,
-      ...targetCollection.albums.splice(oldOrder, 1)
-    )
+    targetCollection.albums.splice(newOrder, 0, ...targetCollection.albums.splice(oldOrder, 1))
 
     targetCollection.albums.forEach((el, index) => {
       el.order = index + 1

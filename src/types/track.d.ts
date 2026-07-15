@@ -7,12 +7,12 @@ import { GatheringUpdateProps } from './gathering'
 export type TrackDocumentNullable = Document<unknown, {}, TrackDocument> | null
 
 export interface NewTrackPayload {
-  track: Required<CloudEntity>,
-  albumId: Types.ObjectId,
-  artistId: Types.ObjectId,
-  genreId: Types.ObjectId,
-  periodId: Types.ObjectId,
-  cloudURL: string,
+  track: Required<CloudEntity>
+  albumId: Types.ObjectId
+  artistId: Types.ObjectId
+  genreId: Types.ObjectId
+  periodId: Types.ObjectId
+  cloudURL: string
   release?: string
 }
 

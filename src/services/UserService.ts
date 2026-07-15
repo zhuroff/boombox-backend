@@ -70,7 +70,7 @@ export default class UserService {
     const { refreshToken } = req.cookies
     res.clearCookie('refreshToken')
     res.clearCookie('accessToken')
-    
+
     return await this.tokenService.removeToken(refreshToken)
   }
 
@@ -135,4 +135,3 @@ export default class UserService {
     return { message: 'user.deleted' }
   }
 }
- 

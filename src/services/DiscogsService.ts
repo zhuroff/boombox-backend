@@ -8,18 +8,19 @@ export default class DiscogsService {
 
   #buildCollectionQuery(subpath = '') {
     return encodeURI(
-      process.env['DISCOGS_DOMAIN'] +
-      '/users/' + process.env['DISCOGS_USERNAME'] +
-      '/collection/folders' + subpath
+      process.env['DISCOGS_DOMAIN'] + '/users/' + process.env['DISCOGS_USERNAME'] + '/collection/folders' + subpath
     )
   }
 
   #buildSearchQuery(param: string) {
     return encodeURI(
       process.env['DISCOGS_DOMAIN'] +
-      '/database/search?' + param +
-      '&key=' + process.env['DISCOGS_KEY'] +
-      '&secret=' + process.env['DISCOGS_SECRET']
+        '/database/search?' +
+        param +
+        '&key=' +
+        process.env['DISCOGS_KEY'] +
+        '&secret=' +
+        process.env['DISCOGS_SECRET']
     )
   }
 
@@ -34,29 +35,26 @@ export default class DiscogsService {
       this.#buildCollectionQuery(),
       parsedQuery.folderName
     )
-    
-    const content = await Promise.all(folders.map(async (folder) => {
-      const query = String(
-        '/' + folder.id +
-        '/releases?sort=added&sort_order=desc' +
-        '&page=' + parsedQuery.page +
-        '&per_page=' + parsedQuery.limit
-      )
-      
-      const releases = await this.discogsRepository.getCollectionContent(
-        this.#buildCollectionQuery(query)
-      )
 
-      return releases
-        ? new DiscogsReleaseView(folder, releases)
-        : null
-    }))
+    const content = await Promise.all(
+      folders.map(async (folder) => {
+        const query = String(
+          '/' +
+            folder.id +
+            '/releases?sort=added&sort_order=desc' +
+            '&page=' +
+            parsedQuery.page +
+            '&per_page=' +
+            parsedQuery.limit
+        )
 
-    return (
-      content
-        .filter((item) => item !== null)
-        .sort((a, b) => b.count - a.count)
+        const releases = await this.discogsRepository.getCollectionContent(this.#buildCollectionQuery(query))
+
+        return releases ? new DiscogsReleaseView(folder, releases) : null
+      })
     )
+
+    return content.filter((item) => item !== null).sort((a, b) => b.count - a.count)
   }
 
   async searchDiscogsData(req: Request, results: DiscogsSearchView[] = [], page = 1): Promise<DiscogsSearchView[]> {
@@ -66,30 +64,36 @@ export default class DiscogsService {
       album: string
       page: number
     }>(req)
-    
+
     const query = String(
       `type=${parsedQuery.isMasterOnly ? 'master' : 'release'}` +
-      '&artist=' + parsedQuery.artist +
-      '&release_title=' + parsedQuery.album +
-      '&sort=year&sort_order=asc&per_page=500' +
-      '&page=' + (parsedQuery.page >= page ? parsedQuery.page : page)
+        '&artist=' +
+        parsedQuery.artist +
+        '&release_title=' +
+        parsedQuery.album +
+        '&sort=year&sort_order=asc&per_page=500' +
+        '&page=' +
+        (parsedQuery.page >= page ? parsedQuery.page : page)
     )
 
     const response = await this.discogsRepository.getDiscogsList(this.#buildSearchQuery(query))
-    
-    results.push(...(response?.results || []).reduce<DiscogsSearchView[]>((acc, next) => {
-      const releaseAlbum = next.title.slice(next.title.indexOf(' - ') + 3)?.trim()
-      if (
-        releaseAlbum?.toLowerCase() === parsedQuery.album.toLowerCase()
-        && !next.format.includes('Unofficial Release')
-      ) acc.push(new DiscogsSearchView(next))
-      return acc
-    }, []))
-    
+
+    results.push(
+      ...(response?.results || []).reduce<DiscogsSearchView[]>((acc, next) => {
+        const releaseAlbum = next.title.slice(next.title.indexOf(' - ') + 3)?.trim()
+        if (
+          releaseAlbum?.toLowerCase() === parsedQuery.album.toLowerCase() &&
+          !next.format.includes('Unofficial Release')
+        )
+          acc.push(new DiscogsSearchView(next))
+        return acc
+      }, [])
+    )
+
     if (
-      !parsedQuery.isMasterOnly
-      && response?.pagination?.page
-      && response.pagination.page < response.pagination.pages
+      !parsedQuery.isMasterOnly &&
+      response?.pagination?.page &&
+      response.pagination.page < response.pagination.pages
     ) {
       return this.searchDiscogsData(req, results, page + 1)
     } else {

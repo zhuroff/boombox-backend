@@ -10,12 +10,7 @@ class CategoryItemView extends EntityBasicView {
   avatar?: string | null
   kind = 'category'
 
-  constructor(
-    _id: Types.ObjectId,
-    title: string,
-    albums: AlbumDocument[],
-    avatar?: string | null
-  ) {
+  constructor(_id: Types.ObjectId, title: string, albums: AlbumDocument[], avatar?: string | null) {
     super(_id, title)
     this.albums = albums.length
     this.avatar = avatar
@@ -27,13 +22,7 @@ class CategoryPageView extends EntityBasicView {
   avatar?: string | null
   albums: AlbumItem[]
 
-  constructor(
-    _id: Types.ObjectId,
-    title: string,
-    albums: AlbumItem[],
-    poster?: string | null,
-    avatar?: string | null
-  ) {
+  constructor(_id: Types.ObjectId, title: string, albums: AlbumItem[], poster?: string | null, avatar?: string | null) {
     super(_id, title)
     this.poster = poster
     this.avatar = avatar
@@ -43,12 +32,7 @@ class CategoryPageView extends EntityBasicView {
 
 export default class CategoryViewFactory {
   static createCategoryItemView(category: CategoryDocument) {
-    return new CategoryItemView(
-      category._id,
-      category.title,
-      category.albums,
-      category.avatar
-    )
+    return new CategoryItemView(category._id, category.title, category.albums, category.avatar)
   }
 
   static createCategoryPageView(category: CategoryDocument) {

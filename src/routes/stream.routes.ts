@@ -24,93 +24,105 @@ router.get('/proxy', (req: Request, res: Response): void => {
       requestHeaders['Range'] = rangeHeader
     }
 
-    protocol.get(url, {
-      headers: requestHeaders
-    }, (proxyRes) => {
-      if (proxyRes.statusCode && [301, 302, 307, 308].includes(proxyRes.statusCode)) {
-        const redirectUrl = proxyRes.headers.location
-        if (!redirectUrl) {
-          res.status(500).json({ error: 'Redirect without location header' })
-          return
-        }
-        
-        const redirectProtocol = redirectUrl.startsWith('https') ? https : http
-        
-        redirectProtocol.get(redirectUrl, {
+    protocol
+      .get(
+        url,
+        {
           headers: requestHeaders
-        }, (finalRes) => {
-          const statusCode = finalRes.statusCode || 200
-          
+        },
+        (proxyRes) => {
+          if (proxyRes.statusCode && [301, 302, 307, 308].includes(proxyRes.statusCode)) {
+            const redirectUrl = proxyRes.headers.location
+            if (!redirectUrl) {
+              res.status(500).json({ error: 'Redirect without location header' })
+              return
+            }
+
+            const redirectProtocol = redirectUrl.startsWith('https') ? https : http
+
+            redirectProtocol
+              .get(
+                redirectUrl,
+                {
+                  headers: requestHeaders
+                },
+                (finalRes) => {
+                  const statusCode = finalRes.statusCode || 200
+
+                  if (statusCode !== 200 && statusCode !== 206) {
+                    res.status(statusCode).json({
+                      error: 'Failed to fetch file after redirect',
+                      statusCode
+                    })
+                    return
+                  }
+
+                  res.status(statusCode)
+
+                  if (finalRes.headers['content-type']) {
+                    res.set('Content-Type', finalRes.headers['content-type'])
+                  }
+                  if (finalRes.headers['content-length']) {
+                    res.set('Content-Length', finalRes.headers['content-length'])
+                  }
+                  if (finalRes.headers['content-range']) {
+                    res.set('Content-Range', finalRes.headers['content-range'])
+                  }
+                  if (finalRes.headers['accept-ranges']) {
+                    res.set('Accept-Ranges', finalRes.headers['accept-ranges'])
+                  }
+
+                  res.set('Cache-Control', 'public, max-age=31536000')
+                  res.set('Access-Control-Allow-Origin', '*')
+
+                  finalRes.pipe(res)
+                }
+              )
+              .on('error', () => {
+                if (!res.headersSent) {
+                  res.status(500).json({ error: 'Failed to follow redirect' })
+                }
+              })
+
+            return
+          }
+
+          const statusCode = proxyRes.statusCode || 200
+
           if (statusCode !== 200 && statusCode !== 206) {
-            res.status(statusCode).json({ 
-              error: 'Failed to fetch file after redirect',
-              statusCode 
+            res.status(statusCode).json({
+              error: 'Failed to fetch file',
+              statusCode
             })
             return
           }
 
           res.status(statusCode)
 
-          if (finalRes.headers['content-type']) {
-            res.set('Content-Type', finalRes.headers['content-type'])
+          if (proxyRes.headers['content-type']) {
+            res.set('Content-Type', proxyRes.headers['content-type'])
           }
-          if (finalRes.headers['content-length']) {
-            res.set('Content-Length', finalRes.headers['content-length'])
+          if (proxyRes.headers['content-length']) {
+            res.set('Content-Length', proxyRes.headers['content-length'])
           }
-          if (finalRes.headers['content-range']) {
-            res.set('Content-Range', finalRes.headers['content-range'])
+          if (proxyRes.headers['content-range']) {
+            res.set('Content-Range', proxyRes.headers['content-range'])
           }
-          if (finalRes.headers['accept-ranges']) {
-            res.set('Accept-Ranges', finalRes.headers['accept-ranges'])
+          if (proxyRes.headers['accept-ranges']) {
+            res.set('Accept-Ranges', proxyRes.headers['accept-ranges'])
           }
-          
+
           res.set('Cache-Control', 'public, max-age=31536000')
           res.set('Access-Control-Allow-Origin', '*')
 
-          finalRes.pipe(res)
-        }).on('error', () => {
-          if (!res.headersSent) {
-            res.status(500).json({ error: 'Failed to follow redirect' })
-          }
-        })
-        
-        return
-      }
-
-      const statusCode = proxyRes.statusCode || 200
-
-      if (statusCode !== 200 && statusCode !== 206) {
-        res.status(statusCode).json({ 
-          error: 'Failed to fetch file',
-          statusCode 
-        })
-        return
-      }
-
-      res.status(statusCode)
-
-      if (proxyRes.headers['content-type']) {
-        res.set('Content-Type', proxyRes.headers['content-type'])
-      }
-      if (proxyRes.headers['content-length']) {
-        res.set('Content-Length', proxyRes.headers['content-length'])
-      }
-      if (proxyRes.headers['content-range']) {
-        res.set('Content-Range', proxyRes.headers['content-range'])
-      }
-      if (proxyRes.headers['accept-ranges']) {
-        res.set('Accept-Ranges', proxyRes.headers['accept-ranges'])
-      }
-      
-      res.set('Cache-Control', 'public, max-age=31536000')
-      res.set('Access-Control-Allow-Origin', '*')
-
-      proxyRes.pipe(res)
-    }).on('error', () => {
-      if (!res.headersSent) {
-        res.status(500).json({ error: 'Failed to fetch file' })
-      }
-    })
+          proxyRes.pipe(res)
+        }
+      )
+      .on('error', () => {
+        if (!res.headersSent) {
+          res.status(500).json({ error: 'Failed to fetch file' })
+        }
+      })
   } catch (error) {
     if (!res.headersSent) {
       res.status(500).json({ error: 'Failed to proxy file' })

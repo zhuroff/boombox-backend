@@ -23,8 +23,20 @@ const router = Router()
 router.get('/', authChecker, genreController.getCategories(Genre))
 router.get('/:id', authChecker, genreController.getCategory(Genre))
 router.post('/create', authChecker, genreController.createCategory(Genre))
-router.post('/:id/poster', authChecker, upload.single('poster'), handleMulterError, genreController.updateModelFileLink(Genre))
-router.post('/:id/avatar', authChecker, upload.single('avatar'), handleMulterError, genreController.updateModelFileLink(Genre))
+router.post(
+  '/:id/poster',
+  authChecker,
+  upload.single('poster'),
+  handleMulterError,
+  genreController.updateModelFileLink(Genre)
+)
+router.post(
+  '/:id/avatar',
+  authChecker,
+  upload.single('avatar'),
+  handleMulterError,
+  genreController.updateModelFileLink(Genre)
+)
 router.delete('/:id', authChecker, genreController.removeCategory)
 
 export default router

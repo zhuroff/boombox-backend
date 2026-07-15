@@ -50,13 +50,14 @@ const schema = new Schema({
     type: Date,
     default: Date.now
   },
-  created: {
-    type: Date,
-    required: true
-  },
   modified: {
     type: Date,
     required: true
+  },
+  availableOnVinyl: {
+    type: Boolean,
+    default: false,
+    required: false
   },
   tracks: [
     {

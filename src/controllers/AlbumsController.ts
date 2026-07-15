@@ -43,4 +43,14 @@ export default class AlbumsController {
       res.status(500).json(error)
     }
   }
+
+  updateAlbumVinylAvailability = async (req: Request, res: Response) => {
+    try {
+      const result = await this.albumService.updateAlbumVinylAvailability(req)
+      res.json(result)
+    } catch (error) {
+      console.error(error)
+      res.status(500).json(error)
+    }
+  }
 }

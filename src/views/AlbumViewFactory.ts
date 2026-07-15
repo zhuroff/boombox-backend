@@ -46,12 +46,14 @@ class AlbumPageView extends AlbumItemView {
   inCollections: EntityBasicView[]
   tracks: ReturnType<typeof TrackViewFactory.create>[]
   note: string
+  availableOnVinyl: boolean
 
   constructor(
     album: AlbumItemView,
     tracks: ReturnType<typeof TrackViewFactory.create>[],
     inCollections: EntityBasicView[],
-    note?: string | null
+    note?: string | null,
+    availableOnVinyl = false
   ) {
     super(
       album._id,
@@ -67,6 +69,7 @@ class AlbumPageView extends AlbumItemView {
     this.tracks = tracks
     this.inCollections = inCollections
     this.note = note || ''
+    this.availableOnVinyl = availableOnVinyl
   }
 }
 
@@ -76,7 +79,13 @@ export default class AlbumViewFactory {
   }
 
   static createAlbumItemView(album: AlbumDocument, albumCover?: string, order?: number, post?: string) {
-    const artistRefs = (album as { artists?: { _id: Types.ObjectId; title?: string }[]; artist?: { _id: Types.ObjectId; title?: string } }).artists ?? (album as { artist?: { _id: Types.ObjectId; title?: string } }).artist
+    const artistRefs =
+      (
+        album as {
+          artists?: { _id: Types.ObjectId; title?: string }[]
+          artist?: { _id: Types.ObjectId; title?: string }
+        }
+      ).artists ?? (album as { artist?: { _id: Types.ObjectId; title?: string } }).artist
     const artists = Array.isArray(artistRefs) ? artistRefs : artistRefs ? [artistRefs] : []
     return new AlbumItemView(
       album._id,
@@ -101,7 +110,8 @@ export default class AlbumViewFactory {
       albumItem,
       tracks,
       album.inCollections?.map(this.createBasicView).filter(Boolean) || [],
-      note
+      note,
+      Boolean(album.availableOnVinyl)
     )
   }
 }

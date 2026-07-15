@@ -19,17 +19,9 @@ export default class PaginationViewFactory {
 
   static create(pagination: Pagination | DiscogsPagination): PaginationView {
     if (this.isDiscogsPagination(pagination)) {
-      return new PaginationView(
-        pagination.items,
-        pagination.pages,
-        pagination.page
-      )
+      return new PaginationView(pagination.items, pagination.pages, pagination.page)
     }
 
-    return new PaginationView(
-      pagination.totalDocs,
-      pagination.totalPages,
-      pagination.page
-    )
+    return new PaginationView(pagination.totalDocs, pagination.totalPages, pagination.page)
   }
 }

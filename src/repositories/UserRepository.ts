@@ -1,9 +1,9 @@
-import { RootFilterQuery, Types } from 'mongoose'
-import { User } from '../models/user.model'
+import { QueryFilter, Types } from 'mongoose'
+import { User, UserDocument } from '../models/user.model'
 import { UserDataPayload, UserRepository } from '../types/user'
 
 export default class UserRepositoryContract implements UserRepository {
-  async findUser(payload: RootFilterQuery<UserDataPayload>) {
+  async findUser(payload: QueryFilter<UserDocument>) {
     return await User.findOne(payload)
   }
 

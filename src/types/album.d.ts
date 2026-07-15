@@ -1,5 +1,5 @@
 import { Request } from 'express'
-import { Document, PaginateResult, Types } from 'mongoose'
+import { PaginateResult, Types, HydratedDocument } from 'mongoose'
 import { CloudEntity } from './cloud'
 import { AlbumDocument } from '../models/album.model'
 import { CollectionDocumentAlbum } from '../models/collection.model'
@@ -37,7 +37,7 @@ export interface AlbumAttrs {
 
 export interface AlbumRepository {
   fetchAlbumDocs(): Promise<AlbumDocument[]>
-  saveNewAlbum(newAlbum: Document, attrs: AlbumAttrs): Promise<Document<AlbumDocument>>
+  saveNewAlbum(newAlbum: HydratedDocument<AlbumDocument>, attrs: AlbumAttrs): Promise<HydratedDocument<AlbumDocument>>
   updateAlbumsClouds(albums: AlbumDocument[]): Promise<Array<AlbumDocument | null>>
   getAlbum(id: string | Types.ObjectId): Promise<AlbumDocument>
   deleteAlbum(id: Types.ObjectId | string): Promise<AlbumDocument | null>
@@ -48,6 +48,7 @@ export interface AlbumRepository {
   fetchAlbumCover(album: AlbumDocument): Promise<string | undefined>
   getAlbumContent(req: Request): Promise<Array<string | undefined>>
   updateAlbumNote(req: Request): Promise<AlbumDocument | null>
+  updateAlbumVinylAvailability(req: Request): Promise<AlbumDocument | null>
   cleanAlbumCollections(albums: CollectionDocumentAlbum[], listID: string | Types.ObjectId): Promise<void>
 }
 

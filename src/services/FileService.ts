@@ -8,7 +8,7 @@ import path from 'path'
 export default class FileService {
   constructor(private fileRepository: FileRepository) {}
 
-  async updateModelFileLink<T, U extends Model<T>>(Model: U, req: Request) {
+  async updateModelFileLink<T>(Model: Model<T>, req: Request) {
     if (!req.params['id']) {
       throw new Error('ID not found in request params')
     }
@@ -17,12 +17,14 @@ export default class FileService {
       throw new Error('File not found')
     }
 
-    return await this.fileRepository.updateModelFileLink<T, U>(req.file, req.params['id'], Model)
+    return await this.fileRepository.updateModelFileLink<T>(
+      { fieldname: req.file.fieldname, filename: req.file.filename },
+      req.params['id'],
+      Model
+    )
   }
 
   remove(files: string[]) {
-    files.map((link) => (
-      fs.unlinkSync(path.join(rootDir, encodeURI(link)))
-    ))
+    files.map((link) => fs.unlinkSync(path.join(rootDir, encodeURI(link))))
   }
 }

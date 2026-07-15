@@ -32,10 +32,7 @@ schema.index({ title: 'text' })
 schema.index({ title: 1 }, { unique: true })
 schema.plugin(paginate)
 
-export interface GenreDocument extends Omit<
-  InferSchemaType<typeof schema> & { _id: Types.ObjectId },
-  'albums'
-> {
+export interface GenreDocument extends Omit<InferSchemaType<typeof schema> & { _id: Types.ObjectId }, 'albums'> {
   albums: AlbumDocument[]
 }
 

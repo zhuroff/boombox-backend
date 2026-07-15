@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "isolatedModules": true,
     "allowSyntheticDefaultImports": true,
     "lib": [
@@ -17,13 +17,11 @@
     "strict": true,
     "noImplicitReturns": true,
     "noImplicitAny": true,
-    "downlevelIteration": true,
     "strictNullChecks": true,
     "noUnusedLocals": true,
     "noUncheckedIndexedAccess": true,
     "declaration": false,
     "noPropertyAccessFromIndexSignature": true,
-    "baseUrl": ".",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
@@ -31,6 +29,7 @@
   "exclude": [
     "node_modules",
     "dist",
-    "*.config.ts"
+    "*.config.ts",
+    "src/ai-docs"
   ]
 }

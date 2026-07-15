@@ -12,11 +12,11 @@ const filenameSlugify = (filename: string) => {
 }
 
 const storage = multer.diskStorage({
-  destination (_: Request, __: Express.Multer.File, callback: MulterCallback) {
+  destination(_: Request, __: Express.Multer.File, callback: MulterCallback) {
     callback(null, path.join(rootDir, 'uploads'))
   },
 
-  filename (_: Request, file: Express.Multer.File, callback: MulterCallback) {
+  filename(_: Request, file: Express.Multer.File, callback: MulterCallback) {
     callback(null, `${new Date().getTime()}-${filenameSlugify(file.originalname)}`)
   }
 })
@@ -38,7 +38,7 @@ const upload = multer({
 export const handleMulterError = (err: unknown, _: Request, res: Response, next: NextFunction): void => {
   if (err instanceof MulterError) {
     let message
-    
+
     switch (err.code) {
       case 'LIMIT_FILE_SIZE':
         message = 'file_size_exceeded_5mb'
@@ -52,16 +52,16 @@ export const handleMulterError = (err: unknown, _: Request, res: Response, next:
       default:
         message = err.message || 'file_upload_error'
     }
-    
+
     res.status(422).json({ error: message })
     return
   }
-  
+
   if (err && typeof err === 'object' && 'message' in err) {
     res.status(422).json({ error: err.message })
     return
   }
-  
+
   next(err)
 }
 
