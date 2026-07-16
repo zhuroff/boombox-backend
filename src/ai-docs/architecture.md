@@ -17,8 +17,8 @@ HTTP → routes/*.routes.ts → controllers/*Controller.ts → services/*Service
 - Connects MongoDB, configures CORS (credentials), cookies, JSON body.
 - Mounts all `/api/*` routers.
 - Exports `rootDir`, `cloudsMap`, `getCloudApi()` for use in repositories.
-- Serves static `/backups` and `/uploads`.
-- Port **3001**.
+- Serves static `/uploads` (auth required). Backups are API-only (`/api/backup`).
+- Port **3001**, binds to **127.0.0.1** in production (nginx reverse proxy).
 
 ## Folder structure (`src/`)
 

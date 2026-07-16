@@ -15,10 +15,10 @@
 | `/api/search` | `search.routes.ts` | `authChecker` |
 | `/api/backup` | `backup.routes.ts` | `authChecker` |
 | `/api/sync` | `sync.routes.ts` | `authChecker` |
-| `/api/discogs` | `discogs.routes.ts` | **No auth** |
-| `/api/proxy` | `stream.routes.ts` | **No auth** (audio stream) |
+| `/api/discogs` | `discogs.routes.ts` | `authChecker` |
+| `/api/proxy` | `stream.routes.ts` | `authChecker` + URL whitelist (pCloud, Yandex Disk) |
 
-Static: `/backups`, `/uploads`, `/robots.txt`.
+Static: `/uploads` (auth required), `/robots.txt`. Backups are **not** served statically — use `/api/backup` only.
 
 ## Auth
 
@@ -55,7 +55,7 @@ GET /api/albums?page=2&limit=12&sort[dateCreated]=-1&noteFilter=withReviews&viny
 
 **Filters** (combinable via `$and`):
 
-- `noteFilter`: `withReviews` → note length **>** 250; `withoutReviews` → **≤** 250.
+- `noteFilter`: `withReviews` → note length **>** 2500; `withoutReviews` → **≤** 2500.
 - `vinylFilter`: `onVinyl` → `availableOnVinyl: true`; `notOnVinyl` → `$ne: true`.
 
 **Sort** (single field):
