@@ -16,7 +16,7 @@ import { GatheringUpdateProps } from '../types/gathering'
 import { getCloudApi } from '..'
 
 export default class AlbumRepositoryContract implements AlbumRepository {
-  readonly #reviewNoteMinLength = 250
+  readonly #reviewNoteMinLength = 1500
   readonly #defaultAlbumSort: Record<string, 1 | -1> = { dateCreated: -1 }
 
   #buildAlbumNoteFilterQuery(noteFilter?: AlbumNoteFilter): QueryFilter<AlbumDocument> {
