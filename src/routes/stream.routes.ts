@@ -1,15 +1,22 @@
 import { Router, Request, Response } from 'express'
 import https from 'https'
 import http from 'http'
+import { authChecker } from '../middleware/auth.checker'
+import { isAllowedProxyUrl } from '../utils/proxyUrl'
 
 const router = Router()
 
-router.get('/proxy', (req: Request, res: Response): void => {
+router.get('/proxy', authChecker, (req: Request, res: Response): void => {
   try {
     const { url } = req.query
 
     if (!url || typeof url !== 'string') {
       res.status(400).json({ error: 'URL parameter is required' })
+      return
+    }
+
+    if (!isAllowedProxyUrl(url)) {
+      res.status(403).json({ error: 'URL is not allowed' })
       return
     }
 
@@ -72,8 +79,7 @@ router.get('/proxy', (req: Request, res: Response): void => {
                     res.set('Accept-Ranges', finalRes.headers['accept-ranges'])
                   }
 
-                  res.set('Cache-Control', 'public, max-age=31536000')
-                  res.set('Access-Control-Allow-Origin', '*')
+                  res.set('Cache-Control', 'private, max-age=31536000')
 
                   finalRes.pipe(res)
                 }
@@ -112,8 +118,7 @@ router.get('/proxy', (req: Request, res: Response): void => {
             res.set('Accept-Ranges', proxyRes.headers['accept-ranges'])
           }
 
-          res.set('Cache-Control', 'public, max-age=31536000')
-          res.set('Access-Control-Allow-Origin', '*')
+          res.set('Cache-Control', 'private, max-age=31536000')
 
           proxyRes.pipe(res)
         }

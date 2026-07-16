@@ -22,11 +22,13 @@ import PCloudApi from './clouds/cloud.pcloud'
 import YandexCloudApi from './clouds/cloud.yandex'
 import { CloudApi } from './types/cloud'
 import { noIndexMiddleware } from './middleware/noindex'
+import { authChecker } from './middleware/auth.checker'
 
 dotenv.config()
 
 const app = express()
 const PORT = 3001
+const HOST = process.env['NODE_ENV'] === 'production' ? '127.0.0.1' : '0.0.0.0'
 const corsConfig = {
   credentials: true,
   origin: process.env['NODE_ENV'] === 'development' ? process.env['CLIENT_URL_DEV'] : process.env['CLIENT_URL_PROD']
@@ -73,7 +75,6 @@ app.use('/api/backup', backupRoutes)
 app.use('/api/sync', synchronizeRoutes)
 app.use('/api/search', searchRoutes)
 app.use('/api', streamRoutes)
-app.use('/backups', express.static(path.join(rootDir, 'backups')))
-app.use('/uploads', express.static(path.join(rootDir, 'uploads')))
+app.use('/uploads', authChecker, express.static(path.join(rootDir, 'uploads')))
 
-app.listen(PORT, () => console.log(`App listening at http://localhost:${PORT}`))
+app.listen(PORT, HOST, () => console.log(`App listening at http://${HOST}:${PORT}`))
