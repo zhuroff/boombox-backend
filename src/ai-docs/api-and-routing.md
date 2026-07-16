@@ -55,7 +55,7 @@ GET /api/albums?page=2&limit=12&sort[dateCreated]=-1&noteFilter=withReviews&viny
 
 **Filters** (combinable via `$and`):
 
-- `noteFilter`: `withReviews` → note length **>** 1500; `withoutReviews` → **≤** 1500.
+- `noteFilter`: `withReviews` → note length **>** 2500; `withoutReviews` → **≤** 2500.
 - `vinylFilter`: `onVinyl` → `availableOnVinyl: true`; `notOnVinyl` → `$ne: true`.
 
 **Sort** (single field):
