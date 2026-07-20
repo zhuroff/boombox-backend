@@ -35,10 +35,18 @@ export interface AlbumAttrs {
   tracks: Types.ObjectId[]
 }
 
+export interface AlbumCloudMigration {
+  album: AlbumDocument
+  cloudFolder: CloudEntity
+}
+
 export interface AlbumRepository {
   fetchAlbumDocs(): Promise<AlbumDocument[]>
   saveNewAlbum(newAlbum: HydratedDocument<AlbumDocument>, attrs: AlbumAttrs): Promise<HydratedDocument<AlbumDocument>>
-  updateAlbumsClouds(albums: AlbumDocument[]): Promise<Array<AlbumDocument | null>>
+  updateAlbumCloud(
+    albumId: Types.ObjectId,
+    attrs: { cloudURL: string; path: string }
+  ): Promise<AlbumDocument | null>
   getAlbum(id: string | Types.ObjectId): Promise<AlbumDocument>
   deleteAlbum(id: Types.ObjectId | string): Promise<AlbumDocument | null>
   getAlbums(body: ListRequestConfig): Promise<PaginateResult<AlbumDocument | null>>

@@ -1,8 +1,10 @@
 import { Request } from 'express'
 import { DeleteResult, Document, Types } from 'mongoose'
 import { CloudEntity } from './cloud'
+import { AlbumTrack } from './album'
 import { AggregatedTrackDocument, TrackDocument } from '../models/track.model'
 import { GatheringUpdateProps } from './gathering'
+import { ListRequestConfig } from './pagination'
 
 export type TrackDocumentNullable = Document<unknown, {}, TrackDocument> | null
 
@@ -26,7 +28,7 @@ export interface ExternalTrackLyricsResponse {
 export interface TrackRepository {
   createTrack(trackPayload: NewTrackPayload): Promise<TrackDocument>
   updateTrack(trackPayload: Partial<TrackDocument>): Promise<TrackDocument | null>
-  updateTracksCloudURLByAlbum(albumId: Types.ObjectId, cloudURL: string): Promise<import('mongoose').UpdateResult>
+  syncTracksCloudByAlbum(albumId: Types.ObjectId, tracks: AlbumTrack[], cloudURL: string): Promise<void>
   removeTracks(tracks: Array<string | Types.ObjectId>): Promise<DeleteResult>
   saveTrackDuration(id: string, duration: number): Promise<TrackDocumentNullable>
   getTrackLyrics(id: string): Promise<{ lyrics: string | null }>

@@ -2,6 +2,7 @@ import { PipelineStage, QueryFilter, Types } from 'mongoose'
 import { Client } from 'genius-lyrics'
 import { AggregatedTrackDocument, Track, TrackDocument } from '../models/track.model'
 import { Collection } from '../models/collection.model'
+import { AlbumTrack } from '../types/album'
 import { NewTrackPayload, TrackRepository } from '../types/track'
 import { GatheringUpdateProps } from '../types/gathering'
 import { ListRequestConfig } from '../types/pagination'
@@ -127,10 +128,21 @@ export default class TrackRepositoryContract implements TrackRepository {
     return await Track.findByIdAndUpdate(trackPayload._id, trackPayload, { new: true })
   }
 
-  async updateTracksCloudURLByAlbum(albumId: Types.ObjectId, cloudURL: string) {
-    return await Track.updateMany({ inAlbum: albumId } as unknown as QueryFilter<TrackDocument>, {
-      $set: { modified: new Date(), cloudURL }
+  async syncTracksCloudByAlbum(albumId: Types.ObjectId, tracks: AlbumTrack[], cloudURL: string) {
+    const modified = new Date()
+
+    await Track.updateMany({ inAlbum: albumId } as unknown as QueryFilter<TrackDocument>, {
+      $set: { cloudURL, modified }
     })
+
+    await Promise.all(
+      tracks.map(({ track }) =>
+        Track.updateOne(
+          { inAlbum: albumId, fileName: track.title } as unknown as QueryFilter<TrackDocument>,
+          { $set: { path: track.path ?? track.title, cloudURL, modified } }
+        )
+      )
+    )
   }
 
   async removeTracks(tracks: Array<string | Types.ObjectId>) {

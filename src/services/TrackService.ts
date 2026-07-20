@@ -2,6 +2,7 @@ import { Request } from 'express'
 import { Types } from 'mongoose'
 import { TrackDocument } from '../models/track.model'
 import { CompilationDocumentTrack } from '../models/compilation.model'
+import { AlbumTrack } from '../types/album'
 import { NewTrackPayload, TrackRepository } from '../types/track'
 import { ListRequestConfig } from '../types/pagination'
 import TrackViewFactory from '../views/TrackViewFactory'
@@ -18,8 +19,8 @@ export default class TrackService {
     return await this.trackRepository.updateTrack(trackPayload)
   }
 
-  async updateTracksCloudURLByAlbum(albumId: Types.ObjectId, cloudURL: string) {
-    return await this.trackRepository.updateTracksCloudURLByAlbum(albumId, cloudURL)
+  async syncTracksCloudByAlbum(albumId: Types.ObjectId, tracks: AlbumTrack[], cloudURL: string) {
+    return await this.trackRepository.syncTracksCloudByAlbum(albumId, tracks, cloudURL)
   }
 
   async removeTracks(tracks: Array<string | Types.ObjectId>) {

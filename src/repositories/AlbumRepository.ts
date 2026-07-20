@@ -19,6 +19,10 @@ export default class AlbumRepositoryContract implements AlbumRepository {
   readonly #reviewNoteMinLength = 2500
   readonly #defaultAlbumSort: Record<string, 1 | -1> = { dateCreated: -1 }
 
+  #touchModified<T extends Record<string, unknown>>(fields: T): T & { modified: Date } {
+    return { ...fields, modified: new Date() }
+  }
+
   #buildAlbumNoteFilterQuery(noteFilter?: AlbumNoteFilter): QueryFilter<AlbumDocument> {
     if (!noteFilter || noteFilter === 'all') {
       return {}
@@ -212,22 +216,22 @@ export default class AlbumRepositoryContract implements AlbumRepository {
     return await newAlbum.save()
   }
 
-  async updateAlbumsClouds(albums: AlbumDocument[]) {
-    return await Promise.all(
-      albums.map(
-        async (album) =>
-          await Album.findOneAndUpdate(
-            { _id: album._id },
-            { $set: { modified: new Date(), cloudURL: album.cloudURL } },
-            { new: true }
-          )
-      )
+  async updateAlbumCloud(
+    albumId: Types.ObjectId,
+    attrs: { cloudURL: string; path: string }
+  ): Promise<AlbumDocument | null> {
+    return await Album.findOneAndUpdate(
+      { _id: albumId },
+      { $set: this.#touchModified(attrs) },
+      { new: true }
     )
   }
 
   async updateCollectionsInAlbum({ listID, itemID, inList }: GatheringUpdateProps) {
     const query = { _id: itemID }
-    const update = inList ? { $pull: { inCollections: listID } } : { $push: { inCollections: listID } }
+    const update = inList
+      ? { $pull: { inCollections: listID }, $set: { modified: new Date() } }
+      : { $push: { inCollections: listID }, $set: { modified: new Date() } }
     const options = { new: true }
 
     await Album.findOneAndUpdate(query, update, options)
@@ -236,7 +240,7 @@ export default class AlbumRepositoryContract implements AlbumRepository {
   async cleanAlbumCollections(albums: CollectionDocumentAlbum[], listID: string | Types.ObjectId) {
     const cleanProcess = albums.map(async (album) => {
       const query: QueryFilter<AlbumDocument> = { _id: new Types.ObjectId(album.album.toString()) }
-      const update = { $pull: { inCollections: listID } }
+      const update = { $pull: { inCollections: listID }, $set: { modified: new Date() } }
       const options = { new: true }
 
       return await Album.findOneAndUpdate(query, update, options)
@@ -395,13 +399,17 @@ export default class AlbumRepositoryContract implements AlbumRepository {
   async updateAlbumNote(req: Request) {
     const { id } = req.params
     const { note } = req.body
-    return await Album.findByIdAndUpdate(id, { $set: { note } }, { new: true })
+    return await Album.findByIdAndUpdate(id, { $set: this.#touchModified({ note }) }, { new: true })
   }
 
   async updateAlbumVinylAvailability(req: Request) {
     const { id } = req.params
     const { availableOnVinyl } = req.body
-    return await Album.findByIdAndUpdate(id, { $set: { availableOnVinyl: Boolean(availableOnVinyl) } }, { new: true })
+    return await Album.findByIdAndUpdate(
+      id,
+      { $set: this.#touchModified({ availableOnVinyl: Boolean(availableOnVinyl) }) },
+      { new: true }
+    )
   }
 
   async getAlbumContent(req: Request) {
