@@ -5,7 +5,7 @@ import { Artist, ArtistDocument } from '../models/artist.model'
 import { Genre, GenreDocument } from '../models/genre.model'
 import { Period, PeriodDocument } from '../models/period.model'
 import { ListRequestConfig } from '../types/pagination'
-import { AlbumRepository, AlbumShape, AlbumTrack } from '../types/album'
+import { AlbumCloudMigration, AlbumRepository, AlbumShape, AlbumTrack } from '../types/album'
 import { CloudEntity } from '../types/cloud'
 import { getCloudApi } from '..'
 import Parser from '../utils/Parser'
@@ -88,10 +88,21 @@ export default class AlbumService {
     }
   }
 
-  async updateAlbumsClouds(albums: AlbumDocument[]) {
-    const updatedAlbums = await this.albumRepository.updateAlbumsClouds(albums)
-    await Promise.all(albums.map((album) => this.trackService.updateTracksCloudURLByAlbum(album._id, album.cloudURL)))
-    return updatedAlbums
+  async updateAlbumsClouds(migrations: AlbumCloudMigration[]) {
+    return await Promise.all(
+      migrations.map(async ({ album, cloudFolder }) => {
+        const shape = await this.createAlbumShape(cloudFolder)
+
+        const updatedAlbum = await this.albumRepository.updateAlbumCloud(album._id, {
+          cloudURL: shape.cloudURL,
+          path: shape.path
+        })
+
+        await this.trackService.syncTracksCloudByAlbum(album._id, shape.tracks, shape.cloudURL)
+
+        return updatedAlbum
+      })
+    )
   }
 
   async createAlbumShape(album: CloudEntity): Promise<AlbumShape> {

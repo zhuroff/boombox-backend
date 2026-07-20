@@ -44,15 +44,14 @@ export default class SyncService {
 
     const dbFoldersMap = new Map(dbFolders.map((folder) => [folder.folderName, folder]))
     const albumsToAdd: CloudEntity[] = []
-    const albumsToFix: AlbumDocument[] = []
+    const albumsToFix: { album: AlbumDocument; cloudFolder: CloudEntity }[] = []
 
     cloudFolders.forEach((folder) => {
       const dbFolder = dbFoldersMap.get(folder.title)
 
       if (dbFolder) {
         if (dbFolder.cloudURL !== folder.cloudURL) {
-          dbFolder.cloudURL = folder.cloudURL
-          albumsToFix.push(dbFolder)
+          albumsToFix.push({ album: dbFolder, cloudFolder: folder })
         }
         dbFoldersMap.delete(folder.title)
       } else {
